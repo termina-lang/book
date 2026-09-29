@@ -17,7 +17,7 @@ each introducing an alternative block:
 === "Termina"
     ```termina
     function grade(score : u32) -> u32 {
-        var level : u32 = 0;
+        var level : u32;
         if score >= 90 {
             level = 3;
         } else if score >= 50 {
@@ -30,9 +30,9 @@ each introducing an alternative block:
     ```
 === "C"
     ```c
-    uint32_t grade(uint32_t score) {
+    uint32_t grade(const uint32_t score) {
 
-        uint32_t level = 0U;
+        uint32_t level;
 
         if (score >= 90U) {
 
@@ -59,6 +59,40 @@ treat an integer as a condition, so a fragment such as `if count { ... }`, where
 example as `if count != 0 { ... }`. The parentheses around the condition are
 optional, and this book omits them.
 
+The transpiler also follows the values that the local variables of a body may
+hold at each point, and it rejects a condition whose value is the same every
+time the condition is reached, since one of the paths it guards can then never
+run. In the following function, the inner test can only see the value assigned
+just before it:
+
+```termina
+function saturate(level : u8) -> u8 {
+    var result : u8 = level;
+    if level > 200 {
+        result = 200;
+        if result > 250 {    // error: invariant control expression
+            result = 250;
+        }
+    }
+    return result;
+}
+```
+
+```text
+error [VAE-001]: invariant control expression.
+→ src/lib/util.fin:5:12
+  │
+4 │           result = 200;
+  │ ┌─────────^^^^^^^^^^^^  result takes that value here
+5 │ │         if result > 250 {
+  │ └────────────^^^^^^^^^^^^^
+Here result holds 200. This condition evaluates to false every time it is reached, so one of the paths it guards is never taken.
+```
+
+A comparison whose result is fixed by the range of its type, such as an unsigned
+value compared with `< 0`, is rejected for the same reason, and so is a `case` of a `match` whose variant
+the value can never hold at that point.
+
 ## Pattern matching
 
 A `match` statement branches on the variant of an enumeration or of one of the
@@ -70,7 +104,7 @@ that data within the corresponding block:
 === "Termina"
     ```termina
     function classify(s : Status<i32>) -> u32 {
-        var code : u32 = 0;
+        var code : u32;
         match s {
             case Success => {
                 code = 1;
@@ -84,17 +118,17 @@ that data within the corresponding block:
     ```
 === "C"
     ```c
-    uint32_t classify(__status_int32_t s) {
+    uint32_t classify(const Status__i32 s) {
 
-        uint32_t code = 0U;
+        uint32_t code;
 
-        if (s.__variant == Success) {
+        if (s._variant == Status__Success) {
 
             code = 1U;
 
         } else {
 
-            int32_t e = s.Failure.__0;
+            int32_t e = s.Failure._0;
 
             code = (uint32_t)e;
 

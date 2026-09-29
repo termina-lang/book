@@ -84,21 +84,22 @@ reads it; in either case the call runs under mutual exclusion. The procedures of
     ```
 === "C"
     ```c
-    void CCounter__increment(const __termina_event_t * const __ev,
-                             void * const __this) {
+    void CCounter__increment(const termina__event_t * const termina__ev,
+                             void * const termina__this) {
 
-        CCounter * self = (CCounter *)__this;
+        CCounter * self = (CCounter *)termina__this;
 
-        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
-                                                           &self->__lock_type);
+        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
+                                                                &self->_lock_type);
 
-        if (CCounter__at_limit(__ev, self) == 0) {
+        if (CCounter__at_limit(termina__ev, self) == false) {
 
             self->count = self->count + 1U;
 
         }
 
-        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
+                                  termina__lock);
 
         return;
 
@@ -129,19 +130,28 @@ whether the counter has reached its ceiling:
     ```
 === "C"
     ```c
-    _Bool CCounter__at_limit(const __termina_event_t * const __ev,
-                             const CCounter * const self) {
+    static _Bool CCounter__at_limit(const termina__event_t * const termina__ev,
+                                    const CCounter * const self) {
+
+        (void)termina__ev;
 
         return self->count == 100U;
 
     }
     ```
 
-The method is generated without any locking. A method runs only when a procedure
+The method is generated as a `static` function, local to the C file of the
+class and absent from its header, and without any locking. A method runs only when a procedure
 has already been entered, and the resource's lock is therefore already held; a
 second acquisition would be redundant. This is why `increment` calls
 `self->at_limit()` directly, and the generated procedure invokes
 `CCounter__at_limit` inside the region it has locked.
+
+Since a method can only be called by the members of its own class, a method
+that none of them calls would be dead code, and the transpiler rejects it. The
+result of a method or a procedure that never uses `self` does not depend on the
+state of the resource, so the transpiler rejects it as well; it belongs in a
+function.
 
 The state and the two kinds of operation together produce the C structure that
 represents the resource. It begins with the lock that protects the instance,
@@ -149,7 +159,7 @@ followed by the declared fields:
 
 ```c
 typedef struct {
-    __termina_resource_lock_type_t __lock_type;
+    termina__resource_lock_type_t _lock_type;
     uint32_t count;
 } CCounter;
 ```
@@ -218,23 +228,24 @@ through the `ICounterCtl` interface introduced above:
     ```
 === "C"
     ```c
-    void CWatchdog__kick(const __termina_event_t * const __ev,
-                         void * const __this) {
+    void CWatchdog__kick(const termina__event_t * const termina__ev,
+                         void * const termina__this) {
 
-        CWatchdog * self = (CWatchdog *)__this;
+        CWatchdog * self = (CWatchdog *)termina__this;
 
-        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
-                                                           &self->__lock_type);
+        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
+                                                                &self->_lock_type);
 
         if (self->expired) {
 
-            self->counter_port.reset(__ev, self->counter_port.__that);
+            self->counter_port.reset(termina__ev, self->counter_port._that);
 
-            self->expired = 0;
+            self->expired = false;
 
         }
 
-        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
+                                  termina__lock);
 
         return;
 

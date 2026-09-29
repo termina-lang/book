@@ -52,6 +52,11 @@ And a function cannot return a reference: the only ways a value leaves a
 function are by return, which yields an owned value, or through a
 mutable-reference parameter.
 
+Within a single expression, an object can be reached through at most one mutable
+reference. A call such as `swap(&mut v, &mut v)` is rejected, since
+the two parameters of `swap` would otherwise name the same object and each
+write through one of them would change what the other reads.
+
 The reason for confining references this way is that it makes their meaning
 trivial to track. A reference exists only for the duration of the call it is
 passed to, and it can only have come from the `&` or `&mut` expression written
@@ -97,7 +102,7 @@ to an array of two bytes, and the call supplies it by slicing a larger buffer:
 
     }
 
-    uint32_t driver() {
+    uint32_t driver(void) {
 
         uint8_t buf[4U] = { 1U, 2U, 3U, 4U };
 

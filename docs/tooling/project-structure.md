@@ -47,8 +47,6 @@ The `termina.yaml` file records the settings the transpiler needs. A freshly
 created project contains the following:
 
 ```yaml
-app-file: app
-app-folder: app
 builder: make
 efp-folder: efp
 name: hello_world
@@ -59,9 +57,13 @@ source-modules: src
 
 The `name` is the name of the project, and `platform` is the target it is built
 for. The remaining entries name the parts of the layout: the folder of the
-application module and the file within it, the folder of the source modules, the
-folder for the generated output, the folder reserved for analysis support files,
-and the build tool used to compile that output.
+source modules, the folder for the generated output, the folder reserved for
+analysis support files, and the build tool used to compile that output. The
+application module has no entry of its own, since it is always `app/app.fin`.
+
+The optional `profile` entry selects how the output is built: `release`, the
+default, or `debug`, which ties the generated code to the Termina sources for
+the debugger, as the chapter on debugging describes.
 
 Some features of the runtime are switched on here as well. Setting
 `enable-system-port` to `true` deploys the `system_entry` resource that provides
@@ -111,6 +113,41 @@ $ ./bin/hello_world
 For an embedded target, the same two stages apply, but the compilation uses the
 cross-toolchain of the chosen platform, and the result is an image to be loaded
 onto the device or an emulator rather than an executable for the host.
+
+The generated `Makefile` includes `platform/common.mk` from the OSAL, which
+compiles every platform in C11 with `-pedantic-errors` and a set of warnings
+beyond `-Wall` and `-Wextra`, among them `-Wconversion` and `-Wshadow`. The
+code the transpiler emits is expected to compile without a single warning under
+those flags, so a warning points either at the transpiler or at C code written
+by hand, such as a platform driver.
+
+## Static analysis
+
+The same `Makefile` provides two targets that run
+[Cppcheck](https://cppcheck.sourceforge.io/) over the generated sources. The
+`cppcheck` target runs the analysis with the warning, style, performance and
+portability checks enabled, and `cppcheck-misra` adds the MISRA addon of
+Cppcheck, restricted to the mandatory and required rules of MISRA C:
+
+```bash
+$ cd output
+$ make cppcheck
+$ make cppcheck-misra
+```
+
+Both analyze the sources of the project and leave the OSAL out, since the OSAL
+is analyzed in its own repository. Each target keeps its results in a directory
+of its own under the build directory, and a second run only analyzes the files
+that have changed. The targets report their findings without failing; setting
+`CPPCHECK_ERROR_EXITCODE=1` on the `make` command line makes them fail when
+there is any, which is the setting for a continuous integration job. The Docker
+image ships Cppcheck, whereas an installation from source requires it on the
+host.
+
+Findings of the MISRA addon are identified by the number of the rule, such as
+`misra-c2012-11.5`. A class member receives its instance as a `void *` and
+converts it into a pointer to its class, so every project gets findings under
+Rule 11.5 that come from the way the generated code is built.
 
 ## Platforms
 

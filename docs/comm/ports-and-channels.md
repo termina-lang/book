@@ -47,7 +47,7 @@ timer : sink TimeVal triggers on_tick;
 
 The events delivered to a sink come from an emitter: a periodic timer, a hardware
 interrupt, a system event, or a runtime exception. A timer delivers a `TimeVal`,
-the timestamp of the tick; an interrupt delivers a `u32`, the interrupt vector.
+the time at which it was due; an interrupt delivers a `u32`, the interrupt vector.
 A sink port is connected to its emitter with the `<-` operator. The actions that
 sinks trigger were shown in the chapters on task and handler classes.
 
@@ -88,15 +88,19 @@ port:
     ```
 === "C"
     ```c
-    __status_int32_t CProducer__tick(const __termina_event_t * const __ev,
-                                     void * const __this, TimeVal _current_time) {
+    Status__i32 CProducer__tick(const termina__event_t * const termina__ev,
+                                void * const termina__this,
+                                const TimeVal termina__ignored__current_time) {
 
-        CProducer * self = (CProducer *)__this;
+        (void)termina__ignored__current_time;
 
-        __status_int32_t status = { .__variant = Success };
+        CProducer * self = (CProducer *)termina__this;
+
+        Status__i32 status = { ._variant = Status__Success };
         {
             const uint32_t msg = 42U;
-            __termina_out_port__send(__ev, self->out_port, (void *)&msg);
+            termina__out_port__send(termina__ev, self->out_port,
+                                    (const void *)&msg);
         }
 
         return status;
@@ -107,6 +111,10 @@ port:
 The send places a copy of the message on the connected channel and returns at
 once; the producer does not wait for anyone to receive it. An output port is
 connected to a channel with the `->` operator.
+
+If the queue of the channel is full when the producer sends, the runtime raises
+the exception `EMsgQueueSendError` and the system restarts, after running the
+`system_except` handler if the application has one.
 
 ## Input ports
 
@@ -129,12 +137,14 @@ and a `triggers` clause:
     ```
 === "C"
     ```c
-    __status_int32_t CConsumer__handle(const __termina_event_t * const __ev,
-                                       void * const __this, uint32_t msg) {
+    Status__i32 CConsumer__handle(const termina__event_t * const termina__ev,
+                                  void * const termina__this, const uint32_t msg) {
 
-        CConsumer * self = (CConsumer *)__this;
+        (void)termina__ev;
 
-        __status_int32_t status = { .__variant = Success };
+        CConsumer * self = (CConsumer *)termina__this;
+
+        Status__i32 status = { ._variant = Status__Success };
 
         self->total = self->total + msg;
 

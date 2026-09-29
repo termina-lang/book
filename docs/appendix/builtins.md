@@ -18,6 +18,36 @@ them requires an import, and their names cannot be redefined.
 |:-----|:---------|:--------|
 | `TimeVal` | `tv_sec`, `tv_usec` | Time representation |
 | `SysPrintBase` | `Decimal`, `Hexadecimal` | Numeric base for the print services |
+| `Exception` | `EActionFailure`, `EMsgQueueSendError`, `EMsgQueueRecvError`, `EArrayIndexOutOfBounds`, `EArraySliceOutOfBounds`, `EArraySliceNegativeRange`, `EArraySliceInvalidRange`, `EShiftAmountOutOfBounds`, `EArithmeticOverflow`, `EDivisionByZero`, `ERuntimeFailure` | Runtime exception delivered by `system_except` |
+| `ExceptSource` | `Task(usize)`, `Handler(usize)` | The entity whose action failed, in `EActionFailure` |
+
+`ERuntimeFailure(u32, i32)` reports a failure of the runtime itself, which the
+application cannot handle. The first value is the operation that failed:
+
+| Operation | Value |
+|:----------|:------|
+| Taking a mutex | 0 |
+| Giving a mutex back | 1 |
+| Arming a periodic timer | 2 |
+| Making a task ready to run | 3 |
+
+The `i32` that `ERuntimeFailure`, `EMsgQueueSendError` and `EMsgQueueRecvError`
+carry is the cause of the failure, with the same value on every operating
+system:
+
+| Cause | Value |
+|:------|:------|
+| Identifier out of range | 200 |
+| The queue is full | 201 |
+| Receiving from the queue failed | 202 |
+| No memory for the message | 203 |
+| The message is a null pointer | 204 |
+| Another task holds the mutex | 205 |
+| The caller does not hold the mutex | 206 |
+| The caller is above the ceiling of the mutex | 207 |
+| The timer cannot be armed | 208 |
+| The task cannot be made ready to run | 209 |
+| Any other error of the operating system | 999 |
 
 ## Resource classes
 
@@ -51,7 +81,8 @@ directly:
 
 | Name | Event payload | Fires |
 |:-----|:--------------|:------|
-| `system_init` | `TimeVal` | Once, at system start-up |
+| `system_init` | `TimeVal` | Once, at system start-up, behind `enable-system-init`; a handler only |
+| `system_except` | `Exception` | When the runtime raises an exception, behind `enable-system-except`; a handler only |
 | `irq_N` | `u32` (vector) | On hardware interrupt N (per platform) |
 | `kbd_irq` | `u32` | On console input (`posix-gcc`, behind `enable-kbd-irq`) |
 
@@ -65,9 +96,13 @@ through a port declared `access SystemAPI` and wired with
 | Group | Procedures | Typical call |
 |:------|:-----------|:-------------|
 | Time | `clock_get_uptime`, `delay_in` | `clock_get_uptime(&mut now)` |
-| Output | `print`, `println`, `print_char` | `println(12, &msg)` |
+| Output | `print`, `println`, `print_char` | `println(&msg)` |
 | Output (numeric) | `print_<T>` and `println_<T>` for every integer type, plus `print_f32/f64` and `println_f32/f64` | `println_u32(value, base)` |
-| Input | `read` | `read(256, &mut buf, &mut nread)` |
+| Input | `read` | `read(&mut buf, &mut nread)` |
+
+The arrays that `print`, `println` and `read` take have the sizes set by
+`sys-print-output-buffer-size` and `sys-read-input-buffer-size` in
+`termina.yaml`, 256 by default, and an array of any other size is rejected.
 
 ## Prelude functions
 

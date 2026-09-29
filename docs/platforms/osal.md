@@ -22,8 +22,8 @@ change. All the primitives that the reactive model relies on reach the
 operating system through OSAL functions: the thread and message queue behind
 each task, the timers behind the periodic emitters, the locks behind resource
 protection, and the atomic operations behind the atomic types. The transpiler
-emits calls such as `__termina_msg_queue__recv` or
-`__termina_resource__lock`, and the OSAL maps them onto the corresponding
+emits calls such as `termina__msg_queue__recv` or
+`termina__resource__lock`, and the OSAL maps them onto the corresponding
 RTEMS directives, FreeRTOS API calls, or POSIX functions.
 
 Because nothing in the generated code names the operating system underneath,
@@ -62,7 +62,7 @@ Termina currently supports three platforms:
 | Platform | Operating system | Target | Toolchain |
 |:---------|:-----------------|:-------|:----------|
 | `posix-gcc` | POSIX emulator | Linux or macOS host | host `gcc` |
-| `rtems5-leon3-nexysa7` | RTEMS 5 | LEON3 (SPARC V8) | `sparc-rtems5-gcc` (Gaisler RCC) |
+| `rtems5-leon3-nexysa7` | RTEMS 5 | LEON3 (SPARC V8) | `sparc-gaisler-rtems5-gcc` (Gaisler RCC) |
 | `freertos10-stm32l432xx` | FreeRTOS 10 | STM32L432 (Arm Cortex-M4) | `arm-none-eabi-gcc` |
 
 The `posix-gcc` platform runs Termina applications on a conventional
