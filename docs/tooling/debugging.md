@@ -13,7 +13,7 @@ generated code. The translation scheme makes the correspondence direct. A
 procedure or action named `increment` of a class `CCounter` becomes the C
 function `CCounter__increment`, fields keep their names inside the generated
 structs, and each task's thread runs a function named after its class, such
-as `termina__task_entry__CSamplerTask`. Reading the output in the `output/src`
+as `__CSamplerTask__termina_task`. Reading the output in the `output/src`
 tree alongside the debugger session is the quickest way to orient oneself.
 
 ## Debugging from the command line
@@ -34,27 +34,6 @@ A Termina application is multi-threaded: one thread per task, plus the
 runtime's own. The `gdb` commands `info threads` and `thread <n>` navigate
 them, and a breakpoint on an action function stops the program on whichever
 task thread executes that action.
-
-## Debugging the Termina source
-
-Setting `profile: debug` in `termina.yaml` makes the transpiler precede each
-generated statement with a `#line` directive that names the Termina file and
-line it comes from. The debug information of the binary then refers to the
-`.fin` sources instead of the generated C, so a breakpoint can be placed on a
-line of a module:
-
-```bash
-(gdb) break hello_world.fin:12
-Breakpoint 1 at 0x663b: file src/tasks/hello_world.fin, line 12.
-```
-
-The same profile defines `TERMINA__PROFILE__DEBUG` in the generated
-`config.h`, which makes the runtime stop at a breakpoint before it restarts the
-system, so that the state that led to the restart, such as an exception, can
-still be inspected. On `posix-gcc` the runtime prints the backtrace and raises
-`SIGTRAP`, which stops the program under `gdb` and terminates it when no
-debugger is attached. The default profile, `release`, emits neither the `#line`
-directives nor the macro.
 
 ## Debugging inside the Dev Container
 
@@ -119,4 +98,4 @@ as a debugger or toolchain that does not match expectations:
 - The `latest` and `MAJOR.MINOR` tags are mutable: they move with each
   release. A project that must behave identically over time, such as the
   material of a course, should pin the exact release tag, for instance
-  `ghcr.io/termina-lang/docker-termina:v0.6.0`.
+  `ghcr.io/termina-lang/docker-termina:v0.4.0`.

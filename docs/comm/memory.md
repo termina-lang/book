@@ -51,32 +51,29 @@ is empty otherwise. The caller must therefore handle both cases:
     ```
 === "C"
     ```c
-    Status__i32 CCollector__tick(const termina__event_t * const termina__ev,
-                                 void * const termina__this,
-                                 const TimeVal termina__ignored__current_time) {
+    __status_int32_t CCollector__tick(const __termina_event_t * const __ev,
+                                      void * const __this, TimeVal _current_time) {
 
-        (void)termina__ignored__current_time;
+        CCollector * self = (CCollector *)__this;
 
-        CCollector * self = (CCollector *)termina__this;
+        __status_int32_t status = { .__variant = Success };
 
-        Status__i32 status = { ._variant = Status__Success };
+        __option_box_t opt = { .__variant = None };
 
-        Option__box opt = { ._variant = Option__None };
+        self->pool_port.alloc(__ev, self->pool_port.__that, &opt);
 
-        self->pool_port.alloc(termina__ev, self->pool_port._that, &opt);
+        if (opt.__variant == Some) {
 
-        if (opt._variant == Option__Some) {
-
-            termina__box_t b = opt.Some._0;
+            __termina_box_t b = opt.Some.__0;
 
             (*(Sample *)b.data).value = 7U;
 
-            termina__out_port__send(termina__ev, self->out_port, (const void *)&b);
+            __termina_out_port__send(__ev, self->out_port, (void *)&b);
 
         } else {
 
-            status._variant = Status__Failure;
-            status.Failure._0 = -(1L);
+            status.__variant = Failure;
+            status.Failure.__0 = -(1L);
 
         }
 
@@ -122,15 +119,14 @@ returning it to the pool with `free`:
     ```
 === "C"
     ```c
-    Status__i32 CSink__receive(const termina__event_t * const termina__ev,
-                               void * const termina__this,
-                               const termina__box_t sample) {
+    __status_int32_t CSink__receive(const __termina_event_t * const __ev,
+                                    void * const __this, __termina_box_t sample) {
 
-        CSink * self = (CSink *)termina__this;
+        CSink * self = (CSink *)__this;
 
-        Status__i32 status = { ._variant = Status__Success };
+        __status_int32_t status = { .__variant = Success };
 
-        self->pool_port.free(termina__ev, self->pool_port._that, sample);
+        self->pool_port.free(__ev, self->pool_port.__that, sample);
 
         return status;
 
@@ -177,16 +173,12 @@ and writes it with `load` and `store`:
     ```
 === "C"
     ```c
-    Status__i32 CMonitor__tick(const termina__event_t * const termina__ev,
-                               void * const termina__this,
-                               const TimeVal termina__ignored__current_time) {
+    __status_int32_t CMonitor__tick(const __termina_event_t * const __ev,
+                                    void * const __this, TimeVal _current_time) {
 
-        (void)termina__ev;
-        (void)termina__ignored__current_time;
+        CMonitor * self = (CMonitor *)__this;
 
-        CMonitor * self = (CMonitor *)termina__this;
-
-        Status__i32 status = { ._variant = Status__Success };
+        __status_int32_t status = { .__variant = Success };
 
         uint32_t v = 0U;
 

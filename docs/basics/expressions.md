@@ -3,9 +3,8 @@
 An expression computes a value from simpler ones. This chapter describes the
 operators that Termina provides to build expressions, the rules that govern how
 their operands must be typed, and the way a literal acquires its type. All of
-Termina's operators are binary and left-associative, and each one maps to its
-counterpart in the generated C code, together with the run-time checks that the
-last section of the chapter describes.
+Termina's operators are binary and left-associative, and each one maps directly
+to its counterpart in the generated C code.
 
 ## Arithmetic operators
 
@@ -52,59 +51,7 @@ The logical operators combine boolean values: `&&` is logical conjunction and
 `||` is logical disjunction. Both evaluate their right operand only when
 necessary, that is, `&&` does not evaluate the right operand if the left one is
 already `false`, and `||` does not evaluate it if the left one is already
-`true`. The right operand may or may not run, so it cannot contain an operation
-with an effect of its own. Such operations are a call to a function that
-receives a mutable reference or to a method that takes `&mut self`, an access to
-a located field, and an operation that the generated code checks while the
-program runs, whose check raises an exception when it fails. The generated code checks an
-array access or a slice whose bounds are not constants, a shift by an amount
-that is not a constant, a division or a remainder by a divisor that is not a
-constant, and a signed addition, subtraction or multiplication. A call to a
-function whose body contains any of these carries the same effect. The
-transpiler rejects them in the right operand.
-
-A comparison in the left operand bounds a variable in the right one: after
-`i < 8 : usize &&`, the right operand runs only when `i` is below 8, and after
-`count == 0 : u32 ||`, only when `count` is not zero. The transpiler uses these
-bounds to leave out the checks that cannot fail, which are those of an index
-kept inside the array, a divisor kept away from zero, and a shift amount kept
-below the width of the value shifted. The right operand then has no effect and
-is accepted:
-
-=== "Termina"
-    ```termina
-    let found : bool = i < 8 : usize && buf[i] > 0 : u32;
-    let ratio_ok : bool = count != 0 : u32 && total / count > limit;
-    ```
-=== "C"
-    ```c
-    _Bool found = i < 8U && buf[i] > 0U;
-
-    _Bool ratio_ok = count != 0U && (uint32_t)(total / count) > limit;
-    ```
-
-The check of a signed division or remainder also covers the quotient of the
-minimum value of the type by `-1`, which a comparison of the divisor with zero
-does not exclude, so a signed division stays checked after such a guard and is
-rejected in the right operand. It is written as two nested conditions instead:
-
-=== "Termina"
-    ```termina
-    var ok : bool = false;
-    if count != 0 : i32 {
-        ok = total / count > limit;
-    }
-    ```
-=== "C"
-    ```c
-    _Bool ok = false;
-
-    if (count != 0L) {
-
-        ok = termina__check__div_i32(total, count) > limit;
-
-    }
-    ```
+`true`.
 
 Termina does not provide a unary logical-negation operator. A boolean value is
 negated by comparing it against `false`:
@@ -115,23 +62,15 @@ let still_running : bool = stopped == false;
 
 ## Bitwise operators
 
-The bitwise operators act on the individual bits of unsigned integer operands:
-`&`, `|`, and `^` are bitwise *and*, *or*, and *exclusive or*, while `<<` and
-`>>` shift the bits of the left operand left or right by the amount given on the
-right. The amount may be of any unsigned type, independently of the type of the
-value being shifted, and the result has the type of the left operand.
+The bitwise operators act on the individual bits of integer operands: `&`, `|`,
+and `^` are bitwise *and*, *or*, and *exclusive or*, while `<<` and `>>` shift
+the bits of the left operand left or right by the amount given on the right.
 
 ```termina
 let masked : u32 = flags & mask;
 let combined : u32 = high | low;
 let shifted : u32 = value << 2 : usize;
 ```
-
-In C, the result of these operations depends on how negative numbers are
-represented, and shifting a negative value left, or shifting a one into the sign
-bit, is undefined behavior, so the transpiler rejects signed operands. A signed value whose
-bits have to be manipulated is first converted to the unsigned type of the same
-width with `as`.
 
 There is no bitwise-complement operator. A complement is obtained, where
 needed, through `^` with an all-ones mask.
@@ -225,9 +164,7 @@ Termina evaluates arithmetic at the width of the operand types, with no
 promotion: the result of every operation has the type of its operands. To
 preserve this meaning in the generated C, where the promotion rule still
 applies, the transpiler wraps each intermediate result in an explicit cast back
-to its type and, when that type is an unsigned type narrower than `int`, masks
-the result to the width of the type before the cast. The effect is visible in a
-function that adds three 8-bit values:
+to its type. The effect is visible in a function that adds three 8-bit values:
 
 === "Termina"
     ```termina
@@ -237,17 +174,17 @@ function that adds three 8-bit values:
     ```
 === "C"
     ```c
-    uint8_t blend(const uint8_t a, const uint8_t b, const uint8_t c) {
+    uint8_t blend(uint8_t a, uint8_t b, uint8_t c) {
 
-        return (uint8_t)((a + b) & 0xFFU) + c;
+        return (uint8_t)(a + b) + c;
 
     }
     ```
 
-The sub-expression `a + b` is masked to eight bits and cast back to `uint8_t`
-before `c` is added, so the intermediate sum is computed at the width of the
-operand type, as the Termina source prescribes, rather than being carried in the
-wider `int` that C's promotion rule would otherwise use. The transpiler applies the same casting
+The sub-expression `a + b` is cast back to `uint8_t` before `c` is added, so the
+intermediate sum is computed at the width of the operand type, as the Termina
+source prescribes, rather than being carried in the wider `int` that C's
+promotion rule would otherwise use. The transpiler applies the same casting
 strategy throughout, making the type of every intermediate result explicit in
 the generated code. Keeping a result at its declared width matters only when the
 result does not fit in that width, which is the subject of the next section.
@@ -261,45 +198,17 @@ outcome is well-defined.
 Unsigned arithmetic is modular. A result that exceeds the range of an unsigned
 type wraps around modulo 2ⁿ, where n is the width of the type, so that adding one
 to the maximum value of a `u8` yields `0`. This is defined and predictable
-behavior, and the mask and the explicit cast described in the previous section
-are what realize the wraparound at the declared width: the intermediate value is
-reduced to its type before the computation proceeds. Modular arithmetic of this kind is
+behavior, and the explicit cast described in the previous section is what
+realizes the wraparound at the declared width: the intermediate value is reduced
+to its type before the computation proceeds. Modular arithmetic of this kind is
 a legitimate tool in tasks such as bit manipulation and the handling of counters
 that are meant to roll over.
 
 Signed arithmetic does not wrap. A signed operation whose result falls outside
 the range of its type is treated as a run-time error: instead of producing the
-undefined result that signed overflow has in C, the generated code calls a
-function of the OSAL that checks the operands before carrying out the
-operation, and raises the exception `EArithmeticOverflow` when the result would
-not be representable. A division or a remainder whose divisor is zero raises
-`EDivisionByZero` in the same way, for signed and unsigned types alike, and a
-divisor that is the constant zero is rejected by the transpiler before any code
-is generated. An exception of the runtime restarts the system. In the following
-function, the addition and the division by `count` are checked, while the
-division by the constant `2` is not, since its divisor can be neither zero nor
-`-1`, the only values for which a signed quotient can fail:
-
-=== "Termina"
-    ```termina
-    function average(total : i32, count : i32) -> i32 {
-        return (total + count / 2) / count;
-    }
-    ```
-=== "C"
-    ```c
-    int32_t average(const int32_t total, const int32_t count) {
-
-        return termina__check__div_i32(termina__check__add_i32(total,
-                                                               (int32_t)(count / 2L)),
-                                       count);
-
-    }
-    ```
-
-Every integer operation in Termina therefore either yields a value within the
-range of its type, wrapping where the type is unsigned, or raises an exception,
-and none has undefined behavior. The floating-point types are not covered yet. A division of
-a floating-point value by zero, and a conversion with `as` from a floating-point
-type to an integer type, or from `f64` to `f32`, whose value does not fit the
-target type, are not checked in the current version.
+undefined result that signed overflow has in C, the program stops through the
+runtime's trap mechanism. The same treatment applies to operations that have no
+meaningful result at all, such as a division by zero. Arithmetic in Termina
+therefore never strays into undefined behavior; every operation either yields a
+value within the range of its type, wrapping where the type is unsigned, or
+aborts in a controlled way rather than continuing with a meaningless value.

@@ -49,13 +49,9 @@ emitter tick : PeriodicTimer = {
 ## Tasks and priorities
 
 A task instance is declared like any other, with one addition: the
-`#[priority(N)]` annotation that fixes its scheduling priority, and which every
-task must carry. The priority is a constant, fixed at compile time, and a lower
-number means a higher priority. It may be written as a literal, a constant or an
-expression of constants, which the transpiler evaluates before checking it. The
-runtime reserves priority 0 for itself and 255 for the idle task, so the
-priority of an application task lies between 1 and 254, and no two tasks may
-share one. The declaration also wires each of the task's ports to a
+`#[priority(N)]` annotation that fixes its scheduling priority. The priority is a
+constant, fixed at compile time, and it determines the task's precedence under
+the scheduling policy. The declaration also wires each of the task's ports to a
 counterpart:
 
 ```termina
@@ -101,12 +97,6 @@ are enabled, is governed by the project configuration; the `kbd_irq` source used
 above, for instance, is enabled by a flag in `termina.yaml` on the `posix-gcc`
 platform.
 
-The initialization event and the runtime exception source, `system_except`, may
-only be attended by a handler, and the transpiler rejects a task wired to either
-of them. The initialization sequence dispatches `system_init` before it
-creates the tasks, and a runtime exception restarts the system once its action
-has run, so a task connected to either would never get to run.
-
 The runtime also provides `system_entry`, a built-in resource that implements the
 `SystemAPI` interface through which an entity reaches platform services such as
 console output. An access port of type `SystemAPI` is connected to it like any
@@ -144,5 +134,4 @@ resource has data fields, the transpiler rejects the annotation; only a resource
 without them, which may still hold access ports to other resources, can be marked
 unprotected. Such a resource has no data whose consistency the protection would
 guard, so leaving it unprotected is safe. Every annotation is written on the line
-above the declaration it modifies, and none may appear twice on the same
-declaration.
+above the declaration it modifies.

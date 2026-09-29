@@ -56,17 +56,15 @@ action itself:
     ```
 === "C"
     ```c
-    Status__i32 CButtonHandler__on_press(const termina__event_t * const termina__ev,
-                                         void * const termina__this,
-                                         const uint32_t termina__ignored__vector) {
+    __status_int32_t CButtonHandler__on_press(const __termina_event_t * const __ev,
+                                              void * const __this,
+                                              uint32_t _vector) {
 
-        (void)termina__ignored__vector;
+        CButtonHandler * self = (CButtonHandler *)__this;
 
-        CButtonHandler * self = (CButtonHandler *)termina__this;
+        __status_int32_t status = { .__variant = Success };
 
-        Status__i32 status = { ._variant = Status__Success };
-
-        self->counter_port.increment(termina__ev, self->counter_port._that);
+        self->counter_port.increment(__ev, self->counter_port.__that);
 
         return status;
 

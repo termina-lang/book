@@ -44,7 +44,7 @@ queue; and access ports, which give the task the use of a resource through one o
 its interfaces. `CSamplerTask` uses two of these kinds: a sink and an access
 port. A sink port names, with the `triggers` keyword, the action to run when an
 event arrives on it, and it states the type of value the event carries; the
-`timer` port carries a `TimeVal`, the time at which the timer was due. The full repertoire
+`timer` port carries a `TimeVal`, the timestamp of the tick. The full repertoire
 of port kinds is the subject of a later chapter.
 
 ## Actions
@@ -53,10 +53,7 @@ An action is the unit of work a task performs in response to an event. It takes
 `&priv self`, or `&self` when it only reads the task's fields, followed by the
 value carried by the triggering event, and it returns a `Status<i32>` reporting
 whether it succeeded. An action runs to completion: once started, it performs its
-bounded sequence of steps and returns before the task handles another event. An
-action that never uses `self` cannot send a message, reach a resource or change
-the state of its task, so it has no effect beyond its result and the transpiler
-rejects it.
+bounded sequence of steps and returns before the task handles another event.
 
 An action cannot be declared `&mut self`; the mutable self reference that a
 resource procedure takes is not permitted here. An action receives `&priv self`,
@@ -83,17 +80,15 @@ the same rule.
     ```
 === "C"
     ```c
-    Status__i32 CSamplerTask__on_tick(const termina__event_t * const termina__ev,
-                                      void * const termina__this,
-                                      const TimeVal termina__ignored__current_time) {
+    __status_int32_t CSamplerTask__on_tick(const __termina_event_t * const __ev,
+                                           void * const __this,
+                                           TimeVal _current_time) {
 
-        (void)termina__ignored__current_time;
+        CSamplerTask * self = (CSamplerTask *)__this;
 
-        CSamplerTask * self = (CSamplerTask *)termina__this;
+        __status_int32_t status = { .__variant = Success };
 
-        Status__i32 status = { ._variant = Status__Success };
-
-        self->counter_port.increment(termina__ev, self->counter_port._that);
+        self->counter_port.increment(__ev, self->counter_port.__that);
 
         return status;
 
@@ -136,34 +131,31 @@ in `first_step` and escalates to `second_step` when a threshold is crossed:
 === "Termina"
     ```termina
     action first_step(&priv self, _t : TimeVal) -> Status<i32> {
+        let ret : Status<i32> = Success;
         self->counter = self->counter + 2;
         if self->counter > 10 {
             continue self->second_step();
         } else {
-            let ret : Status<i32> = Success;
             return ret;
         }
     }
     ```
 === "C"
     ```c
-    Status__i32 CChainTask__first_step(const termina__event_t * const termina__ev,
-                                       void * const termina__this,
-                                       const TimeVal termina__ignored__t) {
+    __status_int32_t CChainTask__first_step(const __termina_event_t * const __ev,
+                                            void * const __this, TimeVal _t) {
 
-        (void)termina__ignored__t;
+        CChainTask * self = (CChainTask *)__this;
 
-        CChainTask * self = (CChainTask *)termina__this;
+        __status_int32_t ret = { .__variant = Success };
 
         self->counter = self->counter + 2U;
 
         if (self->counter > 10U) {
 
-            return CChainTask__second_step(termina__ev, self);
+            return CChainTask__second_step(__ev, self);
 
         } else {
-
-            Status__i32 ret = { ._variant = Status__Success };
 
             return ret;
 

@@ -148,19 +148,19 @@ We will implement the function in a new module named `accept.fin`, located in th
     ```c
     #include "lib/accept.h"
 
-    Status__u32 accept_tc(const TCDescriptor * const tc) {
+    __status_uint32_t accept_tc(const TCDescriptor * const tc) {
 
-        Status__u32 status = { ._variant = Status__Success };
+        __status_uint32_t status = { .__variant = Success };
 
         if (tc->payload[0U] == 'e') {
 
-            status._variant = Status__Failure;
-            status.Failure._0 = 0U;
+            status.__variant = Failure;
+            status.Failure.__0 = 0U;
 
         } else if (tc->payload[0U] != 'v') {
 
-            status._variant = Status__Failure;
-            status.Failure._0 = 1U;
+            status.__variant = Failure;
+            status.Failure.__0 = 1U;
 
         } else {
 
@@ -172,7 +172,7 @@ We will implement the function in a new module named `accept.fin`, located in th
     }
     ```
 
-The function evaluates the first letter of the `payload` field of the structure passed by reference and, depending on its value, updates the local variable `status` accordingly.
+The function evaluates the first letter of the `payload` field of the structure passed by reference and, depending on its value, update the local variable `status` accordingly.
 
 ## Emulating a sensor array
 
@@ -190,7 +190,7 @@ Both the interface and the resource class will be defined in a new module locate
 
     interface ISensorArray {
 
-        procedure get_sensor_value(&mut self, idx : usize,
+        procedure get_sensor_value(&mut self, index: usize,
                                    value : &mut Option<u32>);
 
     };
@@ -201,8 +201,8 @@ Both the interface and the resource class will be defined in a new module locate
 
         method get_random_u32(&mut self) -> u32 {
 
-            var next : u32 = self->seed;
-            var rnd : u32;
+            var next : u32 = self-> seed;
+            var rnd : u32 = 0;
 
             next = next * 1103515245 : u32;
             next = next + 12345 : u32;
@@ -211,7 +211,7 @@ Both the interface and the resource class will be defined in a new module locate
             next = next * 1103515245 : u32;
             next = next + 12345 : u32;
             rnd = rnd << 10 : u32;
-            rnd = rnd ^ (next / 65536 : u32) % 1024 : u32;
+            rnd = rnd ^(next / 65536 : u32) % 1024 : u32;
 
             next = next * 1103515245 : u32;
             next = next + 12345 : u32;
@@ -224,12 +224,12 @@ Both the interface and the resource class will be defined in a new module locate
 
         }
 
-        procedure get_sensor_value(&mut self, idx : usize,
+        procedure get_sensor_value(&mut self, index : usize, 
                                    value : &mut Option<u32>) {
 
             *value = None;
 
-            if idx < SENSOR_ARRAY_SIZE {
+            if index >= 0 && index < SENSOR_ARRAY_SIZE {
                 *value = Some(self->get_random_u32());
             }
 
@@ -243,17 +243,12 @@ Both the interface and the resource class will be defined in a new module locate
     ```c
     #include "resources/sensor_array.h"
 
-    static uint32_t CEmuSensorArray__get_random_u32(const termina__event_t * const termina__ev,
-                                                    CEmuSensorArray * const self);
-
-    static uint32_t CEmuSensorArray__get_random_u32(const termina__event_t * const termina__ev,
-                                                    CEmuSensorArray * const self) {
-
-        (void)termina__ev;
+    uint32_t CEmuSensorArray__get_random_u32(const __termina_event_t * const __ev,
+                                             CEmuSensorArray * const self) {
 
         uint32_t next = self->seed;
 
-        uint32_t rnd;
+        uint32_t rnd = 0U;
 
         next = next * 1103515245U;
 
@@ -283,27 +278,25 @@ Both the interface and the resource class will be defined in a new module locate
 
     }
 
-    void CEmuSensorArray__get_sensor_value(const termina__event_t * const termina__ev,
-                                           void * const termina__this,
-                                           const size_t idx,
-                                           Option__u32 * const value) {
+    void CEmuSensorArray__get_sensor_value(const __termina_event_t * const __ev,
+                                           void * const __this, size_t index,
+                                           __option_uint32_t * const value) {
 
-        CEmuSensorArray * self = (CEmuSensorArray *)termina__this;
+        CEmuSensorArray * self = (CEmuSensorArray *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
-        (*value)._variant = Option__None;
+        (*value).__variant = None;
 
-        if (idx < 10U) {
+        if (index >= 0U && index < 10U) {
 
-            (*value)._variant = Option__Some;
-            (*value).Some._0 = CEmuSensorArray__get_random_u32(termina__ev, self);
+            (*value).__variant = Some;
+            (*value).Some.__0 = CEmuSensorArray__get_random_u32(__ev, self);
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
@@ -312,17 +305,19 @@ Both the interface and the resource class will be defined in a new module locate
 === "C (header)"
     ```c
     typedef struct {
-        termina__resource_lock_type_t _lock_type;
+        __termina_resource_lock_type_t __lock_type;
         uint32_t seed;
     } CEmuSensorArray;
 
-    void CEmuSensorArray__get_sensor_value(const termina__event_t * const termina__ev,
-                                           void * const termina__this,
-                                           const size_t idx,
-                                           Option__u32 * const value);
+    uint32_t CEmuSensorArray__get_random_u32(const __termina_event_t * const __ev,
+                                             CEmuSensorArray * const self);
+
+    void CEmuSensorArray__get_sensor_value(const __termina_event_t * const __ev,
+                                           void * const __this, size_t index,
+                                           __option_uint32_t * const value);
     ```
 
-The module begins by declaring a constant expression, `SENSOR_ARRAY_SIZE`, which defines the number of simulated sensors in the array. The interface `ISensorArray` declares a single procedure, `get_sensor_value()`, which takes two arguments. The first argument, `idx`, indicates which sensor’s value to retrieve, with valid indices ranging from 0 to `SENSOR_ARRAY_SIZE` - 1. The second argument is a mutable reference to an object of type `Option<u32>`, where the sensor value will be stored if the index is valid.
+The module begins by declaring a constant expression, `SENSOR_ARRAY_SIZE`, which defines the number of simulated sensors in the array. The interface `ISensorArray` declares a single procedure, `get_sensor_value()`, which takes two arguments. The first argument, index, indicates which sensor’s value to retrieve, with valid indices ranging from 0 to `SENSOR_ARRAY_SIZE` - 1. The second argument is a mutable reference to an object of type `Option<u32>`, where the sensor value will be stored if the index is valid.
 
 The resource class `CEmuSensorArray` implements the `ISensorArray` interface. It defines a field named `seed`, which stores the internal state of the pseudo-random number generator. The class includes a private method, `get_random_u32()`, which uses a deterministic arithmetic algorithm to generate pseudo-random 32-bit integers. This sequence mimics random sensor readings while ensuring reproducibility across executions.
 
@@ -390,49 +385,47 @@ We will define both the interface and the resource class in a new file called `s
     ```c
     #include "resources/sys_data_pool.h"
 
-    void CSystemDataPool__get_param(const termina__event_t * const termina__ev,
-                                    void * const termina__this, const size_t idx,
-                                    Option__u32 * const value) {
+    void CSystemDataPool__get_param(const __termina_event_t * const __ev,
+                                    void * const __this, size_t idx,
+                                    __option_uint32_t * const value) {
 
-        CSystemDataPool * self = (CSystemDataPool *)termina__this;
+        CSystemDataPool * self = (CSystemDataPool *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
-        (*value)._variant = Option__None;
+        (*value).__variant = None;
 
         if (idx < 10U) {
 
-            (*value)._variant = Option__Some;
-            (*value).Some._0 = self->param_values[termina__check__array_index(10U,
-                                                                              idx)];
+            (*value).__variant = Some;
+            (*value).Some.__0 = self->param_values[__termina_array__index(10U,
+                                                                          idx)];
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
     }
 
-    void CSystemDataPool__set_param(const termina__event_t * const termina__ev,
-                                    void * const termina__this, const size_t idx,
-                                    const uint32_t value) {
+    void CSystemDataPool__set_param(const __termina_event_t * const __ev,
+                                    void * const __this, size_t idx,
+                                    uint32_t value) {
 
-        CSystemDataPool * self = (CSystemDataPool *)termina__this;
+        CSystemDataPool * self = (CSystemDataPool *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
         if (idx < 10U) {
 
-            self->param_values[termina__check__array_index(10U, idx)] = value;
+            self->param_values[__termina_array__index(10U, idx)] = value;
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
@@ -441,17 +434,17 @@ We will define both the interface and the resource class in a new file called `s
 === "C (header)"
     ```c
     typedef struct {
-        termina__resource_lock_type_t _lock_type;
+        __termina_resource_lock_type_t __lock_type;
         uint32_t param_values[10U];
     } CSystemDataPool;
 
-    void CSystemDataPool__get_param(const termina__event_t * const termina__ev,
-                                    void * const termina__this, const size_t idx,
-                                    Option__u32 * const value);
+    void CSystemDataPool__get_param(const __termina_event_t * const __ev,
+                                    void * const __this, size_t idx,
+                                    __option_uint32_t * const value);
 
-    void CSystemDataPool__set_param(const termina__event_t * const termina__ev,
-                                    void * const termina__this, const size_t idx,
-                                    const uint32_t value);
+    void CSystemDataPool__set_param(const __termina_event_t * const __ev,
+                                    void * const __this, size_t idx,
+                                    uint32_t value);
     ```
 
 The code begins by defining a constant expression, `SDP_NUM_PARAMS`, which specifies the number of parameters stored in the pool. This value determines the fixed size of the array used to hold system data.
@@ -509,7 +502,7 @@ The implementation of the telemetry resource will be done in a new module named 
 
         procedure send_tm_3_25(&mut self, hk_data : &[u32; hk_data_size]) {
 
-            // Handle TM(3,25) telemetry
+            // Handle TM_2_25 telemetry
             let msg : [char; 32] = "Send TM(3,25): ";
             let base : SysPrintBase = SysPrintBase::Decimal;
 
@@ -552,84 +545,75 @@ The implementation of the telemetry resource will be done in a new module named 
     ```c
     #include "resources/tm_channel.h"
 
-    void CTMChannel__send_tm_1_1(const termina__event_t * const termina__ev,
-                                 void * const termina__this) {
+    void CTMChannel__send_tm_1_1(const __termina_event_t * const __ev,
+                                 void * const __this) {
 
-        CTMChannel * self = (CTMChannel *)termina__this;
+        CTMChannel * self = (CTMChannel *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
-        char msg[32U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '1', ',', '1',
-                          ')' };
+        char msg[32U] = "Send TM(1,1)";
 
-        self->system_port.println(termina__ev, msg);
+        self->system_port.println(__ev, msg);
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
     }
 
-    void CTMChannel__send_tm_1_2(const termina__event_t * const termina__ev,
-                                 void * const termina__this, const uint32_t value) {
+    void CTMChannel__send_tm_1_2(const __termina_event_t * const __ev,
+                                 void * const __this, uint32_t value) {
 
-        CTMChannel * self = (CTMChannel *)termina__this;
+        CTMChannel * self = (CTMChannel *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
-        char msg[32U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '1', ',', '2',
-                          ')', ' ', '-', ' ', 'E', 'r', 'r', 'o', 'r', ' ', 'c',
-                          'o', 'd', 'e', ':', ' ' };
+        char msg[32U] = "Send TM(1,2) - Error code: ";
 
-        self->system_port.print(termina__ev, msg);
+        self->system_port.print(__ev, msg);
 
-        SysPrintBase base = { ._variant = SysPrintBase__Decimal };
+        SysPrintBase base = { .__variant = SysPrintBase__Decimal };
 
-        self->system_port.println_u32(termina__ev, value, base);
+        self->system_port.println_u32(__ev, value, base);
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
     }
 
-    void CTMChannel__send_tm_3_25(const termina__event_t * const termina__ev,
-                                  void * const termina__this,
+    void CTMChannel__send_tm_3_25(const __termina_event_t * const __ev,
+                                  void * const __this,
                                   const uint32_t hk_data[10U]) {
 
-        CTMChannel * self = (CTMChannel *)termina__this;
+        CTMChannel * self = (CTMChannel *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
-        char msg[32U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '3', ',', '2',
-                          '5', ')', ':', ' ' };
+        char msg[32U] = "Send TM(3,25): ";
 
-        SysPrintBase base = { ._variant = SysPrintBase__Decimal };
+        SysPrintBase base = { .__variant = SysPrintBase__Decimal };
 
-        self->system_port.print(termina__ev, msg);
+        self->system_port.print(__ev, msg);
 
         for (size_t i = 0U; i < 9U; i = i + 1U) {
 
-            self->system_port.print_u32(termina__ev,
-                                        hk_data[termina__check__array_index(10U,
-                                                                            i)],
+            self->system_port.print_u32(__ev, hk_data[__termina_array__index(10U,
+                                                                             i)],
                                         base);
 
-            self->system_port.print_char(termina__ev, ',');
-
-            self->system_port.print_char(termina__ev, ' ');
+            self->system_port.print_char(__ev, ',');
+            self->system_port.print_char(__ev, ' ');
 
         }
 
-        self->system_port.println_u32(termina__ev, hk_data[9U], base);
+        self->system_port.println_u32(__ev, hk_data[10U - 1U], base);
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
@@ -638,29 +622,27 @@ The implementation of the telemetry resource will be done in a new module named 
 === "C (header)"
     ```c
     typedef struct {
-        termina__resource_lock_type_t _lock_type;
+        __termina_resource_lock_type_t __lock_type;
         struct {
-            void (* print)(const termina__event_t * const termina__ev,
-                           const char str[32U]);
-            void (* print_char)(const termina__event_t * const termina__ev,
-                                const char value);
-            void (* print_u32)(const termina__event_t * const termina__ev,
-                               const uint32_t value, const SysPrintBase base);
-            void (* println)(const termina__event_t * const termina__ev,
-                             const char str[32U]);
-            void (* println_u32)(const termina__event_t * const termina__ev,
-                                 const uint32_t value, const SysPrintBase base);
+            void (* print)(const __termina_event_t * const, const size_t,
+                           const char *);
+            void (* print_u32)(const __termina_event_t * const, uint32_t,
+                               SysPrintBase);
+            void (* println)(const __termina_event_t * const, const size_t,
+                             const char *);
+            void (* println_u32)(const __termina_event_t * const, uint32_t,
+                                 SysPrintBase);
         } system_port;
     } CTMChannel;
 
-    void CTMChannel__send_tm_1_1(const termina__event_t * const termina__ev,
-                                 void * const termina__this);
+    void CTMChannel__send_tm_1_1(const __termina_event_t * const __ev,
+                                 void * const __this);
 
-    void CTMChannel__send_tm_1_2(const termina__event_t * const termina__ev,
-                                 void * const termina__this, const uint32_t value);
+    void CTMChannel__send_tm_1_2(const __termina_event_t * const __ev,
+                                 void * const __this, uint32_t value);
 
-    void CTMChannel__send_tm_3_25(const termina__event_t * const termina__ev,
-                                  void * const termina__this,
+    void CTMChannel__send_tm_3_25(const __termina_event_t * const __ev,
+                                  void * const __this,
                                   const uint32_t hk_data[10U]);
     ```
 
@@ -678,7 +660,7 @@ By abstracting telemetry transmission as a resource, the system maintains a clea
 
 To enable the use of system calls within Termina applications, the runtime must provide an internal resource named `system_entry`. This special resource acts as the gateway between Termina code and the underlying platform services implemented by the Operating System Abstraction Layer (OSAL). It provides access to low-level functions such as console input/output, timing services, and other system-dependent primitives used by higher-level components like the telemetry channel.
 
-The `system_entry` resource is not instantiated by default. Its deployment is controlled by a global configuration parameter in the project’s `termina.yaml` file. To enable it, the following lines must be added to the configuration file located at the root of the project:
+The `system_entry` resource is not instantiated by default. Its deployment is controlled by a global configuration parameter in the project’s `termina.yaml` file. To enable it, the following line must be added to the configuration file located at the root of the project:
 
 === "YAML"
     ```yaml
@@ -813,13 +795,13 @@ The implementation of the resource will be done in a new module called `src/reso
     ```c
     #include "resources/hk_subsystem.h"
 
-    void CHKSubsystem__do_housekeeping(const termina__event_t * const termina__ev,
-                                       void * const termina__this) {
+    void CHKSubsystem__do_housekeeping(const __termina_event_t * const __ev,
+                                       void * const __this) {
 
-        CHKSubsystem * self = (CHKSubsystem *)termina__this;
+        CHKSubsystem * self = (CHKSubsystem *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
         self->interval_control = self->interval_control + 1U;
 
@@ -827,21 +809,25 @@ The implementation of the resource will be done in a new module called `src/reso
 
             self->interval_control = 0U;
 
-            uint32_t hk_data[10U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+            uint32_t hk_data[10U];
+            for (size_t __i0 = 0U; __i0 < 10U; __i0 = __i0 + 1U) {
+                hk_data[__i0] = 0U;
+            }
 
-            Option__u32 opt_value = { ._variant = Option__None };
+            __option_uint32_t opt_value;
+            opt_value.__variant = None;
 
             for (size_t i = 0U; i < 10U; i = i + 1U) {
 
-                self->sys_data_pool_port.get_param(termina__ev,
-                                                   self->sys_data_pool_port._that,
+                self->sys_data_pool_port.get_param(__ev,
+                                                   self->sys_data_pool_port.__that,
                                                    i, &opt_value);
 
-                if (opt_value._variant == Option__Some) {
+                if (opt_value.__variant == Some) {
 
-                    uint32_t v = opt_value.Some._0;
+                    uint32_t v = opt_value.Some.__0;
 
-                    hk_data[termina__check__array_index(10U, i)] = v;
+                    hk_data[__termina_array__index(10U, i)] = v;
 
                 } else {
 
@@ -850,41 +836,39 @@ The implementation of the resource will be done in a new module called `src/reso
 
             }
 
-            self->tm_channel_port.send_tm_3_25(termina__ev,
-                                               self->tm_channel_port._that,
+            self->tm_channel_port.send_tm_3_25(__ev, self->tm_channel_port.__that,
                                                hk_data);
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
     }
 
-    void CHKSubsystem__update_params(const termina__event_t * const termina__ev,
-                                     void * const termina__this) {
+    void CHKSubsystem__update_params(const __termina_event_t * const __ev,
+                                     void * const __this) {
 
-        CHKSubsystem * self = (CHKSubsystem *)termina__this;
+        CHKSubsystem * self = (CHKSubsystem *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
-        Option__u32 opt_value = { ._variant = Option__None };
+        __option_uint32_t opt_value = { .__variant = None };
 
         for (size_t i = 0U; i < 10U; i = i + 1U) {
 
-            self->sensor_array_port.get_sensor_value(termina__ev,
-                                                     self->sensor_array_port._that,
+            self->sensor_array_port.get_sensor_value(__ev,
+                                                     self->sensor_array_port.__that,
                                                      i, &opt_value);
 
-            if (opt_value._variant == Option__Some) {
+            if (opt_value.__variant == Some) {
 
-                uint32_t v = opt_value.Some._0;
+                uint32_t v = opt_value.Some.__0;
 
-                self->sys_data_pool_port.set_param(termina__ev,
-                                                   self->sys_data_pool_port._that,
+                self->sys_data_pool_port.set_param(__ev,
+                                                   self->sys_data_pool_port.__that,
                                                    i, v);
 
             } else {
@@ -894,8 +878,7 @@ The implementation of the resource will be done in a new module called `src/reso
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
@@ -904,37 +887,33 @@ The implementation of the resource will be done in a new module called `src/reso
 === "C (header)"
     ```c
     typedef struct {
-        termina__resource_lock_type_t _lock_type;
+        __termina_resource_lock_type_t __lock_type;
         struct {
-            void * _that;
-            void (* send_tm_3_25)(const termina__event_t * const termina__ev,
-                                  void * const termina__this,
-                                  const uint32_t hk_data[10U]);
+            void * __that;
+            void (* send_tm_3_25)(const __termina_event_t * const, void * const,
+                                  const uint32_t *);
         } tm_channel_port;
         struct {
-            void * _that;
-            void (* get_sensor_value)(const termina__event_t * const termina__ev,
-                                      void * const termina__this, const size_t idx,
-                                      Option__u32 * const value);
+            void * __that;
+            void (* get_sensor_value)(const __termina_event_t * const, void * const,
+                                      size_t, __option_uint32_t * const);
         } sensor_array_port;
         struct {
-            void * _that;
-            void (* get_param)(const termina__event_t * const termina__ev,
-                               void * const termina__this, const size_t idx,
-                               Option__u32 * const value);
-            void (* set_param)(const termina__event_t * const termina__ev,
-                               void * const termina__this, const size_t idx,
-                               const uint32_t value);
+            void * __that;
+            void (* get_param)(const __termina_event_t * const, void * const,
+                               size_t, __option_uint32_t * const);
+            void (* set_param)(const __termina_event_t * const, void * const,
+                               size_t, uint32_t);
         } sys_data_pool_port;
         uint32_t interval_control;
         uint32_t interval;
     } CHKSubsystem;
 
-    void CHKSubsystem__do_housekeeping(const termina__event_t * const termina__ev,
-                                       void * const termina__this);
+    void CHKSubsystem__do_housekeeping(const __termina_event_t * const __ev,
+                                       void * const __this);
 
-    void CHKSubsystem__update_params(const termina__event_t * const termina__ev,
-                                     void * const termina__this);
+    void CHKSubsystem__update_params(const __termina_event_t * const __ev,
+                                     void * const __this);
     ```
     
 The interface `IHKSubsystem` defines two procedures. The first, `update_params()`, is responsible for refreshing the system data pool with the most recent readings from the sensor array. The second, `do_housekeeping()`, implements the periodic housekeeping logic that aggregates the data and sends a telemetry report when the defined interval is reached.
@@ -974,7 +953,7 @@ This declaration instantiates the `hk_subsystem` resource with an update interva
 
 ### The housekeeping task
 
-The housekeeping task is the active component responsible for executing the housekeeping subsystem at regular time intervals. In Termina, a task is an active entity that reacts to events or incoming messages by executing actions. An action runs to completion before its task takes the next event, although a task of higher priority may preempt it in the meantime. Tasks typically interact with other system components through ports. For example, access ports to shared resources or event sinks that receive activation signals.
+The housekeeping task is the active component responsible for executing the housekeeping subsystem at regular time intervals. In Termina, a task is an active entity that reacts to events or incoming messages by executing actions. Each action runs to completion without preemption, ensuring deterministic and analyzable behavior. Tasks typically interact with other system components through ports. For example, access ports to shared resources or event sinks that receive activation signals.
 
 The housekeeping task encapsulates the logic that periodically triggers the housekeeping subsystem resource. It does not perform data collection or telemetry generation directly; instead, it calls the procedures provided by the passive `CHKSubsystem` resource. This separation reflects a common pattern in on-board software design: tasks handle scheduling and event reactions, while resources encapsulate functionality and shared data.
 
@@ -1116,7 +1095,16 @@ The keyboard interrupt handler is a reactive component that runs whenever input 
 
 This handler is responsible for simulating the reception of a telecommand through a keyboard interrupt. When triggered, it reads input characters from the console, stores them in a newly allocated telecommand descriptor, and forwards the descriptor to the manager task through a message queue. Dynamic memory allocation and message passing are both performed deterministically using Termina’s memory pools and typed communication channels.
 
-The handler is defined in a new module located at `src/handlers/kbdhandler.fin`, whose complete implementation is shown below:
+On the `posix-gcc` platform the keyboard interrupt emitter `kbd_irq` is not available unless it is enabled in `termina.yaml`. Add the following so the runtime raises an event whenever data becomes available on standard input:
+
+=== "YAML"
+    ```yaml
+    platform-flags:
+      posix-gcc:
+        enable-kbd-irq: true
+    ```
+
+The complete implementation of the handler is shown below:
 
 === "Termina"
     ```termina
@@ -1202,6 +1190,7 @@ All of these elements are instantiated in the main application module `app/app.f
 
 === "Termina"
     ```termina
+    import tasks.housekeeping;
     import tasks.manager;
     import handlers.kbdhandler;
     ```
@@ -1319,7 +1308,7 @@ Once launched, the program initializes the runtime and deploys all defined resou
     - If the telecommand starts with the letter v, it will be accepted, and the system will print a message corresponding to TM(1,1).
     - If it starts with e, it will be rejected with error code 0, producing TM(1,2).
     - Any other string will be rejected with error code 1.
-- In parallel, the housekeeping task executes once per second, invoking the housekeeping subsystem, which refreshes the system data pool on every activation and, since its interval is 5, emits a housekeeping telemetry packet every five seconds. Output messages similar to the following will appear:
+- In parallel, the housekeeping task executes periodically (once per second), invoking the housekeeping subsystem to collect synthetic sensor values and generate housekeeping telemetry packets. Output messages similar to the following will appear:
 
 ```
 Send TM(3,25): 1939973050, 1222863988, 1351162014, 1328756915, 1352917968, 2111677371, 1334411258, 575130578, 1606705543, 1606250631

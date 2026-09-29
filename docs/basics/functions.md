@@ -22,7 +22,7 @@ separated by a colon. The body ends by returning a value of the declared type:
     ```
 === "C"
     ```c
-    uint32_t add_one(const uint32_t x) {
+    uint32_t add_one(uint32_t x) {
 
         return x + 1U;
 
@@ -78,7 +78,7 @@ argument:
     ```
 === "C"
     ```c
-    uint32_t driver(void) {
+    uint32_t driver() {
 
         uint32_t x = 41U;
 
@@ -108,10 +108,7 @@ is reported as an error. When a parameter must exist for reasons of signature
 but is genuinely not needed by a particular function, its name is prefixed with
 an underscore to mark the omission as deliberate, and the transpiler then
 accepts it. This is the convention behind names such as `_current_time` seen in
-earlier examples. In the generated C, the leading underscore is replaced by the
-prefix `termina__ignored__`, so that `_current_time` becomes
-`termina__ignored__current_time`, and the body begins with a cast of the
-parameter to `void` that marks it as intentionally unused for the C compiler.
+earlier examples.
 
 ## Array parameters
 
@@ -146,7 +143,7 @@ definition:
 
         for (size_t i = 0U; i < 16U; i = i + 1U) {
 
-            acc = acc + (uint32_t)data[termina__check__array_index(16U, i)];
+            acc = acc + (uint32_t)data[__termina_array__index(16U, i)];
 
         }
 

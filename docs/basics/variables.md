@@ -3,10 +3,10 @@
 A variable binds a name to a value of a known type. Termina provides two kinds
 of binding, distinguished by whether the bound value may later change:
 immutable bindings, introduced with `let`, and mutable bindings, introduced
-with `var`. Every binding, of either kind, is declared with an explicit type,
-since Termina does not infer types. A `let` also receives its value at the
-point of declaration, whereas a `var` may receive it later, and in that case the
-transpiler checks that no path of the program reads it before it has one.
+with `var`. Every binding, of either kind, is declared with an explicit type
+and an initial value. There are no uninitialized variables and no inferred
+types: the type is always written by the programmer, and a value is always
+supplied at the point of declaration.
 
 ## Immutable bindings
 
@@ -61,7 +61,7 @@ level, not a property of the generated code:
     ```
 === "C"
     ```c
-    uint32_t demo(const uint32_t input) {
+    uint32_t demo(uint32_t input) {
 
         uint32_t base = 10U;
 
@@ -76,101 +76,30 @@ level, not a property of the generated code:
     }
     ```
 
-## Types are mandatory
+## Types and initial values are mandatory
 
-Both forms of declaration require a type annotation. A declaration without a
-type, such as `let base = 10`, is a syntax error, because Termina does not infer
-the types of bindings: the type written by the programmer is the single source
-of truth for the value's representation. A `let` also requires its
-initializing expression, since an immutable binding that is not given a value
-where it is declared could never be given one, and `let base : u32;` is
-likewise a syntax error.
+Both forms of declaration require a type annotation and an initializing
+expression. Neither may be omitted. A declaration without a type, such as
+`let base = 10`, is a syntax error, because Termina does not infer the types of
+bindings: the type written by the programmer is the single source of truth for
+the value's representation. Likewise, a declaration without an initializer,
+such as `var counter : u32`, is also a syntax error.
 
-## Declaring a mutable binding without a value
+The mandatory initializer removes a whole class of errors. In C, a local
+variable may be declared without being initialized, and reading it before a
+value has been written yields an indeterminate result, a frequent source of
+subtle bugs. In Termina a binding cannot exist without a value, so reading
+uninitialized data is not something the language allows to be expressed.
 
-A `var` may be declared without an initializer when its value depends on a
-decision taken after the declaration. In the following function, each branch of
-the `if` gives `r` its value, and the generated C declares the variable without
-initializing it:
-
-=== "Termina"
-    ```termina
-    function clamp(a : u32) -> u32 {
-        var r : u32;
-        if a > 100 {
-            r = 100;
-        } else {
-            r = a;
-        }
-        return r;
-    }
-    ```
-=== "C"
-    ```c
-    uint32_t clamp(const uint32_t a) {
-
-        uint32_t r;
-
-        if (a > 100U) {
-
-            r = 100U;
-
-        } else {
-
-            r = a;
-
-        }
-
-        return r;
-
-    }
-    ```
-
-In C, reading a local variable before a value has been written yields an
-indeterminate result. The transpiler prevents it by following every path from
-the declaration and rejecting a read that at least one of them reaches before
-the variable has been assigned. Removing the `else` branch of the function
-above leaves a path on which `r` is never assigned, and the `return` is
-reported:
-
-```text
-error [VUE-007]: object read before it is assigned.
-→ src/lib/util.fin:6:12
-  │
-6 │     return r;
-  │            ^
-Variable r is declared without an initializer and there is a path that reaches this point without assigning it.
-Assign the whole object on every path before reading it.
-```
-
-The check considers the object as a whole. Until a structure or an array has
-been assigned completely, writing one of its fields or elements is rejected as
-well, because the fields that remain unwritten would still hold
-indeterminate values. A loop body does not count as an assignment, since the
-loop may run no iterations, and taking a reference to the variable counts as a
-read.
-
-## Every value must be used
+## Every binding must be used
 
 Termina rejects a binding that is declared but never read. A value that is
 computed and stored, only to be ignored, is almost always either a mistake or
 the residue of code that has since changed, and in a language aimed at
 analyzable, verifiable software it is treated as an error rather than a
 warning. Each `let` or `var` must therefore contribute to the result of the
-code that declares it.
-
-The same holds for every value a variable receives. An assignment whose value
-is overwritten on every path before anything reads it is rejected, and so is an
-initializer in the same situation:
-
-```termina
-var x : u32 = a;   // error: initializer never read
-x = a + 1;
-return x;
-```
-
-As in the previous section, the declaration moves to the point where the value
-is computed, or loses its initializer.
+code that declares it, which keeps functions free of dead bindings and makes
+the flow of data through them explicit.
 
 ## Scope and the absence of shadowing
 
@@ -197,24 +126,3 @@ This rule eliminates a common source of confusion, in which a single name
 refers to different values in different parts of a function depending on the
 nesting. In Termina, a name in scope denotes exactly one binding, which makes
 the code easier to read and its data flow easier to analyze.
-
-A binding is also expected to be declared in the innermost block that contains
-all its uses. In the following function, `factor` is only used inside the
-`if`, so the transpiler asks for the declaration to be moved there:
-
-```termina
-function scaled(a : u32, big : bool) -> u32 {
-    var r : u32 = a;
-    var factor : u32 = 4;   // error: variable scope can be reduced
-    if big {
-        factor = factor * a;
-        r = factor;
-    }
-    return r;
-}
-```
-
-The check applies when the initializer is built from literals,
-constants and values that cannot change in between, such as parameters passed
-by value, so that moving the declaration does not change what the program
-computes.

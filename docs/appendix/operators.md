@@ -9,12 +9,12 @@ to lowest precedence; operators on the same row share a level.
 |:-----------|:----------|:--------------|
 | highest | `*` `/` `%` | numeric (`%` integer-only) |
 | | `+` `-` | numeric |
-| | `<<` `>>` | unsigned integer (both operands) |
+| | `<<` `>>` | integer |
 | | `<` `<=` `>` `>=` | numeric |
 | | `==` `!=` | integer, `bool`, `char` (not floating-point) |
-| | `&` | unsigned integer |
-| | `\|` | unsigned integer |
-| | `^` | unsigned integer |
+| | `&` | integer |
+| | `\|` | integer |
+| | `^` | integer |
 | | `&&` | `bool` |
 | lowest | `\|\|` | `bool` |
 

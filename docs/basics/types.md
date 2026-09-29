@@ -75,8 +75,8 @@ appear.
 The arithmetic operators `+`, `-`, `*`, and `/` and the ordering comparisons
 `<`, `<=`, `>`, and `>=` accept floating-point operands, under the same rule
 that applies to integers: both operands must have the same type, and the
-result has that type. The remainder operator `%` is integer-only, and the
-bitwise operators and the shifts take unsigned integers only.
+result has that type. The remainder operator `%`, the bitwise operators, and
+the shifts are integer-only.
 
 The equality operators `==` and `!=` do not accept floating-point operands.
 Testing two floating-point values for exact equality is almost always a
@@ -99,12 +99,12 @@ performs the inverse, and `f64_to_bits` and `f64_from_bits` do the same for
     ```termina
     function demo_floats(x : f32, y : f64, n : u32) -> f32 {
         let scaled : f32 = x * 2.5;
+        let bits : u32 = f32_to_bits(scaled);
+        let back : f32 = f32_from_bits(bits);
+        let narrowed : f32 = y as f32;
+        let from_int : f32 = n as f32;
         var acc : f32 = 0.0;
         if scaled < 100.0 {
-            let bits : u32 = f32_to_bits(scaled);
-            let back : f32 = f32_from_bits(bits);
-            let narrowed : f32 = y as f32;
-            let from_int : f32 = n as f32;
             acc = back + narrowed + from_int;
         }
         return acc;
@@ -112,21 +112,21 @@ performs the inverse, and `f64_to_bits` and `f64_from_bits` do the same for
     ```
 === "C"
     ```c
-    float32_t demo_floats(const float32_t x, const float64_t y, const uint32_t n) {
+    float32_t demo_floats(float32_t x, float64_t y, uint32_t n) {
 
         float32_t scaled = x * 2.5f;
+
+        uint32_t bits = f32_to_bits(scaled);
+
+        float32_t back = f32_from_bits(bits);
+
+        float32_t narrowed = (float32_t)y;
+
+        float32_t from_int = (float32_t)n;
 
         float32_t acc = 0.0f;
 
         if (scaled < 100.0f) {
-
-            uint32_t bits = f32_to_bits(scaled);
-
-            float32_t back = f32_from_bits(bits);
-
-            float32_t narrowed = (float32_t)y;
-
-            float32_t from_int = (float32_t)n;
 
             acc = back + narrowed + from_int;
 
@@ -157,8 +157,8 @@ The `char` type represents a single character. It is used mainly for text
 buffers, string literals, and console I/O. In the generated C code, `char`
 maps directly to C's `char` type. A common use of `char` is to define
 fixed-size text messages. When a `char` array is initialized with a string
-literal, the transpiler emits the literal as a C initializer list with one
-character constant per character of the string:
+literal, the transpiler emits the literal directly as the C initializer of
+the array:
 
 === "Termina"
     ```termina
@@ -166,8 +166,7 @@ character constant per character of the string:
     ```
 === "C"
     ```c
-    char msg[12U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '1', ',', '1',
-                      ')' };
+    char msg[12U] = "Send TM(1,1)";
     ```
 
 The length of the string literal must be less than or equal to the declared
@@ -296,15 +295,15 @@ alternatives:
         MonitorCheckType__Limits,
         MonitorCheckType__Delta,
         MonitorCheckType__Free
-    } termina__enum__MonitorCheckType_t;
+    } __enum_MonitorCheckType_t;
 
     typedef struct {
-        termina__enum__MonitorCheckType_t _variant;
+        __enum_MonitorCheckType_t __variant;
     } MonitorCheckType;
     ```
 
 The transpiler represents an enumeration as a struct containing a discriminant
-field named `_variant`, whose value is drawn from a generated C enum. Each
+field named `__variant`, whose value is drawn from a generated C enum. Each
 variant name is prefixed with the enumeration name and a double underscore to
 avoid collisions with other identifiers in the generated code.
 
@@ -318,7 +317,7 @@ discriminant:
     ```
 === "C"
     ```c
-    MonitorCheckType check = { ._variant = MonitorCheckType__Limits };
+    MonitorCheckType check = { .__variant = MonitorCheckType__Limits };
     ```
 
 ### Enumerations with associated data
@@ -344,21 +343,21 @@ as an enumeration:
         CharDevIrqStatus__RxComplete,
         CharDevIrqStatus__IrqOk,
         CharDevIrqStatus__IrqError
-    } termina__enum__CharDevIrqStatus_t;
+    } __enum_CharDevIrqStatus_t;
 
     typedef struct {
-        size_t _0;
-    } termina__enum__CharDevIrqStatus__RxComplete_params_t;
+        size_t __0;
+    } __enum_CharDevIrqStatus__RxComplete_params_t;
 
     typedef struct {
-        int32_t _0;
-    } termina__enum__CharDevIrqStatus__IrqError_params_t;
+        int32_t __0;
+    } __enum_CharDevIrqStatus__IrqError_params_t;
 
     typedef struct {
-        termina__enum__CharDevIrqStatus_t _variant;
+        __enum_CharDevIrqStatus_t __variant;
         union {
-            termina__enum__CharDevIrqStatus__RxComplete_params_t RxComplete;
-            termina__enum__CharDevIrqStatus__IrqError_params_t IrqError;
+            __enum_CharDevIrqStatus__RxComplete_params_t RxComplete;
+            __enum_CharDevIrqStatus__IrqError_params_t IrqError;
         };
     } CharDevIrqStatus;
     ```
@@ -381,8 +380,8 @@ initializer:
     ```
 === "C"
     ```c
-    CharDevIrqStatus status = { ._variant = CharDevIrqStatus__RxComplete,
-                                .RxComplete = { ._0 = 256U } };
+    CharDevIrqStatus status = { .__variant = CharDevIrqStatus__RxComplete,
+                                .RxComplete = { .__0 = 256U } };
     ```
 
 !!! note
@@ -411,7 +410,6 @@ an actual symbol that can be inspected during debugging.
 === "C"
     ```c
     const int32_t TM_POOL_ALLOC_FAILURE = 1L;
-
     const int32_t ACCEPTANCE_ERROR = 4L;
     ```
 
@@ -491,15 +489,17 @@ brackets. The size must be a compile-time constant, either a literal, a
     ```
 === "C"
     ```c
-    uint32_t readings[10U] = { 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U };
+    uint32_t readings[10U];
+    for (size_t __i0 = 0U; __i0 < 10U; __i0 = __i0 + 1U) {
+        readings[__i0] = 0U;
+    }
     ```
 
 Here, `[u32; 10]` declares an array of ten unsigned 32-bit integers. On the
 right-hand side, `[0; 10]` is a fill literal that initializes every element to
-zero; the transpiler expands it into a C initializer list that repeats the
-value once per element. Using a `constexpr` value as the array size is common
-practice, since it gives the size a meaningful name and allows it to be reused
-consistently across the application:
+zero; the transpiler expands it into a loop. Using a `constexpr` value as the
+array size is common practice, since it gives the size a meaningful name and
+allows it to be reused consistently across the application:
 
 ```termina
 constexpr NUM_SENSORS : usize = 10;
@@ -519,10 +519,11 @@ defined in the previous section:
     ```
 === "C"
     ```c
-    MissionOBT obt_table[4U] = { { .finetime = 0U, .seconds = 0U },
-                                 { .finetime = 0U, .seconds = 0U },
-                                 { .finetime = 0U, .seconds = 0U },
-                                 { .finetime = 0U, .seconds = 0U } };
+    MissionOBT obt_table[4U];
+    for (size_t __i0 = 0U; __i0 < 4U; __i0 = __i0 + 1U) {
+        obt_table[__i0].finetime = 0U;
+        obt_table[__i0].seconds = 0U;
+    }
     ```
 
 This creates an array of four `MissionOBT` values, each initialized with the
@@ -554,17 +555,15 @@ be of type `usize`:
     ```
 === "C"
     ```c
-    uint32_t value = readings[termina__check__array_index(10U, i)];
+    uint32_t value = readings[__termina_array__index(10U, i)];
     ```
 
 When the index is a variable, the transpiler wraps every access with a
-bounds-checking function, `termina__check__array_index`, that verifies the
-index is within the valid range at runtime. If the index is out of bounds, the
-function triggers an error rather than allowing undefined behavior. This check
-is omitted when the index is a compile-time constant, which the transpiler
-verifies before generating code, and when a comparison in the left
-operand of an enclosing `&&` or `||` keeps the index inside the array, as
-described under [logical operators](expressions.md#logical-operators).
+bounds-checking function, `__termina_array__index`, that verifies the index is
+within the valid range at runtime. If the index is out of bounds, the function
+triggers an error rather than allowing undefined behavior. This check is
+omitted when the index is a compile-time constant, since the transpiler can
+verify it statically during transpilation.
 
 ## Built-in Generic Types
 
@@ -588,8 +587,8 @@ failure carries an `i32`, and `Result<u32; i32>` a computation that returns a
 `u32` or fails with an `i32`. The argument may be a primitive type, a struct,
 or an enumeration. The transpiler generates a separate C type for each
 distinct instantiation, with a name derived from the arguments, such as
-`Option__u32`, `Status__i32`, and `Result__u32__i32`; these are the types
-shown in the C tabs that follow.
+`__option_uint32_t`, `__status_int32_t`, and `__result_uint32__int32_t`; these
+are the types shown in the C tabs that follow.
 
 ### Option
 
@@ -608,24 +607,18 @@ compile code that does not handle both cases.
 === "Termina"
     ```termina
     var sensor_value : Option<u32> = None;
-    if sensor_ready {
-        sensor_value = Some(42);
-    }
+    sensor_value = Some(42);
     ```
 === "C"
     ```c
-    Option__u32 sensor_value = { ._variant = Option__None };
+    __option_uint32_t sensor_value = { .__variant = None };
 
-    if (sensor_ready) {
-
-        sensor_value._variant = Option__Some;
-        sensor_value.Some._0 = 42U;
-
-    }
+    sensor_value.__variant = Some;
+    sensor_value.Some.__0 = 42U;
     ```
 
 The generated C representation follows the same tagged struct pattern used for
-user-defined enumerations: a discriminant field `_variant` and a parameter
+user-defined enumerations: a discriminant field `__variant` and a parameter
 struct for the `Some` variant. The `None` variant carries no data. As the
 example shows, a declaration is emitted as a designated initializer, while a
 later assignment updates the discriminant and the payload field by field,
@@ -644,20 +637,14 @@ variants:
 === "Termina"
     ```termina
     var status : Status<i32> = Success;
-    if rejected {
-        status = Failure(ACCEPTANCE_ERROR);
-    }
+    status = Failure(ACCEPTANCE_ERROR);
     ```
 === "C"
     ```c
-    Status__i32 status = { ._variant = Status__Success };
+    __status_int32_t status = { .__variant = Success };
 
-    if (rejected) {
-
-        status._variant = Status__Failure;
-        status.Failure._0 = ACCEPTANCE_ERROR;
-
-    }
+    status.__variant = Failure;
+    status.Failure.__0 = ACCEPTANCE_ERROR;
     ```
 
 The key characteristic of `Status` is that success carries no data. Only
@@ -678,20 +665,15 @@ tasks and handlers.
 === "Termina"
     ```termina
     var result : Result<u32; i32> = Ok(100);
-    if overflow {
-        result = Error(-1);
-    }
+    result = Error(-1);
     ```
 === "C"
     ```c
-    Result__u32__i32 result = { ._variant = Result__Ok, .Ok = { ._0 = 100U } };
+    __result_uint32__int32_t result = { .__variant = Ok,
+                                        .Ok = { .__0 = 100U } };
 
-    if (overflow) {
-
-        result._variant = Result__Error;
-        result.Error._0 = -(1L);
-
-    }
+    result.__variant = Error;
+    result.Error.__0 = -(1L);
     ```
 
 `Status<T>` is for operations that either succeed with no output or fail with
@@ -758,13 +740,13 @@ variant a value holds is of interest. The `is` operator provides a concise way
 to test this without writing a full `match` statement:
 
 ```termina
-if status is Success {
+if (status is Success) {
     // proceed
 }
 ```
 
 ```termina
-if result is Ok {
+if (result is Ok) {
     // proceed without extracting the value
 }
 ```
@@ -780,8 +762,7 @@ just as when constructing it:
     ```
 === "C"
     ```c
-    if (check._variant == MonitorCheckType__Limits) {
-
+    if (check.__variant == MonitorCheckType__Limits) {
 
     }
     ```

@@ -55,9 +55,8 @@ The behavior of the application is encapsulated in a task class. In Termina,
 a task is a reactive component that executes one or more actions in response to
 the events or messages it receives. A task may hold internal state and exposes
 ports that connect it to other elements of the system, such as event sinks or
-access ports to shared resources. An action runs to completion before its task
-takes the next event, although a task of higher priority may preempt it in the
-meantime.
+access ports to shared resources. Each action runs to completion without
+preemption, which guarantees deterministic and analyzable behavior.
 
 The class definitions of an application are placed in modules within the `src`
 directory, and never in the main application file. Accordingly, the task class
@@ -157,7 +156,7 @@ The `system_entry` resource referenced above acts as the gateway between
 Termina code and the services of the Operating System Abstraction Layer, and it
 is not instantiated by default. Its deployment is controlled by a configuration
 parameter in the project's `termina.yaml` file, which must be enabled by adding
-the following lines:
+the following line:
 
 === "YAML"
     ```yaml
@@ -165,11 +164,9 @@ the following lines:
     sys-print-output-buffer-size: 32
     ```
 
-When `enable-system-port` is set, the runtime instantiates and exposes the
+When this option is set, the runtime instantiates and exposes the
 `system_entry` resource during system initialization, making it available for
-connection to the task's access port. The second line sets the size of the
-character array that `print` and `println` take, which must match the
-`[char; 32]` declared in the action; without it, the size defaults to 256.
+connection to the task's access port.
 
 ## Building and running the application
 

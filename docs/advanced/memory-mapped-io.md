@@ -40,18 +40,17 @@ three 32-bit registers:
     ```
 === "C"
     ```c
-    void CUartDrv__enable(const termina__event_t * const termina__ev,
-                          void * const termina__this) {
+    void CUartDrv__enable(const __termina_event_t * const __ev,
+                          void * const __this) {
 
-        CUartDrv * self = (CUartDrv *)termina__this;
+        CUartDrv * self = (CUartDrv *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
         self->registers->ctrl = 1U;
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
@@ -60,7 +59,7 @@ three 32-bit registers:
 === "C (header)"
     ```c
     typedef struct {
-        termina__resource_lock_type_t _lock_type;
+        __termina_resource_lock_type_t __lock_type;
         volatile UartRegs * registers;
     } CUartDrv;
     ```
@@ -131,23 +130,21 @@ RAM, a frame buffer, or a DMA window. The driver below covers a 4-KiB bank:
     ```
 === "C"
     ```c
-    void CMemBank__write_byte(const termina__event_t * const termina__ev,
-                              void * const termina__this, const size_t offset,
-                              const uint8_t value) {
+    void CMemBank__write_byte(const __termina_event_t * const __ev,
+                              void * const __this, size_t offset, uint8_t value) {
 
-        CMemBank * self = (CMemBank *)termina__this;
+        CMemBank * self = (CMemBank *)__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        __termina_lock_t __lock = __termina_resource__lock(&__ev->owner,
+                                                           &self->__lock_type);
 
         if (offset < 4096U) {
 
-            self->memory[termina__check__array_index(4096U, offset)] = value;
+            self->memory[__termina_array__index(4096U, offset)] = value;
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        __termina_resource__unlock(&__ev->owner, &self->__lock_type, __lock);
 
         return;
 
@@ -157,7 +154,7 @@ RAM, a frame buffer, or a DMA window. The driver below covers a 4-KiB bank:
 The instance binds the array to the base address of the region,
 `memory @ 0x40100000`, and accesses to it keep the bounds checking that
 applies to every Termina array: an index that is not a compile-time constant
-goes through `termina__check__array_index`, so not even a driver can stray outside
+goes through `__termina_array__index`, so not even a driver can stray outside
 the region its type declares.
 
 ## Drivers as resources

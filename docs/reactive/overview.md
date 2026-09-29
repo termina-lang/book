@@ -32,10 +32,9 @@ is triggered when a device signals it, and it carries the interrupt vector as
 its value. A system event marks a distinguished moment in the system's life,
 the most important being the initialization event, delivered once at start-up.
 Finally, a runtime exception is emitted when the runtime detects an abnormal
-condition, such as an array index out of bounds, a signed arithmetic overflow,
-a division by zero, or an action that returns a failure; exceptions are a
-source of events, not a control-flow construct, and there is no try or catch in
-the language.
+condition, such as a deadline overrun or an invalid memory access; exceptions
+are a source of events, not a control-flow construct, and there is no try or
+catch in the language.
 
 Each event is delivered to a single component, triggering the execution of one action.
 
