@@ -417,18 +417,40 @@ an actual symbol that can be inspected during debugging.
 
 Runtime constants are typically used for error codes, status identifiers, and
 other fixed parameters that are referenced throughout the application. A
-`const` can be used anywhere a value of its type is expected, including as an
-array size. When it appears as an array size, the transpiler folds it to its
-literal value in the generated dimension, so the array remains a fixed-size
-object and the C code contains no variable-length array.
+`const` can be used anywhere a value of its type is expected, and a constant of
+an integer type also as an array size. When it appears as an array size, the
+transpiler folds it to its literal value in the generated dimension, so the
+array remains a fixed-size object and the C code contains no variable-length
+array.
+
+A `const` can also hold an array, a structure, an enumeration, an `Option`, a
+`Status` or a `Result`, as long as what it contains is built from numbers,
+booleans and characters. The transpiler works out every integer of the
+initializer, including those computed from other constants, and writes the
+object with a C initializer list. A field of such a constant, or an element read
+with a constant index, is itself a constant, and can size an array or bound a
+loop like any other:
+
+=== "Termina"
+    ```termina
+    constexpr EPOCH_DAYS : u32 = 10957;
+
+    const MISSION_EPOCH : MissionOBT = {
+        seconds = EPOCH_DAYS * 86400,
+        finetime = 0
+    };
+    ```
+=== "C"
+    ```c
+    const MissionOBT MISSION_EPOCH = { .finetime = 0U, .seconds = 946684800U };
+    ```
 
 ### Compile-time constant expressions
 
 A `constexpr` declaration introduces a value that the transpiler evaluates
-entirely during transpilation. Unlike `const`, a `constexpr` is not limited to
-primitive types: it can define struct-valued constants as well. The transpiler
-substitutes the value inline at every point of use, so no symbol or storage is
-allocated in the compiled binary.
+entirely during transpilation. The transpiler substitutes the value inline at
+every point of use, so no symbol or storage is allocated in the compiled
+binary.
 
 === "Termina"
     ```termina
@@ -463,12 +485,12 @@ value in array literals, as we will see in the next section.
 
 !!! note
     `const` declarations are stored in the read-only data section of the
-    compiled binary and have an address. `constexpr` declarations accept any
-    type, including structures, and are substituted inline by the transpiler
-    during transpilation; taking their address is an error. Both can be used
-    to define array sizes. A `constexpr` is the appropriate choice when a
-    constant of a composite type is required, such as a struct-valued
-    initializer.
+    compiled binary and have an address. `constexpr` declarations are
+    substituted inline by the transpiler during transpilation; taking their
+    address is an error. Both can be used to define array sizes. A
+    `constexpr` is the appropriate choice for a value that only initializes
+    other objects, such as the fill value of an array, and a `const` for one
+    that the program reads in place.
 
 ## Arrays
 
