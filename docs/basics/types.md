@@ -418,10 +418,24 @@ an actual symbol that can be inspected during debugging.
 Runtime constants are typically used for error codes, status identifiers, and
 other fixed parameters that are referenced throughout the application. A
 `const` can be used anywhere a value of its type is expected, and a constant of
-an integer type also as an array size. When it appears as an array size, the
-transpiler folds it to its literal value in the generated dimension, so the
-array remains a fixed-size object and the C code contains no variable-length
-array.
+an integer type also as an array size. Where the program reads the value of an
+integer or boolean constant, the transpiler writes the value itself in the
+generated code. The object in `.rodata` is what a reference to the constant
+points to:
+
+=== "Termina"
+    ```termina
+    if (error_code == ACCEPTANCE_ERROR) {
+        status = Failure(TM_POOL_ALLOC_FAILURE);
+    }
+    ```
+=== "C"
+    ```c
+    if (error_code == 4L) {
+        status._variant = Status__Failure;
+        status.Failure._0 = 1L;
+    }
+    ```
 
 A `const` can also hold an array, a structure, an enumeration, an `Option`, a
 `Status` or a `Result`, as long as what it contains is built from numbers,
