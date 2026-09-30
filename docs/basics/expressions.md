@@ -297,6 +297,42 @@ division by the constant `2` is not, since its divisor can be neither zero nor
     }
     ```
 
+The transpiler also leaves out the check of an operation whose operands the
+code bounds before it runs. In the following function the condition keeps `a`
+between -99 and 99, the sum stays between 901 and 1099, and the addition is
+carried out directly:
+
+=== "Termina"
+    ```termina
+    function calibrate(a : i32) -> i32 {
+        var r : i32 = 0;
+        if a > -100 : i32 && a < 100 : i32 {
+            r = a + 1000 : i32;
+        }
+        return r;
+    }
+    ```
+=== "C"
+    ```c
+    int32_t calibrate(const int32_t a) {
+
+        int32_t r = 0L;
+
+        if (a > -(100L) && a < 100L) {
+
+            r = a + 1000L;
+
+        }
+
+        return r;
+
+    }
+    ```
+
+With the same bounds, the transpiler rejects an operation whose check fails for
+every value its operands may take, such as a division by a variable that a
+condition has just fixed at zero.
+
 Every integer operation in Termina therefore either yields a value within the
 range of its type, wrapping where the type is unsigned, or raises an exception,
 and none has undefined behavior. The floating-point types are not covered yet. A division of

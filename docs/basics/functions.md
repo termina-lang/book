@@ -146,7 +146,7 @@ definition:
 
         for (size_t i = 0U; i < 16U; i = i + 1U) {
 
-            acc = acc + (uint32_t)data[termina__check__array_index(16U, i)];
+            acc = acc + (uint32_t)data[i];
 
         }
 
@@ -157,7 +157,8 @@ definition:
 
 Because the size is part of the parameter type, the transpiler rejects a call
 that supplies an array of any other length, and the same constant bounds
-the loop that walks the array. When only a leading portion of a
+the loop that walks the array, so the generated code reads `data[i]` without
+the bounds check described under [element access](types.md#element-access). When only a leading portion of a
 larger buffer holds meaningful data, the caller passes a slice of the expected
 size, as described in the chapter on references, and the position up to which
 the data is valid travels in a separate parameter.

@@ -404,8 +404,7 @@ We will define both the interface and the resource class in a new file called `s
         if (idx < 10U) {
 
             (*value)._variant = Option__Some;
-            (*value).Some._0 = self->param_values[termina__check__array_index(10U,
-                                                                              idx)];
+            (*value).Some._0 = self->param_values[idx];
 
         }
 
@@ -427,7 +426,7 @@ We will define both the interface and the resource class in a new file called `s
 
         if (idx < 10U) {
 
-            self->param_values[termina__check__array_index(10U, idx)] = value;
+            self->param_values[idx] = value;
 
         }
 
@@ -615,10 +614,7 @@ The implementation of the telemetry resource will be done in a new module named 
 
         for (size_t i = 0U; i < 9U; i = i + 1U) {
 
-            self->system_port.print_u32(termina__ev,
-                                        hk_data[termina__check__array_index(10U,
-                                                                            i)],
-                                        base);
+            self->system_port.print_u32(termina__ev, hk_data[i], base);
 
             self->system_port.print_char(termina__ev, ',');
 
@@ -841,7 +837,7 @@ The implementation of the resource will be done in a new module called `src/reso
 
                     uint32_t v = opt_value.Some._0;
 
-                    hk_data[termina__check__array_index(10U, i)] = v;
+                    hk_data[i] = v;
 
                 } else {
 

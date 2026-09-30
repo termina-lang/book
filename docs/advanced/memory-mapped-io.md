@@ -142,7 +142,7 @@ RAM, a frame buffer, or a DMA window. The driver below covers a 4-KiB bank:
 
         if (offset < 4096U) {
 
-            self->memory[termina__check__array_index(4096U, offset)] = value;
+            self->memory[offset] = value;
 
         }
 
@@ -156,9 +156,10 @@ RAM, a frame buffer, or a DMA window. The driver below covers a 4-KiB bank:
 
 The instance binds the array to the base address of the region,
 `memory @ 0x40100000`, and accesses to it keep the bounds checking that
-applies to every Termina array: an index that is not a compile-time constant
-goes through `termina__check__array_index`, so not even a driver can stray outside
-the region its type declares.
+applies to every Termina array, so not even a driver can stray outside the
+region its type declares. In `write_byte` the `if` keeps `offset` below 4096,
+and the transpiler writes the access without a check; an index that the code
+does not bound in this way goes through `termina__check__array_index`.
 
 ## Drivers as resources
 

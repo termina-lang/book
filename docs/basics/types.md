@@ -557,14 +557,20 @@ be of type `usize`:
     uint32_t value = readings[termina__check__array_index(10U, i)];
     ```
 
-When the index is a variable, the transpiler wraps every access with a
+When the index is a variable, the transpiler wraps the access with a
 bounds-checking function, `termina__check__array_index`, that verifies the
 index is within the valid range at runtime. If the index is out of bounds, the
-function triggers an error rather than allowing undefined behavior. This check
-is omitted when the index is a compile-time constant, which the transpiler
-verifies before generating code, and when a comparison in the left
-operand of an enclosing `&&` or `||` keeps the index inside the array, as
-described under [logical operators](expressions.md#logical-operators).
+function triggers an error rather than allowing undefined behavior.
+
+The transpiler leaves the check out when it can show that the index stays
+inside the array. A compile-time constant is verified before any code is
+generated. A variable is bounded by the code that runs before the access: the
+range of the `for` loop that declares it, as in the `sum_bytes` function of the
+chapter on [functions](functions.md), the condition of an enclosing `if`, or
+the left operand of an enclosing `&&` or `||`, as described under
+[logical operators](expressions.md#logical-operators). The same bounds make the
+transpiler reject an access whose index falls outside the array every time it
+runs.
 
 ## Built-in Generic Types
 
