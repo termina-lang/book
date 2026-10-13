@@ -17,17 +17,17 @@ that use it, giving each one a signature but no body:
 ```termina
 interface ICounter {
     procedure increment(&mut self);
-    procedure get(&mut self, value : &mut u32);
+    procedure get(&self, value : &mut u32);
 };
 ```
 
 The `ICounter` interface declares two operations: `increment`, which takes no
 arguments beyond the resource itself, and `get`, which returns the current value
 through a mutable reference. A task or handler that holds an access port of type
-`ICounter` may call these two procedures and no others. Separating the contract
-from the implementation in this way lets a component depend on what a resource
-offers without depending on how it is built, and a single resource class may
-satisfy several interfaces at once by listing them after `provides`.
+`ICounter` may call these two procedures and no others. A component therefore
+depends on the procedures an interface declares and not on the class that
+implements them. A single resource class may satisfy several interfaces at once
+by listing them after `provides`.
 
 ## Defining a resource class
 
@@ -53,7 +53,7 @@ resource class CCounter provides ICounter {
         return;
     }
 
-    procedure get(&mut self, value : &mut u32) {
+    procedure get(&self, value : &mut u32) {
         *value = self->count;
         return;
     }
@@ -141,11 +141,10 @@ whether the counter has reached its ceiling:
     ```
 
 The method is generated as a `static` function, local to the C file of the
-class and absent from its header, and without any locking. A method runs only when a procedure
-has already been entered, and the resource's lock is therefore already held; a
-second acquisition would be redundant. This is why `increment` calls
-`self->at_limit()` directly, and the generated procedure invokes
-`CCounter__at_limit` inside the region it has locked.
+class and absent from its header, and without any locking. A method runs only
+when a procedure has already been entered, and the resource's lock is therefore
+already held. The generated `increment` calls `CCounter__at_limit` inside the
+region it has locked.
 
 Since a method can only be called by the members of its own class, a method
 that none of them calls would be dead code, and the transpiler rejects it. The
@@ -153,9 +152,8 @@ result of a method or a procedure that never uses `self` does not depend on the
 state of the resource, so the transpiler rejects it as well; it belongs in a
 function.
 
-The state and the two kinds of operation together produce the C structure that
-represents the resource. It begins with the lock that protects the instance,
-followed by the declared fields:
+The transpiler represents the resource as a C structure that begins with the
+lock protecting the instance, followed by the declared fields:
 
 ```c
 typedef struct {
@@ -256,16 +254,14 @@ When a task calls `kick`, the watchdog's procedure runs under the watchdog's
 own protection and, within it, the call through `counter_port` enters the
 counter's procedure under the counter's protection in turn. The transpiler
 analyzes these chains of access when it assigns each resource its protection
-mechanism. Cyclic dependencies between resources cannot arise: a connection in
-the application module may only name an instance declared earlier in it, so
-the uses-relation between resources always forms a directed acyclic graph, and
-the nesting of resource calls cannot deadlock.
+mechanism. A connection in the application module may only name an instance
+declared earlier in it, so the uses-relation between resources always forms a
+directed acyclic graph and the nesting of resource calls cannot deadlock.
 
 ## Instantiation
 
-A resource class is a definition; the resource itself comes into being when an
-instance is declared in the application module. The declaration names the
-instance, gives its class, supplies an initial value for every field, and
+A resource exists only once an instance of its class is declared in the
+application module. The declaration names the instance, gives its class, supplies an initial value for every field, and
 wires any access ports the class declares:
 
 ```termina

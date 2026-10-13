@@ -1,7 +1,7 @@
 # Installation
 
-The Termina toolchain can be obtained in two different ways, and the most
-appropriate one depends on the intended use. For readers who only wish to
+The Termina toolchain can be obtained as a prebuilt Docker image or built from
+source, and the choice depends on the intended use. For readers who only wish to
 write Termina programs and reproduce the examples presented in this book, the
 recommended approach is the prebuilt Docker image, which provides a complete
 and ready-to-use development environment without requiring any installation on
@@ -19,13 +19,12 @@ and must not be typed by the reader.
 
 The Termina project publishes a container image that bundles the transpiler,
 the Operating System Abstraction Layer (OSAL) against which the generated code
-is compiled, and the cross-toolchains required by the supported embedded
-targets. Because all of these elements are distributed together within a
-single image, the user is relieved of the usual tasks of installing a
+is compiled, and the cross-toolchains of the `rtems5-leon3sf-nexysa7` and
+`freertos10-stm32l432-nucleol432kc` platforms. Because all of these elements
+are distributed together within a single image, the user is relieved of the usual tasks of installing a
 compiler, obtaining the appropriate toolchain for each target, and ensuring
 that the different components are mutually compatible. For this reason, the
-image is the recommended starting point for researchers, collaborators, and
-students alike.
+image is the recommended starting point.
 
 The only prerequisite on the host system is Docker. On macOS and Windows, the
 simplest option is to install [Docker Desktop](https://www.docker.com/products/docker-desktop/),
@@ -47,17 +46,16 @@ all participants must work with an identical setup:
 $ docker pull ghcr.io/termina-lang/docker-termina:latest
 ```
 
-The image can be employed in three different ways, described in the following
-sections. These approaches are not mutually exclusive, and the user may move
-freely between them according to the task at hand.
+The following sections describe three ways of using the image, which can be
+combined according to the task at hand.
 
 ### Working in a disposable container
 
 The quickest way to obtain the toolchain, and the one with which a first project
 is created, is to mount the current directory into a disposable container and
-work from a shell within it. Nothing persists once the container is closed, since
-it is removed on exit; however, because the project resides on a bind mount,
-every file produced inside the container remains available on the host.
+work from a shell within it. The container is removed on exit, together with any
+change made outside the mounted directory. The project resides on a bind mount
+of the host directory, and every file produced in it remains on the host.
 
 === "macOS / Linux"
 
@@ -162,17 +160,16 @@ The project folder is then opened in Visual Studio Code, selecting the
 palette. From that point on, the integrated terminal is a shell running inside
 the image, in which `termina`, `make`, and the cross-compilers are all
 available, and the editor provides syntax support through the bundled extension.
-A project can equally be started this way from scratch: place the
-`.devcontainer/devcontainer.json` shown above in an empty folder, reopen it in
-the container, and run `termina new` from the integrated terminal.
+A project can also be started this way from scratch, by placing the
+`.devcontainer/devcontainer.json` shown above in an empty folder, reopening the
+folder in the container, and running `termina new` from the integrated terminal.
 
 ## Building from source
 
 The native installation is intended for those who wish to work on the
 transpiler itself, as well as for the occasional environment in which Docker is
-not appropriate. It demands somewhat more effort, since the user assembles the
-same components that the image otherwise provides, although none of the steps
-involved is difficult.
+not appropriate. In this case the user assembles the same components that the
+image otherwise provides.
 
 The transpiler is written in Haskell and built with
 [Stack](https://docs.haskellstack.org/), which may be installed directly or
@@ -182,10 +179,9 @@ through [GHCup](https://www.haskell.org/ghcup/):
 $ curl -sSL https://get.haskellstack.org/ | sh
 ```
 
-It is not necessary to install a compiler manually. Stack reads the exact
-version required by the project from its `stack.yaml` file and downloads it
-automatically, so that a single `stack install` command suffices to produce the
-binary. The repository is cloned at the current release tag, `v0.6.0` at the time of
+Stack reads the exact GHC version required by the project from its `stack.yaml`
+file and downloads it automatically, so no compiler needs to be installed
+manually and a single `stack install` command produces the binary. The repository is cloned at the current release tag, `v0.6.0` at the time of
 writing, and then built; `stack install` places the resulting `termina`
 executable in Stack's local binary directory, which is `~/.local/bin` by
 default and should therefore be present in the `PATH`:
@@ -206,9 +202,9 @@ termina 0.6.0
 
 The code emitted by the transpiler is compiled against the OSAL, which must
 likewise be present on the system. The OSAL is cloned at the corresponding
-release tag, bearing in mind that the transpiler and the OSAL must share the
-same `MAJOR.MINOR` version, that is, any `v0.6.x` of one is compatible with any
-`v0.6.y` of the other. The `Makefile` generated by `termina build` expects to
+release tag. The transpiler and the OSAL must share the same `MAJOR.MINOR`
+version, so any `v0.6.x` of one is compatible with any `v0.6.y` of the other.
+The `Makefile` generated by `termina build` expects to
 find the OSAL under `/opt/termina-osal`, and the most straightforward
 configuration is therefore to create a symbolic link at that location:
 
@@ -225,16 +221,23 @@ $ cd output && make TERMINA_OSAL_DIR=/absolute/path/to/termina-osal
 ```
 
 The steps described so far are sufficient for the default `posix-gcc`
-platform, which is compiled with the host's own `gcc` and requires nothing
-further. Targeting one of the embedded platforms additionally requires the
-corresponding cross-toolchain to be present in the `PATH`. The
-`rtems5-leon3-nexysa7` platform, which targets LEON3 under RTEMS 5, relies on
+platform, whose generated code is compiled with the host's own `gcc` and
+requires nothing further. Targeting one of the embedded platforms additionally
+requires the corresponding cross-toolchain to be present in the `PATH`. The
+`rtems5-leon3sf-nexysa7` platform, which targets LEON3 under RTEMS 5, relies on
 the Gaisler RCC toolchain (`sparc-gaisler-rtems5-gcc`), available from
 [Gaisler](https://www.gaisler.com/index.php/downloads/compilers). The
-`freertos10-stm32l432xx` platform, which targets the STM32L432 microcontroller
-under FreeRTOS 10, relies on the bare-metal ARM toolchain `arm-none-eabi-gcc`,
+`rtems6-zynq7000-pynqz2` platform targets the Zynq-7000 of the PYNQ-Z2 board
+under RTEMS 6. It relies on the `arm-rtems6-gcc` toolchain and on the
+`xilinx_zynq_pynq` board support package, both built from the RTEMS 6 sources
+with the [RTEMS Source Builder](https://docs.rtems.org/). They are expected
+under `/opt/rtems/6`, and another location is passed to `make` as
+`RTEMS6_PREFIX`. Neither of them is included in the Docker image. The
+`freertos10-stm32l432-nucleol432kc` platform, which targets the STM32L432
+microcontroller of the NUCLEO-L432KC board under FreeRTOS 10, relies on the
+bare-metal ARM toolchain `arm-none-eabi-gcc`,
 which can be obtained from the distribution's repositories or directly from
 [Arm](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads). The
 target platform is selected when the project is created, by means of
-`termina new myproj --platform rtems5-leon3-nexysa7`, or subsequently by
+`termina new myproj --platform rtems5-leon3sf-nexysa7`, or subsequently by
 editing the `platform` field in the `termina.yaml` file.

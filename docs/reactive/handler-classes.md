@@ -3,9 +3,8 @@
 A handler is a reactive entity that has no thread of its own. Where a task runs
 on a dedicated thread and is scheduled by priority, a handler's action runs in
 the context of whatever triggered it, most often a hardware interrupt. A handler
-is therefore the right component for the short, time-critical work that must be
-done the instant an event arrives, before control returns to the rest of the
-system. A handler class is the definition from which such an entity is built,
+is therefore used for the short, time-critical work that must be done as soon as
+an event arrives, before control returns to the rest of the system. A handler class is the definition from which such an entity is built,
 and in its written form it resembles a task class closely; the difference lies
 in how and where its action runs.
 
@@ -14,8 +13,7 @@ in how and where its action runs.
 A handler class is introduced with the words `handler class`, its name, and a
 body that, like a task, holds the handler's ports, any fields it keeps, and its
 action. A handler defines exactly one action, the one that runs when its
-triggering event arrives; this is the chief structural difference from a task,
-which may define several. The class below reacts to an interrupt by incrementing
+triggering event arrives, whereas a task may define several. The class below reacts to an interrupt by incrementing
 a counter:
 
 ```termina
@@ -64,7 +62,7 @@ action itself:
 
         CButtonHandler * self = (CButtonHandler *)termina__this;
 
-        Status__i32 status = { ._variant = Status__Success };
+        const Status__i32 status = { ._variant = Status__Success };
 
         self->counter_port.increment(termina__ev, self->counter_port._that);
 
@@ -80,13 +78,12 @@ control as soon as it finishes.
 
 ## Keeping handlers short
 
-Because a handler runs in interrupt context, the time it spends there is time the
-rest of the system is held off. A handler should therefore do only what must be
+Because a handler runs in the context of the event that triggers it, usually an
+interrupt, the time it spends there is time the rest of the system is held off. A handler should therefore do only what must be
 done immediately and delegate any longer processing to a task. The usual pattern
 is for a handler to capture the data that arrived, place it in a message, and
 send it through an output port to a task that will process it later, at its own
-priority. In this way the handler stays brief and the substantial work happens
-on a scheduled thread. Output ports and the channels that carry such messages
+priority. Output ports and the channels that carry such messages
 are described in the part on communication and memory.
 
 ## Instantiation
@@ -104,7 +101,8 @@ handler button : CButtonHandler = {
 };
 ```
 
-Here the `irq` sink is connected to `kbd_irq`, an interrupt source provided by
-the development platform, and the `counter_port` to the `counter` resource. The
+Here the `irq` sink is connected to `kbd_irq`, an interrupt source that the
+`posix-gcc` platform provides when its `enable-kbd-irq` option is set, and the
+`counter_port` to the `counter` resource. The
 connection operators and the available event sources are treated together with
 the application module later in the book.

@@ -2,10 +2,10 @@
 
 A function is a named, self-contained unit of computation. It receives its
 inputs as parameters, computes a result, and returns it, and it always
-terminates. Functions are the simplest place to write algorithmic code in
-Termina, before the reactive components of later chapters are introduced, and
-they are also among the most constrained: a function operates on its parameters
-and on global constants, and has no access to any mutable or shared state.
+terminates. A function operates only on its parameters and on global constants
+and has no access to any mutable or shared state, so algorithmic code can be
+written in functions before the reactive components of later chapters are
+introduced.
 
 ## Defining a function
 
@@ -89,10 +89,9 @@ argument:
     }
     ```
 
-References in Termina are subject to strict rules that keep the language
-analyzable; the chapter devoted to references examines them in detail. For the
-purpose of this chapter, it is sufficient that a reference may be used to pass a
-value to a function for reading or writing.
+The rules that govern references are the subject of the chapter on references.
+In the examples of this chapter, a reference passes a value to a function for
+reading or writing.
 
 Parameters are immutable bindings, like a `let`. The body may read a parameter
 but not assign a new value to it; the attempt is rejected with the same error as
@@ -105,7 +104,7 @@ itself stays immutable.
 The rule that every binding must be used, introduced in the chapter on
 variables, applies to parameters as well: a parameter that the body never reads
 is reported as an error. When a parameter must exist for reasons of signature
-but is genuinely not needed by a particular function, its name is prefixed with
+but a particular function does not use it, its name is prefixed with
 an underscore to mark the omission as deliberate, and the transpiler then
 accepts it. This is the convention behind names such as `_current_time` seen in
 earlier examples. In the generated C, the leading underscore is replaced by the
@@ -115,8 +114,8 @@ parameter to `void` that marks it as intentionally unused for the C compiler.
 
 ## Array parameters
 
-An array cannot be passed to a function by value: an array is not a valid
-parameter type on its own. A function that operates on an array instead receives
+An array is not a valid parameter type on its own, so it cannot be passed to a
+function by value. A function that operates on an array instead receives
 a reference to it, written `&[T; N]` for read-only access or `&mut [T; N]` when
 the array must be modified, and the array's size travels with the reference as
 part of its type. A function cannot return an array either; an array result is
@@ -156,10 +155,10 @@ definition:
     ```
 
 Because the size is part of the parameter type, the transpiler rejects a call
-that supplies an array of any other length, and the same constant bounds
-the loop that walks the array, so the generated code reads `data[i]` without
-the bounds check described under [element access](types.md#element-access). When only a leading portion of a
-larger buffer holds meaningful data, the caller passes a slice of the expected
+that supplies an array of any other length. The same constant bounds the loop
+that walks the array, so the generated code reads `data[i]` without the bounds
+check described under [element access](types.md#element-access). When only a
+leading portion of a larger buffer holds meaningful data, the caller passes a slice of the expected
 size, as described in the chapter on references, and the position up to which
 the data is valid travels in a separate parameter.
 
@@ -168,12 +167,9 @@ the data is valid travels in a separate parameter.
 A function operates on the values passed to it as parameters and on global
 constants, those introduced with `const` or `constexpr`. It has no access to any
 mutable or shared state: it cannot read or modify global variables, shared
-resources, or the internal state of any component, because none of these is
-reachable from within a function. The only ways a function affects the rest of
-the program are the value it returns and the modifications it makes through its
-mutable-reference parameters. Because every input is named explicitly in the
-signature, as a parameter or as a global constant, and every effect on the
-caller passes through that same signature, a function can be understood and
-analyzed on its own. Functions are therefore where the reusable, computational
-parts of an application are written, while interaction with state is handled by
-the resources and reactive components described later in the book.
+resources, or the internal state of any component. The only ways a function
+affects the rest of the program are the value it returns and the modifications
+it makes through its mutable-reference parameters. Because every input is named
+explicitly in the signature, as a parameter or as a global constant, and every
+effect on the caller passes through that same signature, a function can be
+understood and analyzed on its own.

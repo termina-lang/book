@@ -4,10 +4,9 @@ A reference is a temporary, non-owning handle to an object that already exists
 elsewhere. It allows a function to read an object without copying it, or to
 modify an object belonging to its caller, as seen in the chapter on functions. References
 have appeared in passing in earlier examples; this chapter sets out the rules
-that govern them. Those rules are unusually strict: by confining references to a
-single role, Termina keeps the checking of memory safety simple enough to be
-carried out without the elaborate machinery that more permissive languages
-require.
+that govern them. Termina confines references to a single role, the argument of
+a call, so the transpiler can check memory safety without the lifetime
+annotations that languages with first-class references require.
 
 ## The two kinds of reference
 
@@ -28,12 +27,12 @@ operator used for direct values.
 
 ## References are second-class
 
-The central rule is that a reference may appear in exactly one position: as an
-argument to a call, whether to a function, a procedure, a method, or an action.
+A reference may appear in exactly one position: as an argument to a call,
+whether to a function, a procedure, a method, or an action.
 A reference cannot be produced, stored, or named anywhere else.
 
-Several consequences follow directly. A reference cannot be the type of a
-binding, so the following is rejected:
+As a consequence, a reference cannot be the type of a binding, and the following
+is rejected:
 
 ```termina
 let r : &u32 = &x;      // error: a reference is not a valid binding type
@@ -57,14 +56,11 @@ reference. A call such as `swap(&mut v, &mut v)` is rejected, since
 the two parameters of `swap` would otherwise name the same object and each
 write through one of them would change what the other reads.
 
-The reason for confining references this way is that it makes their meaning
-trivial to track. A reference exists only for the duration of the call it is
-passed to, and it can only have come from the `&` or `&mut` expression written
-at that call site. There is never any question of where a reference came from or
-how long it remains valid, and so the analysis that guarantees the absence of
-dangling references and aliasing errors needs none of the lifetime annotations,
-regions, or reborrowing rules found in languages where references are
-first-class values.
+A reference exists only for the duration of the call it is passed to, and it can
+only have come from the `&` or `&mut` expression written at that call site.
+Where a reference came from and how long it remains valid are therefore fixed by
+the call itself, and the transpiler checks for dangling references and aliasing
+errors without lifetime annotations or reborrowing rules.
 
 ## Slicing arrays
 
@@ -78,8 +74,7 @@ expressions.
 Like a reference, a slice is not a value in its own right. It may appear only as
 the operand of `&` or `&mut`, which together produce a reference to the selected
 sub-array, and that reference is then passed to a function. The size of the
-resulting reference is not computed from the difference of the bounds; it is
-fixed by the type expected at the call site, and the transpiler checks that the
+resulting reference is fixed by the type expected at the call site, and the transpiler checks that the
 width of the slice matches that type. The following function expects a reference
 to an array of two bytes, and the call supplies it by slicing a larger buffer:
 
@@ -116,5 +111,9 @@ In the generated code the slice becomes a pointer to the first selected element,
 the width of the slice fail to match the size the context requires, the program
 is rejected: supplying `&buf[0 .. 3]`, a slice of three elements, where a
 reference to two is expected, is reported as an invalid slice range. When the
-bounds are compile-time constants, this check is performed during transpilation,
-so a mismatched slice is caught before the program ever runs.
+bounds are compile-time constants, the transpiler performs this check and
+rejects a mismatched slice. When they are not, as in `&buf[k .. k + 2]` with a
+parameter `k`, the generated code computes the starting index through
+`termina__check__array_slice(4U, 2U, k, k + 2U)`, which verifies at run time
+that the slice lies within the array and spans the expected number of
+elements, and raises an exception otherwise.

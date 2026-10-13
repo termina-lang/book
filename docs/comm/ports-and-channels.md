@@ -63,8 +63,8 @@ channel link : MsgQueue<u32; 4>;
 ```
 
 The queue `link` holds up to four `u32` messages. Its bound is part of its type,
-so the memory it needs is fixed and known in advance, in keeping with the
-language's avoidance of unbounded storage. Messages are placed on a channel
+so the memory it needs is fixed and known when the application is built.
+Messages are placed on a channel
 through an output port and taken from it through an input port.
 
 ## Output ports
@@ -96,7 +96,7 @@ port:
 
         CProducer * self = (CProducer *)termina__this;
 
-        Status__i32 status = { ._variant = Status__Success };
+        const Status__i32 status = { ._variant = Status__Success };
         {
             const uint32_t msg = 42U;
             termina__out_port__send(termina__ev, self->out_port,
@@ -144,7 +144,7 @@ and a `triggers` clause:
 
         CConsumer * self = (CConsumer *)termina__this;
 
-        Status__i32 status = { ._variant = Status__Success };
+        const Status__i32 status = { ._variant = Status__Success };
 
         self->total = self->total + msg;
 

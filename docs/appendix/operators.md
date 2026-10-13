@@ -20,8 +20,8 @@ to lowest precedence; operators on the same row share a level.
 
 There is no unary logical negation and no bitwise complement: a boolean is
 negated by comparing against `false`, and a complement is obtained with `^`
-and an all-ones mask. Note that the relative order of `&`, `|`, and `^`
-differs from C; parentheses are recommended whenever bitwise operators are
+and an all-ones mask. The relative order of `&`, `|`, and `^` differs from C,
+where `^` binds tighter than `|`; parentheses are recommended whenever bitwise operators are
 mixed.
 
 ## Other expression forms

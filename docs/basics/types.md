@@ -1,8 +1,9 @@
 # Types and Constants
 
-Every value in Termina has a type that is known at compile time. There are no
-implicit conversions between types, no type inference beyond what the
-programmer writes, and no hidden memory allocations. This chapter introduces
+Every value in Termina has a type that is known at compile time. The language
+performs no implicit conversions between types and does not infer the type of a
+declaration, and the generated code allocates no memory that the program does
+not declare. This chapter introduces
 all the types available in the language: primitive scalars, composite
 structures, enumerations, constants and constant expressions, fixed-size
 arrays, and the built-in generic types that Termina provides for common
@@ -11,9 +12,9 @@ patterns in real-time systems programming.
 ## Primitive Types
 
 A primitive type is one that is built into the language and cannot be
-decomposed into simpler parts. Termina provides a set of primitive types that
-correspond directly to fixed-width C types, ensuring predictable memory layout
-and behavior across all target platforms.
+decomposed into simpler parts. Each primitive type of Termina corresponds to a
+fixed-width C type, so a value of that type occupies the same number of bits on
+every target platform.
 
 ### Integer types
 
@@ -40,10 +41,9 @@ The following table lists all integer types available in the language:
 
 Unlike C, where the width of `int` or `long` depends on the compiler and the
 target platform, Termina integers always occupy exactly the number of bits
-specified by their type name. This eliminates an entire class of portability
-bugs that are common in embedded C code, where the same source compiled for
-different targets may produce different behavior due to varying integer
-widths.
+specified by their type name. In embedded C code, the same source compiled for
+two targets with different integer widths can behave differently, a portability
+defect that cannot arise in Termina.
 
 The `usize` type is the only integer whose width is not fixed in the type
 name: it matches the target architecture's pointer size, just like C's
@@ -52,10 +52,10 @@ sizes. An array cannot be indexed with a `u32` or an `i32`; the index must be
 of type `usize`. This restriction ensures that index values are always wide
 enough to address any element in memory on the target platform.
 
-In practice, most application code will use `u8` for byte-level data such as
-communication frames and memory buffers, `u16` and `u32` for hardware register
-fields and protocol values, `i32` for error codes and signed quantities, and
-`usize` for anything related to sizes or positions within arrays.
+In practice, byte-level data such as communication frames and memory buffers is
+usually held in `u8`, and hardware register fields and protocol values in `u16`
+or `u32`. Error codes and other signed quantities are usually `i32`, and sizes
+and positions within arrays are `usize`.
 
 ### Floating-point types
 
@@ -83,13 +83,13 @@ Testing two floating-point values for exact equality is almost always a
 mistake, since rounding makes the result of a computation depend on the order
 and precision of its intermediate steps; the comparison that is usually
 intended, equality within a tolerance, is expressed with the ordering
-operators instead. Termina makes the error unrepresentable by rejecting `==`
-and `!=` on `f32` and `f64` at compile time.
+operators instead. The transpiler therefore rejects `==` and `!=` on `f32` and
+`f64`.
 
 Conversions follow the same explicitness rule as the rest of the language:
-a value moves between integer and floating-point types, or between `f32` and
-`f64`, only through an explicit `as` cast. In addition, two built-in functions
-per type expose the underlying bit pattern, which is needed when a
+a value is converted between integer and floating-point types, or between
+`f32` and `f64`, only through an explicit `as` cast. In addition, two built-in
+functions per type expose the underlying bit pattern, which is needed when a
 floating-point value must be serialized into a communication frame:
 `f32_to_bits` reinterprets an `f32` as its `u32` bit pattern, `f32_from_bits`
 performs the inverse, and `f64_to_bits` and `f64_from_bits` do the same for
@@ -114,19 +114,19 @@ performs the inverse, and `f64_to_bits` and `f64_from_bits` do the same for
     ```c
     float32_t demo_floats(const float32_t x, const float64_t y, const uint32_t n) {
 
-        float32_t scaled = x * 2.5f;
+        const float32_t scaled = x * 2.5f;
 
         float32_t acc = 0.0f;
 
         if (scaled < 100.0f) {
 
-            uint32_t bits = f32_to_bits(scaled);
+            const uint32_t bits = f32_to_bits(scaled);
 
-            float32_t back = f32_from_bits(bits);
+            const float32_t back = f32_from_bits(bits);
 
-            float32_t narrowed = (float32_t)y;
+            const float32_t narrowed = (float32_t)y;
 
-            float32_t from_int = (float32_t)n;
+            const float32_t from_int = (float32_t)n;
 
             acc = back + narrowed + from_int;
 
@@ -166,8 +166,8 @@ character constant per character of the string:
     ```
 === "C"
     ```c
-    char msg[12U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '1', ',', '1',
-                      ')' };
+    const char msg[12U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '1', ',',
+                            '1', ')' };
     ```
 
 The length of the string literal must be less than or equal to the declared
@@ -230,9 +230,8 @@ initializer, so the variable is fully initialized in its declaration:
     MissionOBT obt = { .finetime = 0U, .seconds = 0U };
     ```
 
-Every field must be initialized explicitly. The transpiler rejects a struct
-literal that omits any field. This guarantee means that in Termina, unlike in
-C, an uninitialized field can never be read by accident.
+The transpiler rejects a struct literal that omits any field, so a field of a
+structure built from a literal always holds a value before it is read.
 
 ### Field access
 
@@ -244,7 +243,7 @@ Fields of a struct value are accessed using the dot operator (`.`):
     ```
 === "C"
     ```c
-    uint32_t s = obt.seconds;
+    const uint32_t s = obt.seconds;
     ```
 
 When working with a reference to a struct rather than the struct itself, the
@@ -265,15 +264,15 @@ light, for instance, is either red, yellow, or green, and the result of an
 interrupt service routine is either a successful reception, a generic
 acknowledgment, or an error with a code. In C, these situations are typically
 handled with integer constants and `switch` statements, or with manually
-tagged unions when the alternatives carry data. Both approaches are
-error-prone: nothing prevents the programmer from using an invalid tag value,
-or from reading the wrong member of a union.
+tagged unions when the alternatives carry data. Nothing in either approach
+prevents the programmer from using an invalid tag value or from reading the
+wrong member of a union.
 
-Termina provides enumerations as a safe alternative. An enumeration defines a
+Termina provides enumerations for these situations. An enumeration defines a
 type whose values are drawn from a fixed set of named variants. Each variant
 may optionally carry associated data of a specified type. The transpiler
-guarantees that associated data is only accessed after matching the correct
-variant, eliminating an entire class of bugs at compile time.
+rejects any access to associated data that is not preceded by a match on the
+corresponding variant.
 
 ### Simple enumerations
 
@@ -308,8 +307,8 @@ field named `_variant`, whose value is drawn from a generated C enum. Each
 variant name is prefixed with the enumeration name and a double underscore to
 avoid collisions with other identifiers in the generated code.
 
-To create a value of an enumeration type, use the `::` operator to select a
-variant. The declaration becomes a designated initializer that sets the
+A value of an enumeration type is created by selecting a variant with the `::`
+operator. The declaration becomes a designated initializer that sets the
 discriminant:
 
 === "Termina"
@@ -327,8 +326,8 @@ Variants can carry associated data, turning the enumeration into what is
 sometimes called a tagged union. Consider a type that represents the result of
 an interrupt service routine: the interrupt might have completed a reception
 with a byte count, might have succeeded without any additional information, or
-might have failed with an error code. In Termina, this is expressed naturally
-as an enumeration:
+might have failed with an error code. In Termina, this type is an enumeration
+with three variants:
 
 === "Termina"
     ```termina
@@ -366,10 +365,8 @@ as an enumeration:
 Each variant that carries data generates its own parameter struct. The main
 struct includes a discriminant enum and an anonymous union of all parameter
 structs. Variants without associated data, such as `IrqOk`, do not generate a
-parameter struct and do not appear in the union. This representation is
-equivalent to the tagged union pattern commonly written by hand in C, but the
-Termina transpiler generates it automatically and ensures that it is always
-used correctly.
+parameter struct and do not appear in the union. This representation is the
+tagged union commonly written by hand in C, generated here by the transpiler.
 
 Constructing a variant with associated data requires passing the value in
 parentheses. Both the discriminant and the payload appear in the generated
@@ -384,12 +381,6 @@ initializer:
     CharDevIrqStatus status = { ._variant = CharDevIrqStatus__RxComplete,
                                 .RxComplete = { ._0 = 256U } };
     ```
-
-!!! note
-    Unlike C tagged unions, Termina enumerations are type-safe. The transpiler
-    ensures that associated data is only accessed after matching the correct
-    variant, preventing the undefined behavior that can occur in C when
-    reading the wrong member of a union.
 
 ## Constants and Constant Expressions
 
@@ -420,28 +411,32 @@ other fixed parameters that are referenced throughout the application. A
 `const` can be used anywhere a value of its type is expected, and a constant of
 an integer type also as an array size. Where the program reads the value of an
 integer or boolean constant, the transpiler writes the value itself in the
-generated code. The object in `.rodata` is what a reference to the constant
-points to:
+generated code. A reference to the constant points to the object in
+`.rodata`:
 
 === "Termina"
     ```termina
-    if (error_code == ACCEPTANCE_ERROR) {
-        status = Failure(TM_POOL_ALLOC_FAILURE);
+    var result : i32 = 0;
+    if error_code == ACCEPTANCE_ERROR {
+        result = TM_POOL_ALLOC_FAILURE;
     }
     ```
 === "C"
     ```c
+    int32_t result = 0L;
+
     if (error_code == 4L) {
-        status._variant = Status__Failure;
-        status.Failure._0 = 1L;
+
+        result = 1L;
+
     }
     ```
 
 A `const` can also hold an array, a structure, an enumeration, an `Option`, a
 `Status` or a `Result`, as long as what it contains is built from numbers,
-booleans and characters. The transpiler works out every integer of the
-initializer, including those computed from other constants, and writes the
-object with a C initializer list. A field of such a constant, or an element read
+booleans and characters. The transpiler computes every integer of the
+initializer, including those derived from other constants, and emits the
+object as a C initializer list. A field of such a constant, or an element read
 with a constant index, is itself a constant, and can size an array or bound a
 loop like any other:
 
@@ -470,21 +465,25 @@ binary.
     ```termina
     constexpr SENSOR_ARRAY_SIZE : usize = 10;
     constexpr SDP_NUM_PARAMS : usize = 12;
+
+    function buffer_size() -> usize {
+        return SENSOR_ARRAY_SIZE * SDP_NUM_PARAMS;
+    }
     ```
 === "C"
     ```c
-    /* constexpr values are substituted at compile time.
-       The transpiler replaces each use with the literal value. */
+    size_t buffer_size(void) {
+
+        return 120U;
+
+    }
     ```
 
-Because `constexpr` values are resolved during transpilation, they do not
-appear as named constants in the generated C code. Instead, their values are
-inlined directly. Like `const`, a `constexpr` can be used as an array size.
-Additionally, a `constexpr` can reference other `constexpr` values in its
-definition.
+Like `const`, a `constexpr` can be used as an array size, and it can reference
+other `constexpr` values in its definition.
 
-A `constexpr` can also define a struct-valued constant, which is particularly
-useful for initializing arrays with a repeated default value:
+A `constexpr` can also define a struct-valued constant, for instance the
+default value with which every element of an array is initialized:
 
 === "Termina"
     ```termina
@@ -498,11 +497,8 @@ This defines a compile-time `MissionOBT` value that can be used as a fill
 value in array literals, as we will see in the next section.
 
 !!! note
-    `const` declarations are stored in the read-only data section of the
-    compiled binary and have an address. `constexpr` declarations are
-    substituted inline by the transpiler during transpilation; taking their
-    address is an error. Both can be used to define array sizes. A
-    `constexpr` is the appropriate choice for a value that only initializes
+    Taking the address of a `constexpr` is an error. A `constexpr` is the
+    appropriate choice for a value that only initializes
     other objects, such as the fill value of an array, and a `const` for one
     that the program reads in place.
 
@@ -512,8 +508,8 @@ An array is a collection of multiple values of the same type, stored
 contiguously in memory. Unlike arrays in C, which can be declared with a
 variable length or left partially initialized, every array in Termina has a
 fixed size that must be known at compile time. There are no dynamically sized
-arrays and no implicit heap allocations, which guarantees bounded memory usage
-and predictable access times, both essential for verifiable real-time systems.
+arrays and no implicit heap allocations, so the memory a program uses for
+arrays is known when it is transpiled.
 
 ### Declaration
 
@@ -596,7 +592,7 @@ be of type `usize`:
 When the index is a variable, the transpiler wraps the access with a
 bounds-checking function, `termina__check__array_index`, that verifies the
 index is within the valid range at runtime. If the index is out of bounds, the
-function triggers an error rather than allowing undefined behavior.
+function raises an exception instead of performing the access.
 
 The transpiler leaves the check out when it can show that the index stays
 inside the array. A compile-time constant is verified before any code is
@@ -619,8 +615,8 @@ provides three built-in generic types: `Option<T>`, `Status<T>`, and
 `Result<T; E>`.
 
 These types behave like enumerations with predefined variants. The transpiler
-enforces exhaustive handling of all cases: the possibility of failure or
-absence cannot be ignored without explicitly writing code for it. This section
+rejects a `match` on one of these types that does not cover all its variants.
+This section
 introduces their definitions and basic usage, including the `match` statement
 and the `is` operator for inspecting variants.
 
@@ -643,9 +639,9 @@ two variants:
 
 In C, optional values are typically represented by null pointers, sentinel
 values such as `-1`, or boolean flags paired with output parameters, none of
-which forces the caller to check for a missing value. `Option` makes the
-possibility of absence explicit in the type, and the transpiler refuses to
-compile code that does not handle both cases.
+which forces the caller to check for a missing value. With `Option`, the
+possibility of absence is part of the type, and the value can only be
+extracted through a `match` that covers both variants.
 
 === "Termina"
     ```termina
@@ -702,11 +698,9 @@ variants:
     }
     ```
 
-The key characteristic of `Status` is that success carries no data. Only
-failures include additional information. This makes `Status` the natural
-choice for operations where the caller only needs to know whether the
-operation succeeded, and requires diagnostic details only when something goes
-wrong. In Termina, `Status<i32>` is the standard return type for actions in
+Since only the `Failure` variant carries data, `Status` fits operations whose
+caller needs to know whether they succeeded and needs details only when they
+fail. In Termina, `Status<i32>` is the standard return type for actions in
 tasks and handlers.
 
 ### Result
@@ -736,10 +730,8 @@ tasks and handlers.
     }
     ```
 
-`Status<T>` is for operations that either succeed with no output or fail with
-an error. `Result<T; E>` is for operations that, when they succeed, need to
-return a meaningful value to the caller. If a function computes something and
-the computation can fail, `Result` is the appropriate choice.
+A function that computes a value and can fail returns a `Result`; one that only
+reports whether it succeeded returns a `Status`.
 
 !!! note
     Generic type parameters in Termina are separated by semicolons, not
@@ -748,11 +740,9 @@ the computation can fail, `Result` is the appropriate choice.
 
 ### Inspecting variants with `match`
 
-Having a type that encodes success, failure, or absence is only useful if the
-language forces every case to be handled. The `match` statement does exactly
-this: it branches on the variant of an `Option`, `Status`, `Result`, or
-user-defined enumeration, and the transpiler rejects any match that does not
-cover every possible variant.
+The `match` statement branches on the variant of an `Option`, `Status`,
+`Result`, or user-defined enumeration, and the transpiler rejects any match
+that does not cover every possible variant.
 
 ```termina
 match sensor_value {

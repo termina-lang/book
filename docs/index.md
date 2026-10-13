@@ -2,13 +2,14 @@
 
 **Termina** is a domain-specific programming language for reactive, real-time
 embedded software. It provides memory safety, bounded execution, and timing
-analyzability as properties of the language itself, and it transpiles to
-MISRA-compliant C that runs on RTEMS, FreeRTOS, and POSIX systems.
+analyzability as properties of the language itself, and it transpiles to C code
+that follows the MISRA C:2023 guidelines and runs on RTEMS, FreeRTOS, and POSIX
+systems.
 
 [Get started](started/install.md){ .md-button .md-button--primary }
-[Build your first application](tutorial.md){ .md-button }
+[Build a first application](tutorial.md){ .md-button }
 
-## A first taste
+## A first example
 
 A Termina application is a set of components that react to events. The
 following task class defines such a component, whose `timeout` action runs in

@@ -50,11 +50,13 @@ as identifiers. They are listed here by the role they play.
 | `provides` | Lists the interfaces a resource class implements |
 | `extends` | Interface extension |
 
-## Class members
+## Functions and class members
 
 | Keyword | Role |
 |:--------|:-----|
 | `function` | Free function definition |
+| `extern` | Declaration of a function implemented in C |
+| `noreturn` | Qualifier of an extern function whose calls never come back |
 | `procedure` | Interface-visible operation of a resource class |
 | `method` | Private helper of a class |
 | `viewer` | Private helper of a class that only reads `self` |
@@ -104,11 +106,11 @@ The names of the platform headers depend on the platform selected in
 `termina.yaml`. The
 function `index`, for example, is declared by `<strings.h>`, which the POSIX
 and RTEMS platforms bring in through `<string.h>`, so a function named `index`
-is accepted when the project targets `freertos10-stm32l432xx` and rejected when
-it targets `posix-gcc`:
+is accepted when the project targets `freertos10-stm32l432-nucleol432kc` and
+rejected when it targets `posix-gcc`:
 
 ```text
-error [SE-219]: reserved identifier.
+error [SE-218]: reserved identifier.
 → src/lib/util.fin:1:1
   │
 1 │ function index(x : u32) -> u32 { return x; }
@@ -116,8 +118,8 @@ error [SE-219]: reserved identifier.
 The identifier index is declared by the headers of the target platform posix-gcc.
 ```
 
-The lists are not reproduced here. Each platform contributes a few hundred
-names, and they change with the version of its toolchain; the error message
+Each platform contributes a few hundred names, which change with the version
+of its toolchain, so the lists are not reproduced here. The error message
 states which group a rejected name belongs to and, for the platform group,
 which platform declares it.
 

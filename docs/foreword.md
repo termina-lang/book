@@ -17,17 +17,19 @@ properties that a critical system must exhibit are reconstructed after the
 fact, by analyzing and constraining code written in a language that does not
 express them.
 
-Termina starts from the opposite premise: if the properties are required, the
-language should provide them. A Termina program is organized as a set of
-reactive components, tasks, handlers, and resources, whose interactions are
+Termina is built on the premise that the properties a critical system requires
+should be provided by the language. A Termina program is organized as a set of
+reactive components (tasks, handlers, and resources) whose interactions are
 declared explicitly and checked by the transpiler. Loops are statically
-bounded, recursion is excluded, dynamic memory is confined to fixed-capacity
-pools, and shared state is protected automatically according to how it is
-actually shared. The result of transpilation is MISRA-compliant C, supported
-by an abstraction layer that adapts it to RTEMS, FreeRTOS, or a POSIX host,
-so the language fits the toolchains and operating systems that embedded
-projects already use. The intended effect is that the structure a verifier
-needs to see is the same structure the programmer writes.
+bounded and recursion is excluded. Dynamic memory is confined to
+fixed-capacity pools, and the transpiler protects each shared resource with
+the mechanism that corresponds to the components that access it. The result of
+transpilation is C code that follows the MISRA C:2023 guidelines, supported by
+an abstraction layer that
+adapts it to RTEMS, FreeRTOS, or a POSIX host, and the generated code is built
+with the toolchains that embedded projects already use. The intended effect is
+that the structure a verifier needs to see is the same structure the
+programmer writes.
 
 Termina is developed at the Space Research Group of the Universidad de Alcalá,
 where it grew out of years of building on-board data handling software for
@@ -48,7 +50,7 @@ The book assumes the reader is comfortable with an imperative language such as
 C, and that terms like task, interrupt, and mutual exclusion are familiar. No
 prior exposure to Termina is assumed.
 
-Two reading orders work well. Read sequentially, the book first installs the
+Read sequentially, the book first installs the
 toolchain and runs a minimal program, then builds a complete application in
 the guided tutorial, and only afterwards examines the language piece by piece;
 the tutorial gives an early global picture that the later chapters refine.
@@ -56,6 +58,5 @@ Readers who prefer to start from the foundations may instead jump from the
 installation chapter directly to Language Basics and return to the tutorial
 once the reactive model has been covered.
 
-Every Termina fragment in this book has been compiled with the version of
-the transpiler current at the time of writing, and every C fragment shown
-alongside is the transpiler's actual output rather than a paraphrase of it.
+The C fragments shown alongside the Termina code are the actual output of the
+transpiler.

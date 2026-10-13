@@ -38,14 +38,12 @@ runs whenever a timer event arrives.
 ## Ports
 
 A task interacts with the rest of the system only through its ports. A task may
-hold sink ports, which receive events such as those of a timer; input ports,
-which receive messages from a queue; output ports, which send messages to a
-queue; and access ports, which give the task the use of a resource through one of
-its interfaces. `CSamplerTask` uses two of these kinds: a sink and an access
+hold the four kinds of port introduced in the overview: sink, input, output, and
+access ports. `CSamplerTask` uses two of these kinds: a sink and an access
 port. A sink port names, with the `triggers` keyword, the action to run when an
 event arrives on it, and it states the type of value the event carries; the
-`timer` port carries a `TimeVal`, the time at which the timer was due. The full repertoire
-of port kinds is the subject of a later chapter.
+`timer` port carries a `TimeVal`, the time at which the timer was due. The
+behavior of each kind of port is the subject of a later chapter.
 
 ## Actions
 
@@ -58,17 +56,16 @@ action that never uses `self` cannot send a message, reach a resource or change
 the state of its task, so it has no effect beyond its result and the transpiler
 rejects it.
 
-An action cannot be declared `&mut self`; the mutable self reference that a
-resource procedure takes is not permitted here. An action receives `&priv self`,
+Unlike a resource procedure, an action cannot be declared `&mut self`. An action
+receives `&priv self`,
 the private self reference that the language reserves for the actions of tasks
 and handlers to reach their own fields. It grants read and write access to those
 fields: an action may consult them, assign to them directly, and pass an
-immutable reference to a field to another operation. What it cannot do is create
-a mutable reference to a private field; `&mut self->field` is rejected.
+immutable reference to a field to another operation. It cannot, however, create
+a mutable reference to a private field, so `&mut self->field` is rejected.
 
-This rule keeps a task or handler's state its own: because no mutable reference
-to a private field can escape the entity, that state is modified only by the
-entity's own actions, never through an alias held elsewhere. Data that other
+Because no mutable reference to a private field can leave the entity, the state
+of a task or handler is modified only by its own actions. Data that other
 components must share or modify is placed in a resource instead, where access is
 mediated by an interface. The actions of handlers receive `&priv self` and follow
 the same rule.
@@ -91,7 +88,7 @@ the same rule.
 
         CSamplerTask * self = (CSamplerTask *)termina__this;
 
-        Status__i32 status = { ._variant = Status__Success };
+        const Status__i32 status = { ._variant = Status__Success };
 
         self->counter_port.increment(termina__ev, self->counter_port._that);
 
@@ -113,9 +110,8 @@ on it. That code is a loop: the thread waits for the next event on the task's
 message queue, identifies the port the event arrived on, calls the matching
 action, and, when the action returns, goes back to waiting. Because the thread
 processes one event at a time and each action runs to completion, the events
-directed at a task are handled in sequence, never overlapping. If an action
-reports a failure, the loop raises the corresponding runtime exception rather
-than ignoring the result. The internal fields the thread relies on, such as the
+directed at a task are handled in sequence. If an action reports a failure, the
+loop raises the corresponding runtime exception. The internal fields the thread relies on, such as the
 identifier of its message queue, appear in the generated structure alongside the
 task's own ports.
 
@@ -126,27 +122,55 @@ with the `continue` statement. The statement names the action to run and
 supplies its arguments, and it must be the final statement of whatever
 execution path it appears on; the transpiler rejects a `continue` that is
 followed by further statements. The result of the named action becomes the
-result of the activation.
+result of the activation, so the transpiler requires it to return the same type
+as the action that continues to it.
 
-Chaining is a way to keep individual actions short and single-purpose when a
-response naturally decomposes into stages, each stage written as a separate
-action with a name of its own. The following task performs its periodic work
+Chaining keeps individual actions short when a response decomposes into stages,
+each written as a separate action. The following task performs its periodic work
 in `first_step` and escalates to `second_step` when a threshold is crossed:
 
 === "Termina"
     ```termina
-    action first_step(&priv self, _t : TimeVal) -> Status<i32> {
-        self->counter = self->counter + 2;
-        if self->counter > 10 {
-            continue self->second_step();
-        } else {
+    task class CChainTask {
+
+        counter : u32;
+        timer : sink TimeVal triggers first_step;
+
+        action first_step(&priv self, _t : TimeVal) -> Status<i32> {
+            self->counter = self->counter + 2;
+            if self->counter > 10 {
+                continue self->second_step();
+            } else {
+                let ret : Status<i32> = Success;
+                return ret;
+            }
+        }
+
+        action second_step(&priv self) -> Status<i32> {
+            self->counter = 0;
             let ret : Status<i32> = Success;
             return ret;
         }
-    }
+
+    };
     ```
 === "C"
     ```c
+    Status__i32 CChainTask__second_step(const termina__event_t * const termina__ev,
+                                        void * const termina__this) {
+
+        (void)termina__ev;
+
+        CChainTask * self = (CChainTask *)termina__this;
+
+        self->counter = 0U;
+
+        const Status__i32 ret = { ._variant = Status__Success };
+
+        return ret;
+
+    }
+
     Status__i32 CChainTask__first_step(const termina__event_t * const termina__ev,
                                        void * const termina__this,
                                        const TimeVal termina__ignored__t) {
@@ -163,7 +187,7 @@ in `first_step` and escalates to `second_step` when a threshold is crossed:
 
         } else {
 
-            Status__i32 ret = { ._variant = Status__Success };
+            const Status__i32 ret = { ._variant = Status__Success };
 
             return ret;
 
@@ -172,18 +196,17 @@ in `first_step` and escalates to `second_step` when a threshold is crossed:
     }
     ```
 
-As the generated code shows, the chained action is invoked as a tail call
-within the same activation: `first_step` does not return to the task's event
-loop and then resume; control passes directly to `second_step`, which produces
-the activation's result. Despite the keyword it shares with C's loop-control
-statement, `continue` has nothing to do with loops.
+As the generated code shows, `first_step` invokes `second_step` as a tail call
+within the same activation, and the value that `second_step` returns is the
+result of the activation. The keyword is unrelated to the loop-control
+statement of the same name in C.
 
 ## Instantiation
 
 A task instance is declared in the application module. The declaration carries
-the `#[priority(N)]` annotation that fixes the task's scheduling priority, a
-constant chosen at compile time, and it wires each of the task's ports to a
-concrete counterpart: the sink to an emitter, the access port to a resource:
+the `#[priority(N)]` annotation, whose constant fixes the task's scheduling
+priority at compile time. It also wires each port to a concrete counterpart, the
+sink to an emitter and the access port to a resource:
 
 ```termina
 #[priority(10)]

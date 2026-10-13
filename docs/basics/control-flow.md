@@ -3,10 +3,10 @@
 Control-flow constructs determine the order in which the statements of an
 action, procedure, method, or function are executed. Termina offers three: the
 `if` statement for conditional execution, the `match` statement for branching
-on the variant of a value, and the `for` loop for bounded iteration. There is no
-unbounded loop and no recursion, because every piece of code in Termina must
-complete in a finite, statically bounded number of steps, as the analysis of
-worst-case execution times requires.
+on the variant of a value, and the `for` loop for bounded iteration. The
+analysis of worst-case execution times requires every piece of code to complete
+in a finite, statically bounded number of steps, and Termina therefore has
+neither unbounded loops nor recursion.
 
 ## Conditional execution
 
@@ -59,10 +59,9 @@ treat an integer as a condition, so a fragment such as `if count { ... }`, where
 example as `if count != 0 { ... }`. The parentheses around the condition are
 optional, and this book omits them.
 
-The transpiler also follows the values that the local variables of a body may
-hold at each point, and it rejects a condition whose value is the same every
-time the condition is reached, since one of the paths it guards can then never
-run. In the following function, the inner test can only see the value assigned
+The transpiler also tracks the values that the local variables of a body may
+hold at each point. A condition whose value is the same every time it is reached
+guards a path that can never run, and the transpiler rejects it. In the following function, the inner test can only see the value assigned
 just before it:
 
 ```termina
@@ -128,7 +127,7 @@ that data within the corresponding block:
 
         } else {
 
-            int32_t e = s.Failure._0;
+            const int32_t e = s.Failure._0;
 
             code = (uint32_t)e;
 
@@ -140,12 +139,10 @@ that data within the corresponding block:
     ```
 
 A `match` must be exhaustive: every variant of the matched type has to be
-covered by a `case`, and the transpiler rejects a match that omits one.
-Exhaustiveness guarantees that no variant is ever left unhandled by oversight.
-As the generated code shows, the
-match compiles to a test on the hidden discriminant field, and the associated
-data of a variant is read only inside the branch that has established which
-variant is present.
+covered by a `case`, and the transpiler rejects a match that omits one. As the
+generated code shows, the match compiles to a test on the hidden discriminant
+field, and the associated data of a variant is read only inside the branch that
+has established which variant is present.
 
 When the variant alone is of interest and its associated data is not needed,
 the `is` operator introduced in the chapter on types offers a lighter
@@ -207,6 +204,4 @@ while the guard provides the actual, data-dependent exit condition:
     ```
 
 The guard is combined with the range check in the generated loop, so iteration
-continues only while both the static bound and the runtime condition hold. Every
-loop in a Termina program therefore has a maximum iteration count that the
-transpiler can determine statically.
+continues only while both the static bound and the runtime condition hold.

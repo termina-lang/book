@@ -31,6 +31,7 @@ nav:
   - Systems and Platforms:
     - The Application Module: wiring/application-module.md
     - Memory-Mapped I/O: advanced/memory-mapped-io.md
+    - Calling C Code: advanced/c-code.md
     - Platforms and the OSAL: platforms/osal.md
   - Tooling:
     - Project Structure and Build System: tooling/project-structure.md

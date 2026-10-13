@@ -1,20 +1,19 @@
 # Debugging
 
-The output of a Termina build is an ordinary native program, so the usual
-debugging tools apply to it. This chapter describes how to debug an
-application built for the `posix-gcc` platform with `gdb`, both from the
-command line and from Visual Studio Code, in the Docker-based setup that the
+An application built for the `posix-gcc` platform is an ordinary native
+program, so the usual debugging tools apply to it. This chapter describes how
+to debug such an application with `gdb`, both from the command line and from Visual Studio Code, in the Docker-based setup that the
 installation chapter recommends. The Docker image ships `gdb` for host-side
 debugging and `gdb-multiarch` for the embedded targets.
 
-Debugging operates on the generated C, not on the Termina source: breakpoints
-are set on the C functions and the inspected variables are those of the
-generated code. The translation scheme makes the correspondence direct. A
-procedure or action named `increment` of a class `CCounter` becomes the C
+With the default `release` profile, debugging operates on the generated C, not
+on the Termina source: breakpoints are set on the C functions and the inspected
+variables are those of the generated code. The translation scheme makes the
+correspondence direct. A procedure or action named `increment` of a class `CCounter` becomes the C
 function `CCounter__increment`, fields keep their names inside the generated
 structs, and each task's thread runs a function named after its class, such
-as `termina__task_entry__CSamplerTask`. Reading the output in the `output/src`
-tree alongside the debugger session is the quickest way to orient oneself.
+as `termina__task_entry__CSamplerTask`. The generated sources are in the
+`output/src` tree.
 
 ## Debugging from the command line
 
@@ -49,9 +48,9 @@ Breakpoint 1 at 0x663b: file src/tasks/hello_world.fin, line 12.
 ```
 
 The same profile defines `TERMINA__PROFILE__DEBUG` in the generated
-`config.h`, which makes the runtime stop at a breakpoint before it restarts the
-system, so that the state that led to the restart, such as an exception, can
-still be inspected. On `posix-gcc` the runtime prints the backtrace and raises
+`config.h`. With this macro defined, the runtime stops at a breakpoint before it
+restarts the system, so the state that led to the restart, such as an
+exception, can still be inspected. On `posix-gcc` the runtime prints the backtrace and raises
 `SIGTRAP`, which stops the program under `gdb` and terminates it when no
 debugger is attached. The default profile, `release`, emits neither the `#line`
 directives nor the macro.
@@ -101,16 +100,16 @@ generated C. With the container rebuilt, a launch configuration in
 }
 ```
 
-The `set startup-with-shell off` command works around a limitation of running
-`gdb` in a container without a controlling terminal; without it, launching
-fails with the message "GDB failed to set controlling terminal". Breakpoints
+In a container without a controlling terminal, `gdb` fails to launch the
+program with the message "GDB failed to set controlling terminal"; the
+`set startup-with-shell off` command avoids that failure. Breakpoints
 are then set by clicking in the generated C files under `output/src`, and the
 debugging session behaves as it would for any C program.
 
 ## Keeping the container image current
 
-Two behaviors of the container tooling are worth knowing, since both manifest
-as a debugger or toolchain that does not match expectations:
+The following behaviors of the container tooling can leave a debugger or
+toolchain different from the one expected:
 
 - Pulling a newer image with `docker pull` does not affect an existing Dev
   Container, which continues to run on the image it was created from. After

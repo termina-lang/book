@@ -1,11 +1,11 @@
 # Memory Management
 
-Termina has no general-purpose heap. There is no `malloc`, no `free`, and no
-implicit allocation anywhere in the language: a program never acquires memory
-behind the programmer's back, and it never depends on an allocator whose timing
-cannot be bounded. When an application does need to allocate and release storage
-at run time, it does so through memory pools, a mechanism that is dynamic yet
-fully deterministic. This chapter describes pools, the owned blocks that come
+Termina has no general-purpose heap. The language has no `malloc` or `free` and
+performs no implicit allocation, so a program never depends on an allocator
+whose timing cannot be bounded. When an application does need to allocate and
+release storage at run time, it does so through memory pools, whose blocks are
+reserved when the application is built and whose allocation and release take a
+bounded time. This chapter describes pools, the owned blocks that come
 from them, and the atomic arrays that provide lock-free shared storage.
 
 ## Memory pools
@@ -21,14 +21,14 @@ resource sample_pool : Pool<Sample; 8>;
 This pool holds eight blocks, each large enough for one `Sample`. The blocks
 exist for the lifetime of the program; allocating one hands it out for use, and
 releasing it returns it to the pool. Because the number of blocks is fixed and
-reserved in advance, the memory the application uses is known when it is built,
-and allocation never fails for want of space beyond the pool's stated capacity.
+reserved in advance, the memory the application uses is known when it is built;
+an allocation fails only when all the blocks of the pool are in use.
 
 ## Allocating from a pool
 
-An entity reaches a pool through an access port of type `Allocator<T>`. The
-`alloc` operation does not return a block directly, since the pool may be
-exhausted; it sets an `Option`, which holds the block when one was available and
+An entity reaches a pool through an access port of type `Allocator<T>`. Since
+the pool may be exhausted, the `alloc` operation does not return a block
+directly but sets an `Option`, which holds the block when one was available and
 is empty otherwise. The caller must therefore handle both cases:
 
 === "Termina"
@@ -67,7 +67,7 @@ is empty otherwise. The caller must therefore handle both cases:
 
         if (opt._variant == Option__Some) {
 
-            termina__box_t b = opt.Some._0;
+            const termina__box_t b = opt.Some._0;
 
             (*(Sample *)b.data).value = 7U;
 
@@ -97,8 +97,9 @@ pool, or it can be handed to another component, but it cannot be copied, and it
 cannot simply go out of scope while still holding a block. The transpiler tracks
 each `box` through the body that holds it and rejects any path that would leave a
 block neither released nor passed on, or that would use a block after it has
-already been given away. This discipline is what guarantees, at compile time,
-that the memory managed by a pool is never leaked and never used after it has been freed.
+already been given away. Consequently, the memory managed by a pool is never
+leaked and never used after it has been freed, and both properties are checked
+when the program is transpiled.
 
 The life of a block is summarized by the following diagram: it leaves the
 pool through `alloc`, is owned by exactly one component at a time, may change
@@ -128,7 +129,7 @@ returning it to the pool with `free`:
 
         CSink * self = (CSink *)termina__this;
 
-        Status__i32 status = { ._variant = Status__Success };
+        const Status__i32 status = { ._variant = Status__Success };
 
         self->pool_port.free(termina__ev, self->pool_port._that, sample);
 
@@ -143,8 +144,8 @@ block to whoever receives the message. The sender no longer owns the block after
 the send, and the transpiler will reject any later use of it. On the receiving
 side, the block arrives as the `box` argument of the triggered action, and the
 receiver becomes responsible for consuming it in turn, as the `receive` action
-above does by freeing it. This is how a block of data moves from one component to
-another without being copied and without any ambiguity about who must release it.
+above does by freeing it. Only the handle travels in the message; the block
+itself is not copied.
 
 ## Atomic variables and arrays
 
@@ -186,7 +187,7 @@ and writes it with `load` and `store`:
 
         CMonitor * self = (CMonitor *)termina__this;
 
-        Status__i32 status = { ._variant = Status__Success };
+        const Status__i32 status = { ._variant = Status__Success };
 
         uint32_t v = 0U;
 

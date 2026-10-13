@@ -18,19 +18,17 @@ declaration states the name, its type, and the initial value:
 let base : u32 = 10;
 ```
 
-Attempting to assign a new value to an immutable binding is rejected by the
-transpiler. The following fragment does not compile because `base` was
-declared with `let`:
+The transpiler rejects any assignment to an immutable binding. The following
+fragment is rejected by the transpiler because `base` was declared with `let`:
 
 ```termina
 let base : u32 = 10;
 base = 20;            // error: assignment to immutable variable
 ```
 
-Immutability is the default habit to cultivate. A binding that never changes
-documents the intent directly in the code, and the transpiler enforces it, so
-`let` should be preferred whenever a value does not need to be modified after
-its initialization.
+A binding declared with `let` records in the code that its value does not
+change, and the transpiler enforces it, so `let` is preferred whenever a value
+does not need to be modified after its initialization.
 
 ## Mutable bindings
 
@@ -44,10 +42,10 @@ counter = counter + 1;
 ```
 
 The two kinds of binding can be seen together in a small function that
-combines an immutable value with a mutable accumulator. The generated C shows
-that both `let` and `var` map to ordinary C local variables; the immutability
-of a `let` binding is a guarantee enforced by the transpiler at the language
-level, not a property of the generated code:
+combines an immutable value with a mutable accumulator. Both `let` and `var`
+map to C local variables. The transpiler rejects any write to a `let` binding
+when it checks the program, and the generated C declares the binding `const`
+as well:
 
 === "Termina"
     ```termina
@@ -63,7 +61,7 @@ level, not a property of the generated code:
     ```c
     uint32_t demo(const uint32_t input) {
 
-        uint32_t base = 10U;
+        const uint32_t base = 10U;
 
         uint32_t counter = 0U;
 
@@ -80,8 +78,8 @@ level, not a property of the generated code:
 
 Both forms of declaration require a type annotation. A declaration without a
 type, such as `let base = 10`, is a syntax error, because Termina does not infer
-the types of bindings: the type written by the programmer is the single source
-of truth for the value's representation. A `let` also requires its
+the types of bindings, and the representation of the value is taken only from
+the type the programmer writes. A `let` also requires its
 initializing expression, since an immutable binding that is not given a value
 where it is declared could never be given one, and `let base : u32;` is
 likewise a syntax error.
@@ -156,8 +154,7 @@ Termina rejects a binding that is declared but never read. A value that is
 computed and stored, only to be ignored, is almost always either a mistake or
 the residue of code that has since changed, and in a language aimed at
 analyzable, verifiable software it is treated as an error rather than a
-warning. Each `let` or `var` must therefore contribute to the result of the
-code that declares it.
+warning.
 
 The same holds for every value a variable receives. An assignment whose value
 is overwritten on every path before anything reads it is rejected, and so is an
@@ -169,8 +166,9 @@ x = a + 1;
 return x;
 ```
 
-As in the previous section, the declaration moves to the point where the value
-is computed, or loses its initializer.
+The fragment is accepted once `x` is declared where its value is computed, as
+`var x : u32 = a + 1;`, or is declared without an initializer, as in the
+previous section.
 
 ## Scope and the absence of shadowing
 
@@ -193,10 +191,9 @@ if condition {
 }
 ```
 
-This rule eliminates a common source of confusion, in which a single name
-refers to different values in different parts of a function depending on the
-nesting. In Termina, a name in scope denotes exactly one binding, which makes
-the code easier to read and its data flow easier to analyze.
+With shadowing, a single name can refer to different values in different parts
+of a function depending on the nesting; in Termina, a name in scope always
+denotes the same binding.
 
 A binding is also expected to be declared in the innermost block that contains
 all its uses. In the following function, `factor` is only used inside the

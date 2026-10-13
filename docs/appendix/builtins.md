@@ -59,7 +59,7 @@ Instances of these classes are declared in the application module:
 | `Atomic<T>` | `resource a : Atomic<T> = { value = ... };` | `access AtomicAccess<T>` |
 | `AtomicArray<T; N>` | `resource a : AtomicArray<T; N> = { values = [...] };` | `access AtomicArrayAccess<T; N>` |
 
-The operations they offer through their access ports:
+Each access port type offers the following operations:
 
 | Port type | Operations |
 |:----------|:-----------|
@@ -81,17 +81,17 @@ directly:
 
 | Name | Event payload | Fires |
 |:-----|:--------------|:------|
-| `system_init` | `TimeVal` | Once, at system start-up, behind `enable-system-init`; a handler only |
-| `system_except` | `Exception` | When the runtime raises an exception, behind `enable-system-except`; a handler only |
+| `system_init` | `TimeVal` | Once, at system start-up, when `enable-system-init` is set; handlers only |
+| `system_except` | `Exception` | When the runtime raises an exception, when `enable-system-except` is set; handlers only |
 | `irq_N` | `u32` (vector) | On hardware interrupt N (per platform) |
-| `kbd_irq` | `u32` | On console input (`posix-gcc`, behind `enable-kbd-irq`) |
+| `kbd_irq` | `u32` | On console input (`posix-gcc`, when `enable-kbd-irq` is set) |
 
 ## The system interface
 
 The `system_entry` instance implements the `SystemAPI` interface and is
 deployed when `enable-system-port` is set in `termina.yaml`. It is reached
 through a port declared `access SystemAPI` and wired with
-`<-> system_entry`. Its procedures:
+`<-> system_entry`. Its procedures are the following:
 
 | Group | Procedures | Typical call |
 |:------|:-----------|:-------------|

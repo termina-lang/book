@@ -33,6 +33,11 @@ let bad : u32 = a + c;   // error: the right operand is u16, not u32
 To combine values of different types, one of them must be converted explicitly,
 as described under casting below.
 
+A minus sign written before a decimal literal is part of the
+literal, so `-100` is a single negative constant, which the generated C writes
+as `-(100L)` when its type is `i32`. Termina has no unary minus operator, and
+the negation of a variable is written as a subtraction, `0 - a`.
+
 ## Comparison operators
 
 The comparison operators relate two operands of the same type and produce a
@@ -54,22 +59,22 @@ necessary, that is, `&&` does not evaluate the right operand if the left one is
 already `false`, and `||` does not evaluate it if the left one is already
 `true`. The right operand may or may not run, so it cannot contain an operation
 with an effect of its own. Such operations are a call to a function that
-receives a mutable reference or to a method that takes `&mut self`, an access to
-a located field, and an operation that the generated code checks while the
-program runs, whose check raises an exception when it fails. The generated code checks an
-array access or a slice whose bounds are not constants, a shift by an amount
-that is not a constant, a division or a remainder by a divisor that is not a
-constant, and a signed addition, subtraction or multiplication. A call to a
+receives a mutable reference, a call to a method that takes `&mut self`, an
+access to a located field, and an operation checked at run time. A run-time
+check raises an exception when it fails. The generated code checks signed
+addition, subtraction and multiplication, and any array access, slice, shift,
+division or remainder whose index, bounds, shift amount or divisor is not a
+constant. A call to a
 function whose body contains any of these carries the same effect. The
 transpiler rejects them in the right operand.
 
 A comparison in the left operand bounds a variable in the right one: after
 `i < 8 : usize &&`, the right operand runs only when `i` is below 8, and after
 `count == 0 : u32 ||`, only when `count` is not zero. The transpiler uses these
-bounds to leave out the checks that cannot fail, which are those of an index
-kept inside the array, a divisor kept away from zero, and a shift amount kept
-below the width of the value shifted. The right operand then has no effect and
-is accepted:
+bounds to leave out a check that cannot fail: an index check when the index is
+kept inside the array, a division check when the divisor is kept away from
+zero, and a shift check when the amount is kept below the width of the shifted
+value. The right operand then has no effect and is accepted:
 
 === "Termina"
     ```termina
@@ -78,15 +83,16 @@ is accepted:
     ```
 === "C"
     ```c
-    _Bool found = i < 8U && buf[i] > 0U;
+    const _Bool found = i < 8U && buf[i] > 0U;
 
-    _Bool ratio_ok = count != 0U && (uint32_t)(total / count) > limit;
+    const _Bool ratio_ok = count != 0U && (uint32_t)(total / count) > limit;
     ```
 
 The check of a signed division or remainder also covers the quotient of the
-minimum value of the type by `-1`, which a comparison of the divisor with zero
-does not exclude, so a signed division stays checked after such a guard and is
-rejected in the right operand. It is written as two nested conditions instead:
+minimum value of the type by `-1`. A comparison of the divisor with zero does
+not exclude that case, so a signed division stays checked after such a guard
+and is rejected in the right operand. The guard is written instead as an `if`
+that encloses the division:
 
 === "Termina"
     ```termina
@@ -138,8 +144,8 @@ needed, through `^` with an all-ones mask.
 
 ## Casting with `as`
 
-Because Termina never converts between types on its own, a value is moved from
-one type to another with an explicit cast, written with the `as` operator
+Because Termina never converts between types on its own, a value is converted
+from one type to another with an explicit cast, written with the `as` operator
 followed by the target type. A cast generates the corresponding C cast:
 
 === "Termina"
@@ -148,7 +154,7 @@ followed by the target type. A cast generates the corresponding C cast:
     ```
 === "C"
     ```c
-    uint16_t narrow = (uint16_t)value;
+    const uint16_t narrow = (uint16_t)value;
     ```
 
 A cast is the only way to use a value of one integer type where another is
@@ -181,7 +187,7 @@ constant in the generated code rather than a runtime shift:
     ```
 === "C"
     ```c
-    uint32_t high_bit = 65536U;
+    const uint32_t high_bit = 65536U;
     ```
 
 ## Operator precedence
@@ -203,11 +209,10 @@ groups are:
 | | `&&` |
 | lowest | `\|\|` |
 
-All operators associate to the left. Note that the relative order of the
-bitwise operators differs from the convention used in C, where `^` binds more
-tightly than `|`. To avoid any ambiguity, and to keep the intended grouping
-obvious to the reader, parentheses are recommended whenever an expression mixes
-operators from different groups.
+All operators associate to the left. The relative order of the bitwise
+operators differs from that of C, where `^` binds more tightly than `|`, so
+parentheses are recommended whenever an expression mixes operators from
+different groups.
 
 ## Integer promotion and explicit casts
 
@@ -216,9 +221,9 @@ narrower than `int`, such as values of an 8- or 16-bit type, are converted to
 `int` before an operation is carried out, and the operation is then performed at
 the width of `int`. An expression written in terms of small integer types is
 therefore not evaluated at the width its types suggest, which can alter the
-result of a computation and is a well-known source of defects in embedded code.
-Integer promotion is intrinsic to C and cannot be switched off; coding standards
-such as MISRA C address it indirectly, through rules that constrain the implicit
+result of a computation, for example when the sum of two `uint8_t` values
+exceeds 255 and is compared against another `uint8_t`. Integer promotion is
+intrinsic to C and cannot be switched off; coding standards such as MISRA C address it indirectly, through rules that constrain the implicit
 conversions surrounding it and call for explicit casts.
 
 Termina evaluates arithmetic at the width of the operand types, with no
@@ -247,10 +252,13 @@ function that adds three 8-bit values:
 The sub-expression `a + b` is masked to eight bits and cast back to `uint8_t`
 before `c` is added, so the intermediate sum is computed at the width of the
 operand type, as the Termina source prescribes, rather than being carried in the
-wider `int` that C's promotion rule would otherwise use. The transpiler applies the same casting
-strategy throughout, making the type of every intermediate result explicit in
-the generated code. Keeping a result at its declared width matters only when the
-result does not fit in that width, which is the subject of the next section.
+wider `int` that C's promotion rule would otherwise use. The outer sum carries
+no mask, since the `return` already converts it to `uint8_t`; used as the
+operand of a comparison, as in `a + b + c > 3`, it is masked and cast as well.
+The transpiler emits the same mask and cast for every intermediate result of an
+unsigned type narrower than `int`. The mask changes the value only when the
+result does not fit in that width, the case of overflow treated in the next
+section.
 
 ## Arithmetic overflow
 
@@ -260,22 +268,21 @@ outcome is well-defined.
 
 Unsigned arithmetic is modular. A result that exceeds the range of an unsigned
 type wraps around modulo 2ⁿ, where n is the width of the type, so that adding one
-to the maximum value of a `u8` yields `0`. This is defined and predictable
-behavior, and the mask and the explicit cast described in the previous section
-are what realize the wraparound at the declared width: the intermediate value is
-reduced to its type before the computation proceeds. Modular arithmetic of this kind is
+to the maximum value of a `u8` yields `0`. The mask and the explicit cast
+described in the previous section reduce each intermediate value to its type
+before the computation proceeds, which produces the wraparound at the declared
+width. Modular arithmetic of this kind is
 a legitimate tool in tasks such as bit manipulation and the handling of counters
 that are meant to roll over.
 
-Signed arithmetic does not wrap. A signed operation whose result falls outside
-the range of its type is treated as a run-time error: instead of producing the
-undefined result that signed overflow has in C, the generated code calls a
-function of the OSAL that checks the operands before carrying out the
-operation, and raises the exception `EArithmeticOverflow` when the result would
-not be representable. A division or a remainder whose divisor is zero raises
+Signed arithmetic does not wrap, and signed overflow has an undefined result in
+C. For a signed operation, the generated code calls a function of the OSAL that
+checks the operands before carrying out the operation and raises the exception
+`EArithmeticOverflow` when the result would not be representable in its type.
+A division or a remainder whose divisor is zero raises
 `EDivisionByZero` in the same way, for signed and unsigned types alike, and a
 divisor that is the constant zero is rejected by the transpiler before any code
-is generated. An exception of the runtime restarts the system. In the following
+is generated. A runtime exception restarts the system. In the following
 function, the addition and the division by `count` are checked, while the
 division by the constant `2` is not, since its divisor can be neither zero nor
 `-1`, the only values for which a signed quotient can fail:
@@ -333,9 +340,6 @@ With the same bounds, the transpiler rejects an operation whose check fails for
 every value its operands may take, such as a division by a variable that a
 condition has just fixed at zero.
 
-Every integer operation in Termina therefore either yields a value within the
-range of its type, wrapping where the type is unsigned, or raises an exception,
-and none has undefined behavior. The floating-point types are not covered yet. A division of
-a floating-point value by zero, and a conversion with `as` from a floating-point
-type to an integer type, or from `f64` to `f32`, whose value does not fit the
-target type, are not checked in the current version.
+In the current version, a division of a floating-point value by zero, and a
+conversion with `as` from a floating-point type to an integer type, or from
+`f64` to `f32`, whose value does not fit the target type, are not checked.

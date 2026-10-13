@@ -3,9 +3,8 @@
 Every Termina project has a main application module, `app/app.fin`, where the
 system is assembled. The classes and functions of the program are defined in the
 modules under `src`, as the earlier chapters showed; the application module
-contains no definitions of its own. Its role is to bring the system into being:
-it declares the instances that make up the application and connects them to one
-another. This chapter gathers in one place the declarations that appear there and
+contains no definitions of its own. It declares the instances that make up the
+application and connects them to one another. This chapter gathers in one place the declarations that appear there and
 the way they fit together.
 
 ## Instances
@@ -101,11 +100,30 @@ are enabled, is governed by the project configuration; the `kbd_irq` source used
 above, for instance, is enabled by a flag in `termina.yaml` on the `posix-gcc`
 platform.
 
-The initialization event and the runtime exception source, `system_except`, may
-only be attended by a handler, and the transpiler rejects a task wired to either
-of them. The initialization sequence dispatches `system_init` before it
-creates the tasks, and a runtime exception restarts the system once its action
-has run, so a task connected to either would never get to run.
+The initialization sequence dispatches `system_init` before it creates the
+tasks, and a runtime exception restarts the system once its action has run, so a
+task connected to either source would never run. For this reason, only a handler
+may be connected to `system_init` or to the runtime exception source,
+`system_except`, and the transpiler rejects a task wired to either of them.
+
+The runtime restarts the system as soon as the action of the handler connected
+to `system_except` returns, so the action returns nothing and omits its return
+type. It may record the cause of the exception. A message sent from it would
+reach a task that never runs again, so the action may not send one. The restart
+that follows the action is the only exit of the exception path, so the action
+may contain neither a `reboot` nor a call to a `noreturn` function:
+
+```termina
+handler class CFatalHandler {
+    except_port : sink Exception triggers on_except;
+    reset_record : access IResetRecord;
+
+    action on_except(&priv self, e : Exception) {
+        self->reset_record.store(&e);
+        return;
+    }
+};
+```
 
 The runtime also provides `system_entry`, a built-in resource that implements the
 `SystemAPI` interface through which an entity reaches platform services such as
@@ -122,10 +140,10 @@ book did.
 
 ## Annotations
 
-Three annotations may appear on the declarations in the application module. Two
-of them apply to tasks. The `#[priority(N)]` annotation, already seen, sets the
-scheduling priority of a task. The `#[stack_size(N)]` annotation sets the size,
-in bytes, of the task's own stack; when it is omitted, the task is given a
+The declarations in the application module may carry three annotations. The
+`#[priority(N)]` annotation, already seen, sets the scheduling priority of a
+task, and the `#[stack_size(N)]` annotation sets the size, in bytes, of the
+task's own stack; when it is omitted, the task is given a
 default stack of 4096 bytes. A task may carry both, each on its own line:
 
 ```termina
@@ -139,10 +157,9 @@ task sampler : CSamplerTask = {
 
 The third annotation, `#[unprotected]`, is placed instead on a resource, to
 suppress the automatic insertion of protection described in the reactive model.
-It may be applied only to a resource that holds no state of its own. When the
-resource has data fields, the transpiler rejects the annotation; only a resource
-without them, which may still hold access ports to other resources, can be marked
-unprotected. Such a resource has no data whose consistency the protection would
-guard, so leaving it unprotected is safe. Every annotation is written on the line
+A resource without data fields has no state whose consistency the protection
+would guard, so it may be marked unprotected even when it holds access ports to
+other resources; the transpiler rejects the annotation on a resource that has
+data fields. Every annotation is written on the line
 above the declaration it modifies, and none may appear twice on the same
 declaration.

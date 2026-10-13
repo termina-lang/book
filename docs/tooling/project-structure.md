@@ -8,8 +8,8 @@ commands that turn the source into a running program.
 ## Creating a project
 
 A project is created with the `new` command, which takes the project name and,
-optionally, the target platform. When no platform is given, the project is
-created for `posix-gcc`, the development platform:
+optionally, the target platform with `-p` or `--platform`. When no platform is
+given, the project is created for `posix-gcc`, the development platform:
 
 ```bash
 $ termina new hello_world
@@ -19,6 +19,7 @@ The command generates the project directory with its initial structure:
 
 ```bash
 hello_world/
+├── .gitignore
 ├── termina.yaml
 ├── app/
 │   └── app.fin
@@ -26,10 +27,18 @@ hello_world/
 └── output/
 ```
 
+The command also initializes a Git repository in the new directory, unless the
+directory already lies inside one, and writes a `.gitignore` that excludes the
+built executables in `output/bin/`. The option `--vcs none` skips the
+repository, although the `.gitignore` is still written. The option `--vscode`
+adds the files that Visual Studio Code needs to work on the project inside the
+Termina development container: `.devcontainer/devcontainer.json`, which names
+the container image, `.vscode/tasks.json`, with a `termina: build` task, and
+`.vscode/launch.json`, with a debug configuration for `posix-gcc`.
+
 ## The project layout
 
-The four elements of a new project have distinct roles. The file `termina.yaml`
-holds the project configuration. The `app` directory contains the application
+The file `termina.yaml` holds the project configuration. The `app` directory contains the application
 module, `app.fin`, where the system is assembled. The `src` directory holds the
 source modules that define the component classes and functions of the program.
 The `output` directory receives the C code that the transpiler generates, and is
@@ -77,6 +86,13 @@ platform-flags:
     enable-kbd-irq: true
 ```
 
+The keys of `platform-flags` name platforms. The flags under a key that names no
+platform would be dropped without notice, so such a key is rejected.
+
+A project that calls C code keeps it in an `extern` directory at its root and
+lists it in an `extern` section of `termina.yaml`, as the chapter on
+[calling C code](../advanced/c-code.md) describes.
+
 ## Building a project
 
 Building a project is a two-stage process: the transpiler turns the Termina
@@ -97,7 +113,7 @@ $ termina build
 The transpiler reads the application module and the source modules, checks the
 program, and writes the resulting C into the `output` directory. The output
 mirrors the source: a `src` tree of C files, an `include` tree of headers, and a
-`Makefile` that knows how to compile them against the Operating System
+`Makefile` that compiles them against the Operating System
 Abstraction Layer for the configured platform.
 
 The second stage compiles that generated code. On the `posix-gcc` platform, this
@@ -117,9 +133,9 @@ onto the device or an emulator rather than an executable for the host.
 The generated `Makefile` includes `platform/common.mk` from the OSAL, which
 compiles every platform in C11 with `-pedantic-errors` and a set of warnings
 beyond `-Wall` and `-Wextra`, among them `-Wconversion` and `-Wshadow`. The
-code the transpiler emits is expected to compile without a single warning under
-those flags, so a warning points either at the transpiler or at C code written
-by hand, such as a platform driver.
+code the transpiler emits is expected to compile without warnings under those
+flags, so a warning comes either from the transpiler or from C code written by
+hand, such as a platform driver.
 
 ## Static analysis
 
@@ -135,8 +151,8 @@ $ make cppcheck
 $ make cppcheck-misra
 ```
 
-Both analyze the sources of the project and leave the OSAL out, since the OSAL
-is analyzed in its own repository. Each target keeps its results in a directory
+The OSAL is analyzed in its own repository, so both targets analyze only the
+sources of the project. Each target keeps its results in a directory
 of its own under the build directory, and a second run only analyzes the files
 that have changed. The targets report their findings without failing; setting
 `CPPCHECK_ERROR_EXITCODE=1` on the `make` command line makes them fail when
@@ -151,12 +167,13 @@ Rule 11.5 that come from the way the generated code is built.
 
 ## Platforms
 
-Termina currently supports three platforms. The `posix-gcc` platform builds the
-application for a conventional Unix-like host, using the system's own compiler,
-and is intended for development and validation. The `rtems5-leon3-nexysa7`
-platform targets the LEON3 processor under RTEMS 5, and the
-`freertos10-stm32l432xx` platform targets the STM32L432 microcontroller under
-FreeRTOS 10. The platform is chosen when the project is created, with the
+The `posix-gcc` platform builds the application for a conventional Unix-like
+host, using the system's own compiler, and is intended for development and
+validation. The embedded platforms are `rtems5-leon3sf-nexysa7`, for the LEON3
+processor under RTEMS 5; `rtems6-zynq7000-pynqz2`, for the Zynq-7000 of the
+PYNQ-Z2 board under RTEMS 6; and `freertos10-stm32l432-nucleol432kc`, for the
+STM32L432 microcontroller under FreeRTOS 10. The platform is chosen when the
+project is created, with the
 `--platform` option of the `new` command, or changed afterwards by editing the
 `platform` field in `termina.yaml`. Each target beyond `posix-gcc` requires its
 cross-toolchain to be installed, as described in the chapter on installation.

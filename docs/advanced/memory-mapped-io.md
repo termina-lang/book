@@ -1,6 +1,6 @@
 # Memory-Mapped I/O
 
-A device driver talks to its hardware through registers that the platform
+A device driver accesses its hardware through registers that the platform
 maps at fixed physical addresses. In C, this is conventionally done by casting
 an integer address to a pointer to a register structure, a pattern that the
 compiler cannot check: nothing relates the address to the structure supposedly
@@ -66,12 +66,12 @@ three 32-bit registers:
     ```
 
 Within the class, a located field is read and written like any ordinary field
-of a structure type. In the generated code it becomes a pointer to the mapped
-structure, declared `volatile` so that the C compiler performs every access
-the program writes, in the order it writes them, rather than caching or
-eliminating accesses whose effect it cannot see. This is the behavior a
-device register requires, since reading or writing one is an interaction with
-hardware and not a plain memory operation.
+of a structure type. Reading or writing a device register is an interaction
+with the hardware and not a plain memory operation. In the generated code, the
+field therefore becomes a pointer to the mapped structure, declared `volatile`
+so that the C compiler performs every access the program writes, in the order
+it writes them, rather than caching or eliminating accesses whose effect it
+cannot see.
 
 ## Binding the address
 
@@ -93,9 +93,9 @@ handler runs:
 uart.registers = (volatile UartRegs *)0x80000100U;
 ```
 
-Keeping the address out of the class pays off as soon as a device exists more
-than once: a board with two UARTs is served by two instances of the same
-driver class, each bound to its own base address.
+Because the address belongs to the instance and not to the class, a board with
+two UARTs is served by two instances of the same driver class, each bound to
+its own base address.
 
 The address of a device is given by the memory map of the target platform,
 so a class with located fields is meaningful on the embedded targets, where
@@ -156,17 +156,16 @@ RAM, a frame buffer, or a DMA window. The driver below covers a 4-KiB bank:
 
 The instance binds the array to the base address of the region,
 `memory @ 0x40100000`, and accesses to it keep the bounds checking that
-applies to every Termina array, so not even a driver can stray outside the
+applies to every Termina array, so a driver cannot access memory outside the
 region its type declares. In `write_byte` the `if` keeps `offset` below 4096,
 and the transpiler writes the access without a check; an index that the code
 does not bound in this way goes through `termina__check__array_index`.
 
 ## Drivers as resources
 
-A located field can only appear in a resource class, and the example driver
-shows why the restriction fits: a device is shared state. Its registers are
-read and modified by whichever tasks and handlers use the device, and those
-accesses must not interleave. Because the driver is a resource, the transpiler
+A device is shared state: its registers are read and modified by whichever
+tasks and handlers use the device, and those accesses must not interleave. For
+this reason, a located field can only appear in a resource class. Because the driver is a resource, the transpiler
 applies the protection analysis described in the reactive model: a driver used
 by several tasks is serialized with a priority-ceiling mutex, and one shared
 between a task and an interrupt handler is protected by disabling the
