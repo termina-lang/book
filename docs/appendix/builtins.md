@@ -18,7 +18,7 @@ them requires an import, and their names cannot be redefined.
 |:-----|:---------|:--------|
 | `TimeVal` | `tv_sec`, `tv_usec` | Time representation |
 | `SysPrintBase` | `Decimal`, `Hexadecimal` | Numeric base for the print services |
-| `Exception` | `EActionFailure`, `EMsgQueueSendError`, `EMsgQueueRecvError`, `EArrayIndexOutOfBounds`, `EArraySliceOutOfBounds`, `EArraySliceNegativeRange`, `EArraySliceInvalidRange`, `EShiftAmountOutOfBounds`, `EArithmeticOverflow`, `EDivisionByZero`, `ERuntimeFailure` | Runtime exception delivered by `system_except` |
+| `Exception` | `EActionFailure`, `EMsgQueueSendError`, `EMsgQueueRecvError`, `EArrayIndexOutOfBounds`, `EArraySliceOutOfBounds`, `EArraySliceNegativeRange`, `EArraySliceInvalidRange`, `EShiftAmountOutOfBounds`, `EArithmeticOverflow`, `EDivisionByZero`, `ERuntimeFailure`, `EProcessorFault`, `EKernelFailure`, `EStackOverflow` | Runtime exception delivered by `system_except` |
 | `ExceptSource` | `Task(usize)`, `Handler(usize)` | The entity whose action failed, in `EActionFailure` |
 
 `ERuntimeFailure(u32, i32)` reports a failure of the runtime itself, which the
@@ -30,6 +30,9 @@ application cannot handle. The first value is the operation that failed:
 | Giving a mutex back | 1 |
 | Arming a periodic timer | 2 |
 | Making a task ready to run | 3 |
+| Returning a block to its pool | 4 |
+| Dispatching an event to the action of a task | 5 |
+| Dispatching an interrupt to its handler | 6 |
 
 The `i32` that `ERuntimeFailure`, `EMsgQueueSendError` and `EMsgQueueRecvError`
 carry is the cause of the failure, with the same value on every operating
@@ -47,7 +50,32 @@ system:
 | The caller is above the ceiling of the mutex | 207 |
 | The timer cannot be armed | 208 |
 | The task cannot be made ready to run | 209 |
+| The address is not the start of a block of the pool | 210 |
+| No handler is registered for the interrupt | 211 |
 | Any other error of the operating system | 999 |
+
+Three variants report faults that the runtime does not detect by itself but
+receives from the processor or from the operating system. Their values are
+those of the platform, so they are decoded with the platform at hand:
+
+- `EProcessorFault(u32, u32, usize, usize)` is a fault of the processor. Its
+  values are the exception number of the architecture, the fault status
+  register (0 when the architecture has none), the address of the instruction
+  that failed and the faulting address (0 when the architecture gives none).
+  On the Cortex-A9 of the Zynq-7000 they come from the exception frame of
+  RTEMS and from `DFSR` and `DFAR`, or `IFSR` and `IFAR`; on the Cortex-M4 of
+  the Nucleo, from the HardFault with `CFSR` and `MMFAR` or `BFAR`; on LEON3,
+  from the trap type and its program counter; on `posix-gcc`, from the signal,
+  its `si_code` and `si_addr`.
+- `EKernelFailure(u32, usize)` is a fatal error raised by the operating system
+  itself, with its source and code. On RTEMS they are the source and the code
+  of the fatal error; on FreeRTOS the source 1 is a failed assertion of the
+  kernel, and its code is the address of the assertion.
+- `EStackOverflow(usize)` is a stack overflow that the operating system
+  detects, with the identifier of the task, or the largest value of `usize`
+  when the stack does not belong to a task of the application. RTEMS 6 checks
+  the stacks at every context switch, and FreeRTOS does the same with
+  `configCHECK_FOR_STACK_OVERFLOW`. RTEMS 5 does not check them.
 
 ## Resource classes
 
