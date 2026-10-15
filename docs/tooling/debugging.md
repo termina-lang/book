@@ -106,6 +106,41 @@ program with the message "GDB failed to set controlling terminal"; the
 are then set by clicking in the generated C files under `output/src`, and the
 debugging session behaves as it would for any C program.
 
+## Debugging on a board
+
+On the embedded platforms, `gdb-multiarch` runs in the container and controls
+the board through the GDB server of the board's debug tool. The server runs on
+the host, which has the USB connection to the debug probe of the board:
+
+| Platform | GDB server on the host | Default port |
+|---|---|---|
+| `rtems5-leon3sf-nexysa7` | [GRMON](https://www.gaisler.com/products/grmon3) | 2222 |
+| `rtems6-zynq7000-pynqz2` | `hw_server` of [AMD Vitis](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vitis.html) | 3000 |
+| `freertos10-stm32l432-nucleol432kc` | `ST-LINK_gdbserver` of [STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html) | 61234 |
+
+![Debugging on a board from the Dev Container](../diagrams/remote-debugging.svg){ .diagram }
+
+The `.devcontainer/devcontainer.json` that `termina new --vscode` generates
+starts the container with `--add-host=host.docker.internal:host-gateway`,
+which maps the name `host.docker.internal` to the address of the host on the
+`docker0` bridge of Docker. For these platforms, the generated
+`.vscode/launch.json` connects `gdb-multiarch` to the GDB server at that name
+and at the port of the table. Before each session, VS Code asks for the
+address of the server, with that one as the default, so that a server on
+another machine or port can be given. Once connected, the `load` command writes
+the program to the board.
+
+On a Linux host with `ufw`, the default policy drops the connections that come
+from the containers through `docker0`, and `gdb-multiarch` cannot reach the
+server. The following rule opens the default ports of the three servers on the
+bridge:
+
+```bash
+$ sudo ufw allow in on docker0 to any port 2222,3000,61234 proto tcp
+```
+
+A server started on another port needs that port in the rule.
+
 ## Keeping the container image current
 
 The following behaviors of the container tooling can leave a debugger or
