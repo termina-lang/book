@@ -19,8 +19,9 @@ and must not be typed by the reader.
 
 The Termina project publishes a container image that bundles the transpiler,
 the Operating System Abstraction Layer (OSAL) against which the generated code
-is compiled, and the cross-toolchains of the `rtems5-leon3sf-nexysa7` and
-`freertos10-stm32l432-nucleol432kc` platforms. Because all of these elements
+is compiled, and the cross-toolchains of the `rtems5-leon3sf-nexysa7`,
+`rtems6-zynq7000-pynqz2` and `freertos10-stm32l432-nucleol432kc` platforms.
+Because all of these elements
 are distributed together within a single image, the user is relieved of the usual tasks of installing a
 compiler, obtaining the appropriate toolchain for each target, and ensuring
 that the different components are mutually compatible. For this reason, the
@@ -232,12 +233,12 @@ under RTEMS 6. It relies on the `arm-rtems6-gcc` toolchain and on the
 `xilinx_zynq_pynq` board support package, both built from the RTEMS 6 sources
 with the [RTEMS Source Builder](https://docs.rtems.org/). They are expected
 under `/opt/rtems/6`, and another location is passed to `make` as
-`RTEMS6_PREFIX`. Neither of them is included in the Docker image. The
-`freertos10-stm32l432-nucleol432kc` platform, which targets the STM32L432
-microcontroller of the NUCLEO-L432KC board under FreeRTOS 10, relies on the
-bare-metal ARM toolchain `arm-none-eabi-gcc`,
-which can be obtained from the distribution's repositories or directly from
-[Arm](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads). The
+`RTEMS6_PREFIX`. The `freertos10-stm32l432-nucleol432kc` platform, which
+targets the STM32L432 microcontroller of the NUCLEO-L432KC board under
+FreeRTOS 10, relies on the bare-metal ARM toolchain `arm-none-eabi-gcc` with
+its C library, newlib. The Arm GNU Toolchain, available from
+[Arm](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads),
+includes both, and the image ships its release 13.3.rel1. The
 target platform is selected when the project is created, by means of
 `termina new myproj --platform rtems5-leon3sf-nexysa7`, or subsequently by
 editing the `platform` field in the `termina.yaml` file.

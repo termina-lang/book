@@ -102,11 +102,8 @@ application module.
 The platform is selected per project, in `termina.yaml`, and the chapter on
 the build system describes how the generated `Makefile` invokes the
 corresponding toolchain. The Docker image distributed by the project bundles
-the toolchains of the `posix-gcc`, `rtems5-leon3sf-nexysa7` and
-`freertos10-stm32l432-nucleol432kc` platforms, so switching among them does not
-require installing anything. The `arm-rtems6-gcc` toolchain of the
-`rtems6-zynq7000-pynqz2` platform is not in the image and is built from the
-RTEMS 6 sources, as the installation chapter describes.
+the toolchains of the four platforms, so switching among them does not
+require installing anything.
 
 ## Versioning and compatibility
 
