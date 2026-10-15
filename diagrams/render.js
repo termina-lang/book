@@ -19,6 +19,12 @@ const KIND = {
   pool:     { fill: '#EDE7F6', stroke: '#5E48A6' },
   atomic:   { fill: '#FBE6EC', stroke: '#A6325A' },
 };
+// A node with children draws as a frame around them, with its title top left.
+const GROUP = {
+  host:      { fill: '#F6F8FB', stroke: '#566879', icon: '#566879' },
+  container: { fill: '#FFFFFF', stroke: '#2C6FA6', icon: '#2C6FA6', dash: '6,4' },
+};
+const GROUP_PAD = 16;
 const SIDE = { W: 'WEST', E: 'EAST', N: 'NORTH', S: 'SOUTH' };
 // A flow port carries an arrow inside its square showing direction: sink/in
 // point into the node, out points outward. access and provided (interface)
@@ -37,6 +43,27 @@ function portArrow(cx, cy, [dx, dy], color) {
 const FONT = 'IBM Plex Sans, system-ui, sans-serif';
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const charw = (t, px) => t.length * px * 0.58; // rough text width estimate
+
+// Icons in icons/<name>.svg, 24x24: Lucide icons are stroked, Simple Icons filled.
+const ICON = 20, ICON_GAP = 7;
+const iconCache = {};
+function iconBody(name) {
+  if (!(name in iconCache)) {
+    const src = fs.readFileSync(path.join(__dirname, 'icons', name + '.svg'), 'utf8')
+      .replace(/<!--[\s\S]*?-->/g, '').replace(/<title>[\s\S]*?<\/title>/g, '');
+    const open = src.match(/<svg[\s\S]*?>/)[0];
+    const inner = src.slice(src.indexOf(open) + open.length, src.lastIndexOf('</svg>')).trim();
+    iconCache[name] = { inner, stroked: /stroke="currentColor"/.test(open) };
+  }
+  return iconCache[name];
+}
+function iconSvg(name, x, y, color) {
+  const ic = iconBody(name), s = ICON / 24;
+  const paint = ic.stroked
+    ? `fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"`
+    : `fill="${color}"`;
+  return `<g transform="translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${s.toFixed(4)})" ${paint}>${ic.inner}</g>`;
+}
 // A node label renders as one or more lines. An instance label `name : Class`
 // wraps onto two lines (name bold, then ": Class"); an optional `sub` adds a
 // small grey subtitle line below the title.
@@ -51,19 +78,34 @@ function labelSpec(node) {
   }
   if (node.sub) lines.push({ text: node.sub, size: 10.5, weight: 400, color: '#5B6B82' });
   const lh = (s) => (s >= 14 ? 18 : 14);
+  const iconW = node.icon ? ICON + ICON_GAP : 0;
   return {
-    lines,
-    width: Math.max(...lines.map((l) => charw(l.text, l.size))),
-    height: lines.reduce((a, l) => a + lh(l.size), 0) + 4,
+    lines, iconW, icon: node.icon,
+    width: Math.max(...lines.map((l) => charw(l.text, l.size))) + iconW,
+    height: Math.max(lines.reduce((a, l) => a + lh(l.size), 0) + 4, node.icon ? ICON + 4 : 0),
   };
 }
 
 function toElk(spec) {
   const kindById = {}, edgeKind = {}, portInfo = {}, labelById = {};
-  const children = spec.nodes.map((n) => {
+  let grouped = false;
+  const toNode = (n) => {
     kindById[n.id] = n.kind;
     const ls = labelSpec(n);
     labelById[n.id] = ls;
+    if (n.children) {
+      grouped = true;
+      // The title is drawn by toSvg in the top padding, outside the layout
+      return {
+        id: n.id,
+        layoutOptions: {
+          'elk.nodeSize.constraints': '[MINIMUM_SIZE]',
+          'elk.nodeSize.minimum': `(${Math.ceil(ls.width) + 2 * GROUP_PAD},0)`,
+          'elk.padding': `[top=${Math.ceil(ls.height) + 2 * GROUP_PAD},left=${GROUP_PAD},bottom=${GROUP_PAD},right=${GROUP_PAD}]`,
+        },
+        children: n.children.map(toNode),
+      };
+    }
     const place = (n.ports && n.ports.length) ? '[H_CENTER,V_TOP,INSIDE]' : '[H_CENTER,V_CENTER,INSIDE]';
     return {
       id: n.id,
@@ -84,7 +126,8 @@ function toElk(spec) {
         return port;
       }),
     };
-  });
+  };
+  const children = spec.nodes.map(toNode);
   const edges = spec.edges.map((e, i) => {
     edgeKind['e' + i] = e[3] || 'flow';
     return { id: 'e' + i, sources: [e[0]], targets: [e[1]],
@@ -103,6 +146,8 @@ function toElk(spec) {
         'elk.spacing.portLabel': '3',
         'elk.spacing.labelPortHorizontal': '3',
         'elk.spacing.edgeLabel': '4',
+        // Edges between nodes of different groups are laid out across them
+        ...(grouped ? { 'elk.hierarchyHandling': 'INCLUDE_CHILDREN' } : {}),
         ...(spec.layoutOptions || {}),
       },
       children, edges,
@@ -171,16 +216,49 @@ function legendSvg(W) {
 function toSvg(g, kindById, edgeKind, portInfo, labelById, legend) {
   const P = 6, LEG = legend ? 28 : 0;
   let body = '';
+  // ELK places a child relative to its group and an edge relative to its container
+  const abs = { root: { x: 0, y: 0 } }, leaves = [], groups = [];
+  const walk = (nodes, ox, oy) => {
+    for (const n of nodes) {
+      const a = { ...n, x: n.x + ox, y: n.y + oy };
+      abs[n.id] = a;
+      if (n.children && n.children.length) { groups.push(a); walk(n.children, a.x, a.y); }
+      else leaves.push(a);
+    }
+  };
+  walk(g.children, 0, 0);
+  const shift = (p, o) => ({ ...p, x: p.x + o.x, y: p.y + o.y });
+  const edges = g.edges.map((e) => {
+    const o = abs[e.container] || abs.root;
+    return { ...e,
+      sections: (e.sections || []).map((s) => ({ ...s, startPoint: shift(s.startPoint, o),
+        endPoint: shift(s.endPoint, o), bendPoints: (s.bendPoints || []).map((b) => shift(b, o)) })),
+      labels: (e.labels || []).map((l) => shift(l, o)) };
+  });
+  for (const n of groups) {
+    const gk = GROUP[kindById[n.id]] || GROUP.host, spec = labelById[n.id];
+    const dash = gk.dash ? ` stroke-dasharray="${gk.dash}"` : '';
+    body += `<rect x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${n.width.toFixed(1)}" height="${n.height.toFixed(1)}" rx="10" fill="${gk.fill}" stroke="${gk.stroke}" stroke-width="1.3"${dash}/>`;
+    if (spec) {
+      const lx = n.x + GROUP_PAD, ly = n.y + GROUP_PAD - 4;
+      if (spec.icon) body += iconSvg(spec.icon, lx, ly + (spec.height - ICON) / 2, gk.icon);
+      let y = ly;
+      for (const ln of spec.lines) {
+        y += ln.size >= 14 ? 18 : 14;
+        body += `<text x="${(lx + spec.iconW).toFixed(1)}" y="${(y - 4).toFixed(1)}" font-size="${ln.size}" font-weight="${ln.weight}" fill="${ln.color}">${esc(ln.text)}</text>`;
+      }
+    }
+  }
   // Merged lines per kind (so dash patterns never overlap), then arrowheads.
   for (const kind of ['flow', 'access']) {
     const segs = [];
-    for (const e of g.edges) if ((edgeKind[e.id] || 'flow') === kind) segs.push(...segmentsOf(e));
+    for (const e of edges) if ((edgeKind[e.id] || 'flow') === kind) segs.push(...segmentsOf(e));
     if (!segs.length) continue;
     const dash = kind === 'access' ? ' stroke-dasharray="5,4"' : '';
     for (const [x1, y1, x2, y2] of mergeSegments(segs))
       body += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#2C6FA6" stroke-width="1.4"${dash}/>`;
   }
-  for (const e of g.edges) {
+  for (const e of edges) {
     const access = (edgeKind[e.id] || 'flow') === 'access';
     const secs = e.sections || [];
     if (secs.length) {
@@ -196,12 +274,13 @@ function toSvg(g, kindById, edgeKind, portInfo, labelById, legend) {
       body += `<text x="${(l.x + l.width / 2).toFixed(1)}" y="${(l.y + l.height - 2).toFixed(1)}" font-size="12" fill="#15243A" text-anchor="middle">${esc(l.text)}</text>`;
     }
   }
-  for (const n of g.children) {
+  for (const n of leaves) {
     const k = KIND[kindById[n.id]] || KIND.task;
     body += `<rect x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${n.width.toFixed(1)}" height="${n.height.toFixed(1)}" rx="8" fill="${k.fill}" stroke="${k.stroke}" stroke-width="1.5"/>`;
     const lab = (n.labels || [])[0], spec = labelById[n.id];
     if (lab && spec) {
-      const cx = n.x + lab.x + lab.width / 2;
+      if (spec.icon) body += iconSvg(spec.icon, n.x + lab.x, n.y + lab.y + (lab.height - ICON) / 2, k.stroke);
+      const cx = n.x + lab.x + (lab.width + spec.iconW) / 2;
       let y = n.y + lab.y;
       for (const ln of spec.lines) {
         y += ln.size >= 14 ? 18 : 14;

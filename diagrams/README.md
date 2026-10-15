@@ -54,5 +54,10 @@ module.exports = {
 - Edge kind `flow` is a solid arrow (events/messages) labeled with the item
   type; `access` is a dashed, **bidirectional** connector (`<->`) to a resource
   port, since access is a call.
+- A node with `children` draws as a frame around them, with its title top
+  left: `kind: 'host'` is solid, `kind: 'container'` dashed. Edges may join
+  nodes of different frames.
+- `icon: '<name>'` draws `icons/<name>.svg` left of the title, in the color of
+  the box (see [`icons/README.md`](icons/README.md)).
 - Conceptual diagrams use generic kinds (`Task`, `Handler`, …). Instance
   diagrams use `instance : Class` as the node label, the SysML part-usage form.
