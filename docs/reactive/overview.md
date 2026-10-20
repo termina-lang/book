@@ -32,7 +32,7 @@ its value. A system event marks a distinguished moment in the system's life,
 the most important being the initialization event, delivered once at start-up.
 Finally, a runtime exception is emitted when the runtime detects an abnormal
 condition, such as an array index out of bounds, a signed arithmetic overflow,
-a division by zero, or an action that returns a failure. Exceptions are a source
+or a division by zero. Exceptions are a source
 of events, and the language has no try or catch construct.
 
 Each event is delivered to a single component, triggering the execution of one action.

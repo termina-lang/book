@@ -74,14 +74,13 @@ of this example is defined in a new module located at
 
         system_port : access SystemAPI;
 
-        action timeout(&priv self, _current_time : TimeVal) -> Status<i32> {
+        action timeout(&priv self, _current_time : TimeVal) {
 
             let msg : [char; 32] = "Hello, Real-Time World!";
-            let ret : Status<i32> = Success;
 
             self->system_port.println(&msg);
 
-            return ret;
+            return;
 
         }
 
@@ -101,10 +100,8 @@ the console.
 The action `timeout` constitutes the entire behavior of the task. It declares
 a fixed-length character array initialized with the message to be displayed and
 invokes the `println` procedure of the system port to print it, passing a
-reference to it. The action returns a value
-of type `Status<i32>`, one of the built-in result types of the language, which
-indicates whether the action completed successfully or encountered an error. In
-this example it always returns `Success`.
+reference to it. Like every action, it returns no value, and its body ends
+with a `return` statement written without one.
 
 ## Declaring the application architecture
 

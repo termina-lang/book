@@ -22,10 +22,9 @@ handler class CButtonHandler {
     counter_port : access ICounter;
     irq : sink u32 triggers on_press;
 
-    action on_press(&priv self, _vector : u32) -> Status<i32> {
-        let status : Status<i32> = Success;
+    action on_press(&priv self, _vector : u32) {
         self->counter_port.increment();
-        return status;
+        return;
     }
 
 };
@@ -39,34 +38,31 @@ action exactly as a task would use it.
 ## Actions, without a thread
 
 A handler's action is written like a task's: it takes `&priv self` and the value
-carried by the event, and it returns a `Status<i32>`. The difference appears in
+carried by the event, and it returns no value. The difference appears in
 the generated code. For a task, the transpiler emits a thread that loops, waits
 for events, and dispatches them to the actions. For a handler, it emits only the
 action itself:
 
 === "Termina"
     ```termina
-    action on_press(&priv self, _vector : u32) -> Status<i32> {
-        let status : Status<i32> = Success;
+    action on_press(&priv self, _vector : u32) {
         self->counter_port.increment();
-        return status;
+        return;
     }
     ```
 === "C"
     ```c
-    Status__i32 CButtonHandler__on_press(const termina__event_t * const termina__ev,
-                                         void * const termina__this,
-                                         const uint32_t termina__ignored__vector) {
+    void CButtonHandler__on_press(const termina__event_t * const termina__ev,
+                                  void * const termina__this,
+                                  const uint32_t termina__ignored__vector) {
 
         (void)termina__ignored__vector;
 
         CButtonHandler * self = (CButtonHandler *)termina__this;
 
-        const Status__i32 status = { ._variant = Status__Success };
-
         self->counter_port.increment(termina__ev, self->counter_port._that);
 
-        return status;
+        return;
 
     }
     ```

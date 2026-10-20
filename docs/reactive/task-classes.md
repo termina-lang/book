@@ -21,10 +21,9 @@ task class CSamplerTask {
     counter_port : access ICounter;
     timer : sink TimeVal triggers on_tick;
 
-    action on_tick(&priv self, _current_time : TimeVal) -> Status<i32> {
-        let status : Status<i32> = Success;
+    action on_tick(&priv self, _current_time : TimeVal) {
         self->counter_port.increment();
-        return status;
+        return;
     }
 
 };
@@ -49,12 +48,17 @@ behavior of each kind of port is the subject of a later chapter.
 
 An action is the unit of work a task performs in response to an event. It takes
 `&priv self`, or `&self` when it only reads the task's fields, followed by the
-value carried by the triggering event, and it returns a `Status<i32>` reporting
-whether it succeeded. An action runs to completion: once started, it performs its
-bounded sequence of steps and returns before the task handles another event. An
-action that never uses `self` cannot send a message, reach a resource or change
-the state of its task, so it has no effect beyond its result and the transpiler
-rejects it.
+value carried by the triggering event, and it returns no value. An action runs
+to completion: once started, it performs its bounded sequence of steps and
+returns before the task handles another event. An action that never uses `self`
+cannot send a message, reach a resource or change the state of its task, so it
+has no effect and the transpiler rejects it.
+
+Since an action returns nothing, the runtime receives no report of how it
+ended. An error that the action detects and cannot recover from is the concern
+of the application, which sends it through a channel to the task in charge of
+fault handling. The runtime exceptions are reserved for the faults that the
+generated code, the runtime and the hardware detect.
 
 Unlike a resource procedure, an action cannot be declared `&mut self`. An action
 receives `&priv self`,
@@ -72,27 +76,24 @@ the same rule.
 
 === "Termina"
     ```termina
-    action on_tick(&priv self, _current_time : TimeVal) -> Status<i32> {
-        let status : Status<i32> = Success;
+    action on_tick(&priv self, _current_time : TimeVal) {
         self->counter_port.increment();
-        return status;
+        return;
     }
     ```
 === "C"
     ```c
-    Status__i32 CSamplerTask__on_tick(const termina__event_t * const termina__ev,
-                                      void * const termina__this,
-                                      const TimeVal termina__ignored__current_time) {
+    void CSamplerTask__on_tick(const termina__event_t * const termina__ev,
+                               void * const termina__this,
+                               const TimeVal termina__ignored__current_time) {
 
         (void)termina__ignored__current_time;
 
         CSamplerTask * self = (CSamplerTask *)termina__this;
 
-        const Status__i32 status = { ._variant = Status__Success };
-
         self->counter_port.increment(termina__ev, self->counter_port._that);
 
-        return status;
+        return;
 
     }
     ```
@@ -110,8 +111,7 @@ on it. That code is a loop: the thread waits for the next event on the task's
 message queue, identifies the port the event arrived on, calls the matching
 action, and, when the action returns, goes back to waiting. Because the thread
 processes one event at a time and each action runs to completion, the events
-directed at a task are handled in sequence. If an action reports a failure, the
-loop raises the corresponding runtime exception. The internal fields the thread relies on, such as the
+directed at a task are handled in sequence. The internal fields the thread relies on, such as the
 identifier of its message queue, appear in the generated structure alongside the
 task's own ports.
 
@@ -121,9 +121,7 @@ An action may end by transferring control to another action of the same task,
 with the `continue` statement. The statement names the action to run and
 supplies its arguments, and it must be the final statement of whatever
 execution path it appears on; the transpiler rejects a `continue` that is
-followed by further statements. The result of the named action becomes the
-result of the activation, so the transpiler requires it to return the same type
-as the action that continues to it.
+followed by further statements.
 
 Chaining keeps individual actions short when a response decomposes into stages,
 each written as a separate action. The following task performs its periodic work
@@ -136,28 +134,26 @@ in `first_step` and escalates to `second_step` when a threshold is crossed:
         counter : u32;
         timer : sink TimeVal triggers first_step;
 
-        action first_step(&priv self, _t : TimeVal) -> Status<i32> {
+        action first_step(&priv self, _t : TimeVal) {
             self->counter = self->counter + 2;
             if self->counter > 10 {
                 continue self->second_step();
             } else {
-                let ret : Status<i32> = Success;
-                return ret;
+                return;
             }
         }
 
-        action second_step(&priv self) -> Status<i32> {
+        action second_step(&priv self) {
             self->counter = 0;
-            let ret : Status<i32> = Success;
-            return ret;
+            return;
         }
 
     };
     ```
 === "C"
     ```c
-    Status__i32 CChainTask__second_step(const termina__event_t * const termina__ev,
-                                        void * const termina__this) {
+    void CChainTask__second_step(const termina__event_t * const termina__ev,
+                                 void * const termina__this) {
 
         (void)termina__ev;
 
@@ -165,15 +161,13 @@ in `first_step` and escalates to `second_step` when a threshold is crossed:
 
         self->counter = 0U;
 
-        const Status__i32 ret = { ._variant = Status__Success };
-
-        return ret;
+        return;
 
     }
 
-    Status__i32 CChainTask__first_step(const termina__event_t * const termina__ev,
-                                       void * const termina__this,
-                                       const TimeVal termina__ignored__t) {
+    void CChainTask__first_step(const termina__event_t * const termina__ev,
+                                void * const termina__this,
+                                const TimeVal termina__ignored__t) {
 
         (void)termina__ignored__t;
 
@@ -183,22 +177,20 @@ in `first_step` and escalates to `second_step` when a threshold is crossed:
 
         if (self->counter > 10U) {
 
-            return CChainTask__second_step(termina__ev, self);
+            CChainTask__second_step(termina__ev, self);
+            return;
 
         } else {
 
-            const Status__i32 ret = { ._variant = Status__Success };
-
-            return ret;
+            return;
 
         }
 
     }
     ```
 
-As the generated code shows, `first_step` invokes `second_step` as a tail call
-within the same activation, and the value that `second_step` returns is the
-result of the activation. The keyword is unrelated to the loop-control
+As the generated code shows, `first_step` invokes `second_step` as its last
+operation within the same activation and returns as soon as it finishes. The keyword is unrelated to the loop-control
 statement of the same name in C.
 
 ## Instantiation

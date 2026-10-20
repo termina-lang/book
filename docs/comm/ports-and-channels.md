@@ -31,8 +31,9 @@ application is assembled, by connecting the port to a resource instance with the
 
 The same kind of port is used to reach the generic resources of the memory
 model. A port of type `access Allocator<T>` grants the use of a memory pool, one
-of type `access AtomicAccess<T>` the use of an atomic variable, and one of type
-`access AtomicArrayAccess<T; N>` the use of an atomic array; all three are
+of type `access DequeAccess<T>` the use of a deque, one of type
+`access AtomicAccess<T>` the use of an atomic variable, and one of type
+`access AtomicArrayAccess<T; N>` the use of an atomic array; all four are
 described in the chapter on memory management.
 
 ## Sink ports
@@ -79,31 +80,28 @@ port:
         out_port : out u32;
         timer : sink TimeVal triggers tick;
 
-        action tick(&priv self, _current_time : TimeVal) -> Status<i32> {
-            let status : Status<i32> = Success;
+        action tick(&priv self, _current_time : TimeVal) {
             self->out_port.send(42);
-            return status;
+            return;
         }
     };
     ```
 === "C"
     ```c
-    Status__i32 CProducer__tick(const termina__event_t * const termina__ev,
-                                void * const termina__this,
-                                const TimeVal termina__ignored__current_time) {
+    void CProducer__tick(const termina__event_t * const termina__ev,
+                         void * const termina__this,
+                         const TimeVal termina__ignored__current_time) {
 
         (void)termina__ignored__current_time;
 
         CProducer * self = (CProducer *)termina__this;
-
-        const Status__i32 status = { ._variant = Status__Success };
         {
             const uint32_t msg = 42U;
             termina__out_port__send(termina__ev, self->out_port,
                                     (const void *)&msg);
         }
 
-        return status;
+        return;
 
     }
     ```
@@ -128,27 +126,24 @@ and a `triggers` clause:
         total : u32;
         in_port : in u32 triggers handle;
 
-        action handle(&priv self, msg : u32) -> Status<i32> {
-            let status : Status<i32> = Success;
+        action handle(&priv self, msg : u32) {
             self->total = self->total + msg;
-            return status;
+            return;
         }
     };
     ```
 === "C"
     ```c
-    Status__i32 CConsumer__handle(const termina__event_t * const termina__ev,
-                                  void * const termina__this, const uint32_t msg) {
+    void CConsumer__handle(const termina__event_t * const termina__ev,
+                           void * const termina__this, const uint32_t msg) {
 
         (void)termina__ev;
 
         CConsumer * self = (CConsumer *)termina__this;
 
-        const Status__i32 status = { ._variant = Status__Success };
-
         self->total = self->total + msg;
 
-        return status;
+        return;
 
     }
     ```

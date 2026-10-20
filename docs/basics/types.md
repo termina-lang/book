@@ -382,6 +382,28 @@ initializer:
                                 .RxComplete = { ._0 = 256U } };
     ```
 
+An enum variant or a struct initializer can also be passed directly as the
+argument of a call, without first declaring a variable to hold it. The
+transpiler types the initializer against the type of the parameter, as it does
+with the initializer of a declaration. A C initializer list is only valid in a
+declaration, so in an argument the transpiler writes it as a compound literal,
+the same initializer preceded by its type in parentheses:
+
+=== "Termina"
+    ```termina
+    self->gpio.write_pin({port = 1, pin = 3}, GPIOPinState::High);
+    ```
+=== "C"
+    ```c
+    self->gpio.write_pin(termina__ev, self->gpio._that,
+                         (GPIOPinId){ .pin = 3U, .port = 1U },
+                         (GPIOPinState){ ._variant = GPIOPinState__High });
+    ```
+
+The transpiler rejects an initializer anywhere other than a declaration, the
+right-hand side of an assignment or the argument of a call, for instance as an
+operand of an arithmetic expression.
+
 ## Constants and Constant Expressions
 
 Programs frequently need named values that do not change: error codes, array
@@ -693,15 +715,14 @@ variants:
     if (rejected) {
 
         status._variant = Status__Failure;
-        status.Failure._0 = ACCEPTANCE_ERROR;
+        status.Failure._0 = 4L;
 
     }
     ```
 
 Since only the `Failure` variant carries data, `Status` fits operations whose
 caller needs to know whether they succeeded and needs details only when they
-fail. In Termina, `Status<i32>` is the standard return type for actions in
-tasks and handlers.
+fail.
 
 ### Result
 

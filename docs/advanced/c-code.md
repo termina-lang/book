@@ -85,7 +85,7 @@ runs once the call is made:
         boots : u32;
         load_port : sink usize triggers load;
 
-        action load(&priv self, entry : usize) -> Status<i32> {
+        action load(&priv self, entry : usize) {
             self->boots = self->boots + 1;
             jump_to_image(entry);
         }
@@ -94,8 +94,8 @@ runs once the call is made:
     ```
 === "C"
     ```c
-    Status__i32 CLoader__load(const termina__event_t * const termina__ev,
-                              void * const termina__this, const size_t entry) {
+    void CLoader__load(const termina__event_t * const termina__ev,
+                       void * const termina__this, const size_t entry) {
 
         (void)termina__ev;
 

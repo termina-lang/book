@@ -18,8 +18,7 @@ them requires an import, and their names cannot be redefined.
 |:-----|:---------|:--------|
 | `TimeVal` | `tv_sec`, `tv_usec` | Time representation |
 | `SysPrintBase` | `Decimal`, `Hexadecimal` | Numeric base for the print services |
-| `Exception` | `EActionFailure`, `EMsgQueueSendError`, `EMsgQueueRecvError`, `EArrayIndexOutOfBounds`, `EArraySliceOutOfBounds`, `EArraySliceNegativeRange`, `EArraySliceInvalidRange`, `EShiftAmountOutOfBounds`, `EArithmeticOverflow`, `EDivisionByZero`, `ERuntimeFailure`, `EProcessorFault`, `EKernelFailure`, `EStackOverflow` | Runtime exception delivered by `system_except` |
-| `ExceptSource` | `Task(usize)`, `Handler(usize)` | The entity whose action failed, in `EActionFailure` |
+| `Exception` | `EMsgQueueSendError`, `EMsgQueueRecvError`, `EArrayIndexOutOfBounds`, `EArraySliceOutOfBounds`, `EArraySliceNegativeRange`, `EArraySliceInvalidRange`, `EShiftAmountOutOfBounds`, `EArithmeticOverflow`, `EDivisionByZero`, `ERuntimeFailure`, `EProcessorFault`, `EKernelFailure`, `EStackOverflow` | Runtime exception delivered by `system_except` |
 
 `ERuntimeFailure(u32, i32)` reports a failure of the runtime itself, which the
 application cannot handle. The first value is the operation that failed:
@@ -33,6 +32,7 @@ application cannot handle. The first value is the operation that failed:
 | Returning a block to its pool | 4 |
 | Dispatching an event to the action of a task | 5 |
 | Dispatching an interrupt to its handler | 6 |
+| Putting a box into a deque | 7 |
 
 The `i32` that `ERuntimeFailure`, `EMsgQueueSendError` and `EMsgQueueRecvError`
 carry is the cause of the failure, with the same value on every operating
@@ -52,6 +52,7 @@ system:
 | The task cannot be made ready to run | 209 |
 | The address is not the start of a block of the pool | 210 |
 | No handler is registered for the interrupt | 211 |
+| The deque is full | 212 |
 | Any other error of the operating system | 999 |
 
 Three variants report faults that the runtime does not detect by itself but
@@ -84,6 +85,7 @@ Instances of these classes are declared in the application module:
 | Class | Declaration | Access port type |
 |:------|:------------|:-----------------|
 | `Pool<T; N>` | `resource p : Pool<T; N>;` | `access Allocator<T>` |
+| `Deque<T; N>` | `resource d : Deque<T; N>;` | `access DequeAccess<T>` (one element only) |
 | `Atomic<T>` | `resource a : Atomic<T> = { value = ... };` | `access AtomicAccess<T>` |
 | `AtomicArray<T; N>` | `resource a : AtomicArray<T; N> = { values = [...] };` | `access AtomicArrayAccess<T; N>` |
 
@@ -92,6 +94,7 @@ Each access port type offers the following operations:
 | Port type | Operations |
 |:----------|:-----------|
 | `Allocator<T>` | `alloc(&mut Option<box T>)`, `free(box T)` |
+| `DequeAccess<T>` | `take(&mut Option<box T>)`, `put(box T)`, `put_front(box T)`, `try_put(box T, &mut Option<box T>)`, `replace(box T, &mut Option<box T>)` |
 | `AtomicAccess<T>` | `load(&mut T)`, `store(T)` |
 | `AtomicArrayAccess<T; N>` | `load_index(usize, &mut T)`, `store_index(usize, T)` |
 

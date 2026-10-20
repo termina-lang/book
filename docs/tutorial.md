@@ -993,14 +993,12 @@ The task will be defined in the file `src/tasks/housekeeping.fin`:
 
         timer : sink TimeVal triggers hk_timeout;
 
-        action hk_timeout(&priv self, _current_time : TimeVal) -> Status<i32> {
-
-            let status : Status<i32> = Success;
+        action hk_timeout(&priv self, _current_time : TimeVal) {
 
             self->hk_subsystem_port.update_params();
             self->hk_subsystem_port.do_housekeeping();
 
-            return status;
+            return;
             
         }
 
@@ -1013,7 +1011,7 @@ The field `timer` is an event sink that receives periodic events from a timer em
 
 The action `hk_timeout()` constitutes the main logic of the task. When triggered, it calls the `update_params()` and `do_housekeeping()` procedures on the connected housekeeping subsystem. The first procedure updates the system data pool with the latest sensor readings, while the second determines whether it is time to send a housekeeping telemetry packet based on the configured interval.
 
-The action returns a value of type `Status<i32>`, which indicates whether it completed successfully or encountered an error. In this example, it always returns `Success`. 
+Like every action in Termina, `hk_timeout()` returns no value, and its body ends with a `return` statement written without one.
 
 Once the `CHKTask` class has been defined in `src/tasks/housekeeping.fin`, the housekeeping task must be instantiated in the main module `app/app.fin`. The task module is first imported at the top of the file:
 
@@ -1068,9 +1066,7 @@ The task is defined in the file `src/tasks/manager.fin`, whose contents are as f
         tc_pool_port : access Allocator<TCDescriptor>;
         in_tc_channel : in box TCDescriptor triggers process_tc;
 
-        action process_tc(&priv self, tc : box TCDescriptor) -> Status<i32> {
-
-            let status : Status<i32> = Success;
+        action process_tc(&priv self, tc : box TCDescriptor) {
 
             // Process incoming telecommands here
             var tc_accept : Status<u32> = accept_tc(&tc);
@@ -1088,7 +1084,7 @@ The task is defined in the file `src/tasks/manager.fin`, whose contents are as f
 
             self->tc_pool_port.free(tc);
 
-            return status;
+            return;
 
         }
 
@@ -1110,8 +1106,6 @@ A match statement is used to handle the two possible cases explicitly:
 
 Once processing is complete, the task releases the telecommand object by calling `self->tc_pool_port.free(tc)`. This operation returns the memory block to `tc_pool`, where it becomes available to the next allocation.
 
-The action then returns a `Status<i32>` value indicating the success of its execution. In this example, it always returns `Success`.
-
 ### The keyboard interrupt handler
 
 The keyboard interrupt handler is a reactive component that runs whenever input data become available from the standard input stream. In Termina, a handler is an active entity executed immediately in response to an external event, typically an interrupt. Handlers are designed for short, time-critical actions that must execute quickly and deterministically before returning control to the system scheduler.
@@ -1131,9 +1125,7 @@ The handler is defined in a new module located at `src/handlers/kbdhandler.fin`,
         in_kbd_irq : sink u32 triggers receive_tc;
         tc_channel_out : out box TCDescriptor;
 
-        action receive_tc(&priv self, _vector : u32) -> Status<i32> {
-
-            var status : Status<i32> = Success;
+        action receive_tc(&priv self, _vector : u32) {
 
             var opt_tc_desc : Option<box TCDescriptor> = None;
             
@@ -1151,12 +1143,11 @@ The handler is defined in a new module located at `src/handlers/kbdhandler.fin`,
 
                 }
                 case None => {
-                    status = Failure(-1);
+                    // No descriptor available: the input is left unread
                 }
             }
-            
 
-            return status;
+            return;
             
         }
 
@@ -1175,9 +1166,7 @@ The action `receive_tc()` implements the logic executed upon each interrupt. It 
 - If the allocation succeeds (`Some(tc_desc)`), the handler reads up to 256 characters from the system input into the descriptor’s `payload` field and stores the number of valid characters in `size`. Then:
     - If at least one character has been read, the descriptor is sent through `tc_channel_out` to the manager task.
     - If no characters have been read, the descriptor is released back to the pool using `free()`.
-- If the allocation fails (`None`), the action sets the status to `Failure(-1)`.
-
-Finally, the action returns a `Status<i32>` value, which is `Success` unless the allocation fails.
+- If the allocation fails (`None`), the handler does not read the input, and the telecommand is lost. An action returns no value, so an application that must report the loss sends a message to a task in charge of fault handling.
 
 ## Deploying the remaining components
 

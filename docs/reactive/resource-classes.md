@@ -113,6 +113,11 @@ runs between the two calls, with the resource held for its exclusive use. The
 fields of the resource are reached through `self` with the arrow operator, as in
 `self->count`.
 
+A procedure may also receive a block of memory from its caller, or hand one
+back to it through a parameter of type `&mut Option<box T>`. The rules for these
+parameters are set out in the chapter on
+[memory management](../comm/memory.md#boxes-and-procedures).
+
 ## Methods
 
 A method is a helper internal to the resource class. Unlike a procedure, it does

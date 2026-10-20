@@ -110,7 +110,7 @@ is accepted when the project targets `freertos10-stm32l432-nucleol432kc` and
 rejected when it targets `posix-gcc`:
 
 ```text
-error [SE-218]: reserved identifier.
+error [SE-213]: reserved identifier.
 → src/lib/util.fin:1:1
   │
 1 │ function index(x : u32) -> u32 { return x; }

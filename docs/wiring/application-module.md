@@ -25,15 +25,23 @@ resource counter : CCounter = {
 };
 ```
 
-The pools and channels of the memory and communication models are instances of
-built-in types, and they carry no fields to initialize. A pool states the type
-and number of its blocks, and a channel the type and capacity of its queue:
+The pools, deques and channels of the memory and communication models are
+instances of built-in types, and they carry no fields to initialize. A pool
+states the type and number of its blocks, a deque the type of the blocks it
+keeps and how many it can hold, and a channel the type and capacity of its
+queue:
 
 ```termina
 resource sample_pool : Pool<Sample; 8>;
 
+resource pending_samples : Deque<Sample; 4>;
+
 channel samples : MsgQueue<box Sample; 8>;
 ```
+
+Unlike a pool, which any number of entities may use, a deque is connected to
+exactly one task, handler or resource, as the chapter on
+[memory management](../comm/memory.md#deques) describes.
 
 An emitter is the source of the events that drive the system. A periodic timer is
 declared from the built-in `PeriodicTimer` type, with the interval between its
@@ -107,8 +115,7 @@ may be connected to `system_init` or to the runtime exception source,
 `system_except`, and the transpiler rejects a task wired to either of them.
 
 The runtime restarts the system as soon as the action of the handler connected
-to `system_except` returns, so the action returns nothing and omits its return
-type. It may record the cause of the exception. A message sent from it would
+to `system_except` returns. The action may record the cause of the exception. A message sent from it would
 reach a task that never runs again, so the action may not send one. The restart
 that follows the action is the only exit of the exception path, so the action
 may contain neither a `reboot` nor a call to a `noreturn` function:
