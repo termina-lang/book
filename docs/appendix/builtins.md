@@ -126,7 +126,7 @@ through a port declared `access SystemAPI` and wired with
 
 | Group | Procedures | Typical call |
 |:------|:-----------|:-------------|
-| Time | `clock_get_uptime`, `delay_in` | `clock_get_uptime(&mut now)` |
+| Time | `clock_get_uptime` | `clock_get_uptime(&mut now)` |
 | Output | `print`, `println`, `print_char` | `println(&msg)` |
 | Output (numeric) | `print_<T>` and `println_<T>` for every integer type, plus `print_f32/f64` and `println_f32/f64` | `println_u32(value, base)` |
 | Input | `read` | `read(&mut buf, &mut nread)` |

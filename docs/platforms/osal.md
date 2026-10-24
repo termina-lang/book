@@ -40,7 +40,7 @@ runtime-provided `system_entry` resource that the installation and
 hello-world chapters introduced. Its procedures fall into three groups:
 
 - **Time**. `clock_get_uptime` returns the elapsed time since boot as a
-  `TimeVal`, and `delay_in` suspends the caller for a given interval.
+  `TimeVal`.
 - **Console output**. `print` and `println` write a character array;
   `print_char` writes a single character; and a family of
   `print_<type>`/`println_<type>` procedures covers every integer type, with
