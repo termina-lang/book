@@ -33,9 +33,14 @@ nav:
     - Memory-Mapped I/O: advanced/memory-mapped-io.md
     - Calling C Code: advanced/c-code.md
     - Platforms and the OSAL: platforms/osal.md
+    - posix-gcc: platforms/posix-gcc.md
+    - NUCLEO-L432KC: platforms/nucleo-l432kc.md
+    - Nexys A7: platforms/nexys-a7.md
+    - PYNQ-Z2: platforms/pynq-z2.md
   - Tooling:
     - Project Structure and Build System: tooling/project-structure.md
     - Debugging: tooling/debugging.md
+    - Running Tests: tooling/testing.md
   - Appendix:
     - A. Keywords: appendix/keywords.md
     - B. Operators and Symbols: appendix/operators.md

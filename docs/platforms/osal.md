@@ -69,35 +69,16 @@ Termina currently supports four platforms:
 
 The `posix-gcc` platform runs Termina applications on a conventional
 Unix-like host, which makes it the usual choice for prototyping and
-functional validation. Its OSAL does not simply map tasks onto host threads:
-it implements a single-core, fixed-priority preemptive scheduler of its own on
-top of POSIX: each task is a pthread, but the OSAL keeps per-priority ready queues and suspends and
-resumes the threads explicitly, so that at any instant exactly one task runs,
-chosen by the same policy an RTOS would apply. Interrupts are emulated with
-POSIX signals, and a timer signal drives the system tick. The keyboard
-interrupt of the demos is raised by an auxiliary thread that watches the
-standard input and signals the process; the signal handler then runs with
-scheduling suspended, as an interrupt service routine would. The
-interrupt-disabling protection that resources may require becomes the
-blocking of those signals. The emulation preserves the scheduling logic of
-the reactive model, including preemption and priority order, but not its
-timing: the host decides when the process runs, so `posix-gcc` validates
-functionality and sequencing, not deadlines.
+functional validation; it preserves the scheduling logic of the reactive
+model, but not its timing. On the embedded platforms the build produces an
+image to be loaded on the board, and tasks are scheduled by the RTOS with the
+priorities declared in the application module.
 
-The `rtems5-leon3sf-nexysa7` platform targets the LEON3, a SPARC V8 processor
-widely used in European space missions, running RTEMS 5 on the Digilent
-Nexys A7 development board. The processor of that board has no floating-point
-unit, so the platform compiles for soft-float; the `sf` in its name comes from
-the Gaisler board support package it uses, `leon3_sf`. The
-`rtems6-zynq7000-pynqz2` platform targets the Zynq-7000, a system-on-chip with two Arm Cortex-A9 cores, running RTEMS 6 on
-the PYNQ-Z2 board; RTEMS is built there in its single-processor configuration,
-so the application runs on one of the two cores. The
-`freertos10-stm32l432-nucleol432kc` platform targets the STM32L432
-microcontroller running FreeRTOS 10 on the NUCLEO-L432KC board, representative
-of the small Arm-based controllers found in instrumentation and robotics. On
-the embedded platforms the build produces an image to be loaded on the board,
-and tasks are scheduled by the RTOS with the priorities declared in the
-application module.
+Each platform has a page of its own, which describes its execution model or
+its board, the servers that debug it from the host, and how its programs and
+its tests are loaded: [posix-gcc](posix-gcc.md),
+[NUCLEO-L432KC](nucleo-l432kc.md), [Nexys A7](nexys-a7.md) and
+[PYNQ-Z2](pynq-z2.md).
 
 The platform is selected per project, in `termina.yaml`, and the chapter on
 the build system describes how the generated `Makefile` invokes the

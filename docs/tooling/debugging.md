@@ -114,9 +114,12 @@ the host, which has the USB connection to the debug probe of the board:
 
 | Platform | GDB server on the host | Default port |
 |---|---|---|
-| `rtems5-leon3sf-nexysa7` | [GRMON](https://www.gaisler.com/products/grmon3) | 2222 |
-| `rtems6-zynq7000-pynqz2` | `hw_server` of [AMD Vitis](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vitis.html) | 3000 |
-| `freertos10-stm32l432-nucleol432kc` | `ST-LINK_gdbserver` of [STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html) | 61234 |
+| [`rtems5-leon3sf-nexysa7`](../platforms/nexys-a7.md) | [GRMON](https://www.gaisler.com/products/grmon3) | 2222 |
+| [`rtems6-zynq7000-pynqz2`](../platforms/pynq-z2.md) | `hw_server` of [AMD Vitis](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vitis.html) | 3000 |
+| [`freertos10-stm32l432-nucleol432kc`](../platforms/nucleo-l432kc.md) | `ST-LINK_gdbserver` of [STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html) | 61234 |
+
+The page of each platform gives the command that starts its server and what
+the board needs before a program is loaded.
 
 ![Debugging on a board from the Dev Container](../diagrams/remote-debugging.svg){ .diagram }
 
@@ -129,14 +132,13 @@ and at the port of the table. Before each session, VS Code asks for the
 address of the server, with that one as the default, so that a server on
 another machine or port can be given. Once connected, the `load` command writes
 the program to the board.
-
 On a Linux host with `ufw`, the default policy drops the connections that come
 from the containers through `docker0`, and `gdb-multiarch` cannot reach the
 server. The following rule opens the default ports of the three servers on the
-bridge:
+bridge, and the one of the XSDB server that `termina test` uses on the PYNQ:
 
 ```bash
-$ sudo ufw allow in on docker0 to any port 2222,3000,61234 proto tcp
+$ sudo ufw allow in on docker0 to any port 2222,3000,3122,61234 proto tcp
 ```
 
 A server started on another port needs that port in the rule.

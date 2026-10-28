@@ -169,11 +169,10 @@ Rule 11.5 that come from the way the generated code is built.
 
 The `posix-gcc` platform builds the application for a conventional Unix-like
 host, using the system's own compiler, and is intended for development and
-validation. The embedded platforms are `rtems5-leon3sf-nexysa7`, for the LEON3
-processor under RTEMS 5; `rtems6-zynq7000-pynqz2`, for the Zynq-7000 of the
-PYNQ-Z2 board under RTEMS 6; and `freertos10-stm32l432-nucleol432kc`, for the
-STM32L432 microcontroller under FreeRTOS 10. The platform is chosen when the
-project is created, with the
+validation. The embedded platforms are `rtems5-leon3sf-nexysa7`,
+`rtems6-zynq7000-pynqz2` and `freertos10-stm32l432-nucleol432kc`, which the
+chapter on platforms and the OSAL describes with a page for each one. The
+platform is chosen when the project is created, with the
 `--platform` option of the `new` command, or changed afterwards by editing the
 `platform` field in `termina.yaml`. Each target beyond `posix-gcc` requires its
 cross-toolchain to be installed, as described in the chapter on installation.
