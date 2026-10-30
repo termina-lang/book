@@ -120,35 +120,67 @@ on. The action of the handler attending `system_except` may not call a
 
 ## The C code of a project
 
-The C code of a project is kept in an `extern` directory at its root and listed
-in the `extern` section of `termina.yaml`. The C source files are compiled with
-the generated code for the selected platform. A static library, by contrast, is
-compiled for one processor and one floating-point convention, so the libraries
-are listed per platform:
+The C code of a project is kept in an `extern` directory at its root, with the
+C source files in `extern/src`, their headers in `extern/include` and the static
+libraries in `extern/lib/<platform>`. The `extern` section of `termina.yaml`
+lists these files under the module that declares the extern functions they
+implement, with the module named as in an `import`. For example, the C code of
+a function `crc16` declared in `src/utils/crc.fin` is listed under `utils.crc`:
 
 ```yaml
 extern:
-  sources:
-    - crc.c
-  libraries:
-    rtems5-leon3sf-nexysa7:
-      - leon3sf/libmcs.a
+  utils.crc:
+    sources:
+      - crc.c
+    headers:
+      - crc_tables.h
+    libraries:
+      rtems5-leon3sf-nexysa7:
+        - libmcs.a
 ```
 
-The paths are relative to the `extern` directory. The build stops if a C source
-file in the directory is not listed, which would leave it out of the build, or
-if a listed file does not exist. When a project lists libraries, the build also
-stops if none is listed for the platform being built. The C source files
-include the headers that the transpiler generates from the modules declaring
-their functions, and the headers of the C library.
+The sources are relative to `extern/src`, the headers to `extern/include` and
+the libraries to `extern/lib/<platform>`. The name of a file may contain a `*`,
+written between quotes as in `"spi/*.c"`, and then lists every file of that
+folder whose name matches it. The C source files are compiled with the
+generated code for the selected platform. A static library, by contrast, is
+compiled for one processor and one floating-point convention, so the libraries
+are listed per platform.
+
+Extern functions are declared in the modules of `src`. The application module
+has no entry in the `extern` section and cannot declare them. The C code of the
+modules of a test is listed in the `extern` section of the entry of the test in
+`termina.yaml`, and its files are kept in the `extern` directory of the test.
+
+The files listed under a module are built only when the build loads that
+module, and a file listed under several modules is built once. The C source
+files include the headers that the transpiler generates for their modules,
+which exist only for the modules of the build, together with the headers of
+`extern/include` and those of the C library. The headers of `extern/include`
+precede the generated ones in the search path.
+
+The build stops when:
+
+- a file of the `extern` directory is not in the folder for its type, or is not
+  listed, which would leave it out of the build;
+- a listed file does not exist, or a pattern matches no file;
+- an entry names something other than a module of its folder that declares an
+  extern function;
+- a module that the build loads declares an extern function and has no entry;
+- a module that the build loads lists libraries, none of them for the platform
+  being built;
+- a header of `extern/include` has the path of a header that the transpiler
+  generates, which the C code of the project would include in place of the
+  generated one.
 
 ## Linking the C code
 
-The build copies the listed files to the output folder and links all the C code
-of the project into a single relocatable object, in which only the extern
-functions remain global. The other functions of the C sources and of the
-libraries become local to that object, so their names cannot collide with the
-generated code, with the runtime or with each other. Linking the object also
+The build copies the files listed under the modules that it loads to the output
+folder and links all the C code of the project into a single relocatable
+object, in which only the extern functions remain global. The other functions
+of the C sources and of the libraries become local to that object, so their
+names cannot collide with the generated code, with the runtime or with each
+other. Linking the object also
 checks it, and the build stops when:
 
 - a global symbol is defined both by a C source file and by a library;
