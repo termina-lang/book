@@ -186,9 +186,10 @@ binary, or the log of GDB on a board, is written to `test.log`.
 ## Tests on posix-gcc
 
 On `posix-gcc`, the runner starts the binary of the test as a process of the
-host or, with the option `--executor gdb`, under the native `gdb`, which adds
-the backtrace of an exception to the report. The [page of the
-platform](../platforms/posix-gcc.md) describes both executors.
+host or, with the option `--with-gdb`, under the native `gdb`, which adds the
+backtrace of an exception to the report. The [page of the
+platform](../platforms/posix-gcc.md) gives the hosts where `gdb` cannot run
+the tests.
 
 ## Tests on a board
 

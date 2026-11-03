@@ -32,11 +32,11 @@ and from Visual Studio Code, inside the Dev Container or on the host.
 
 The runner of `termina test` starts the binary of a test as a process of the
 host, once for all the cases or once per case with `--isolated`. With
-`--executor gdb` it runs the binary under the native `gdb` instead, which
-adds the backtrace of an exception to the report:
+`--with-gdb` it runs the binary under the native `gdb` instead, which adds
+the backtrace of an exception to the report:
 
 ```bash
-$ termina test hk_fdir --platform posix-gcc --executor gdb
+$ termina test hk_fdir --platform posix-gcc --with-gdb
 ```
 
 The container image ships `gdb`. On macOS with Apple Silicon `gdb` cannot
