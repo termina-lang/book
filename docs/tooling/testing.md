@@ -200,7 +200,7 @@ the scenario, is an ordinary task class with access ports connected to
 provides `finish()`. The scenario is started by `system_init`, through a
 handler that sends the time of the event to a channel read by the scenario:
 
-```
+```termina
 handler class CStarter {
     init_ev : sink TimeVal triggers go;
     start_out : out TimeVal;
