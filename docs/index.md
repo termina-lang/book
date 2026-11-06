@@ -49,7 +49,7 @@ second, and then builds and runs the program step by step.
 | [The Reactive Model](reactive/overview.md) | Tasks, handlers, and resources: the components of a Termina system. |
 | [Communication and Memory](comm/ports-and-channels.md) | Ports, channels, message passing, and deterministic memory management. |
 | [Systems and Platforms](wiring/application-module.md) | Assembling the application module, writing device drivers with memory-mapped I/O, and the platforms and OSAL the system runs on. |
-| [Tooling](tooling/project-structure.md) | Project layout, the build system, and debugging. |
+| [Tooling](tooling/project-structure.md) | Project layout, the build system, packages and dependencies, debugging, and tests. |
 | [Appendix](appendix/keywords.md) | Reference tables: keywords, operators, built-in types, conventions. |
 
 ## Project links

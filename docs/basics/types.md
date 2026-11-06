@@ -431,7 +431,9 @@ an actual symbol that can be inspected during debugging.
 Runtime constants are typically used for error codes, status identifiers, and
 other fixed parameters that are referenced throughout the application. A
 `const` can be used anywhere a value of its type is expected, and a constant of
-an integer type also as an array size. Where the program reads the value of an
+an integer type also as an array size. The value of a boolean constant may be
+a comparison of constants, or a combination of boolean constants with `&&` and
+`||`. Where the program reads the value of an
 integer or boolean constant, the transpiler writes the value itself in the
 generated code. A reference to the constant points to the object in
 `.rodata`:

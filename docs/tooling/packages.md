@@ -1,0 +1,267 @@
+# Packages and Dependencies
+
+A Termina project can use the source modules of other projects. The project
+that publishes them is a library, and each published version of it is
+identified by the URL of its git repository and a tag. This chapter describes
+how a library publishes its modules, how a project declares the libraries it
+depends on, and how the transpiler fetches them, records their exact version
+and keeps a copy of them inside the project.
+
+## Libraries
+
+A library is a project with an `exports` section in its manifest and no `app/`
+directory. The `exports` section lists the module prefixes that the library
+owns. A prefix is the dotted path of a directory or a module under `src/`, and
+the library owns every module below it:
+
+```yaml
+project:
+  name: "acme_drivers"
+  version: 0.2.0
+  manifest-version: 1
+
+exports:
+  - drivers.acme
+```
+
+With this manifest, the module `src/drivers/acme/uart.fin` is published as
+`drivers.acme.uart`, and every other module under `src/drivers/acme/` is
+published as well. The first segment of a prefix may be shared by several
+libraries. For example, a library for the peripherals of one vendor may export
+`drivers.acme` and a library for those of another vendor `drivers.other`, and an
+application can depend on both, since their subtrees do not overlap. Two
+prefixes overlap when one of them contains the other, as `drivers` and
+`drivers.acme` do, and the transpiler rejects two overlapping prefixes anywhere
+in the dependencies of a project, the project itself included. A prefix that
+contains no module is rejected too, since it usually comes from a misspelling.
+
+The exported modules of a library may import other exported modules of the
+same library and the exported modules of the libraries it depends on, and
+nothing else. A consumer of the library compiles only its exported modules, so
+an import of any other module would fail in the consumer. Modules outside the
+prefixes, such as helpers shared by the tests of the library, may still live
+under its `src/`, where its own tests import them and no consumer sees them.
+Since there is no application to build, `termina build` in a library checks
+its exported modules without generating code, and builds its tests only when
+they are selected with `--test`, `--tests` or `--all`.
+
+A version of a library is published by creating a tag in its repository and
+pushing it. The transpiler does not read the `version` of the manifest, so the
+tag is the only version that a consumer sees. The releases of Termina itself
+use tags of the form `vMAJOR.MINOR.PATCH`, such as `v0.2.0`.
+
+## Adding a dependency
+
+The `add` command adds a dependency to the project. It takes the `https://`
+URL of the repository and the tag of the version:
+
+```bash
+$ termina add https://github.com/acme/acme-drivers v0.2.0
+```
+
+The command resolves the tag to its commit, clones the repository with the
+`git` of the system, and checks the library: its manifest, its exported
+prefixes against those of the project and of the rest of its dependencies, and
+the dependencies of the library itself, which are fetched and checked in the
+same way. When every check passes, it writes the dependency in the
+`dependencies` section of `termina.yaml`, the exact resolution of every library
+in `termina.lock`, and a copy of each library in `vendor/`. When any check
+fails, it writes nothing. The entry it adds to the manifest is the
+following:
+
+```yaml
+dependencies:
+  - git: https://github.com/acme/acme-drivers
+    rev: "v0.2.0"
+```
+
+The `rev` is always a tag. A branch would change its commit over time, so the
+same manifest would build different code on different days, and a commit hash
+is reproducible but tells nothing to the reader of the manifest. A library
+whose version has to be pinned at a commit without a tag is tagged first. The
+URL is always an `https://` one, so that a public library can be fetched
+without credentials by every consumer, including a continuous integration job.
+
+The option `--test` adds a dependency to a single test instead of the project:
+
+```bash
+$ termina add https://github.com/acme/ccsds-fixtures v0.1.0 --test tc_decoder
+```
+
+The dependency is then written in the `dependencies` of that test in
+`termina.yaml`, and only the build of that test uses it. A test double or a
+generator of test data is declared in this way, so it never appears among the
+dependencies of the application.
+
+Once added, the modules of a dependency are imported like those of the project,
+by their full dotted path. The URL of the library does not appear in the
+source code:
+
+```termina
+import drivers.acme.uart;
+```
+
+## The lock file and the vendor directory
+
+The file `termina.lock` records, for every library in the dependencies of the
+project, those of its tests and those of each library, the tag requested, the
+commit the tag resolved to and a hash of the content copied to `vendor/`. The
+transpiler writes it and it is never edited by hand:
+
+```yaml
+# termina.lock: generated by termina, do not edit. Commit it with vendor/.
+version: 1
+packages:
+  - git: https://github.com/acme/acme-drivers
+    rev: "v0.2.0"
+    resolved-rev: 9876543210fedcba9876543210fedcba98765432
+    content-hash: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+```
+
+The manifest lists only the direct dependencies of the project. A library that
+enters the build because another library depends on it appears only in the
+lock, the one file that records the exact version of every library that the
+program contains.
+
+The `vendor` directory holds a copy of each library of the lock, in a
+subdirectory named after its URL, such as
+`vendor/github.com/acme/acme-drivers/`. Each copy contains the exported modules
+of the library, its manifest and its C code, and nothing else. Both
+`termina.lock` and `vendor/` are committed together with the project, so that a
+clone of the project builds without network access and without access to the
+repositories of its dependencies, and so that every change of a dependency
+appears as a change in the history of the project. Before compiling, every
+build compares the content of each copy in `vendor/` with the hash recorded in
+the lock, and stops with an error if a copy has been modified.
+
+## Updating a dependency
+
+A dependency moves to another version when its `rev` is changed in
+`termina.yaml`. The next build sees that the tag of the manifest and the tag of
+the lock differ, fetches the new version, checks it as `add` does, and rewrites
+the lock and the copy in `vendor/`. A build never fetches a dependency whose tag
+matches the lock, so a tag that is moved in the repository of a library does
+not change the build of a project that already uses it. The option `--offline`
+of `build` makes the command fail instead of fetching.
+
+The `update` command fetches the tags of the manifest again, also those that
+match the lock, and adopts the commit each one points to now. It takes the URL
+or the name of one dependency, or updates all of them when none is given, and
+it never changes `termina.yaml`. The option `--check` reports what `update`
+would change without writing anything, and fails if anything would change:
+
+```bash
+$ termina update --check
+$ termina update acme_drivers
+```
+
+## Restoring and verifying the copies
+
+The `restore` command brings back the copies in `vendor/` that do not match the
+lock, fetching from each repository the commit recorded in the lock. It does
+not read the manifest and changes no version, so it repairs a copy that has
+been edited or deleted by mistake, which is also the action that the error of a
+build with a modified copy suggests.
+
+The `verify` command checks, without network access and without writing
+anything, that every copy in `vendor/` matches its hash in the lock and that
+the lock contains exactly the libraries that the manifest requires. It fails
+on any difference, and also on a dependency on a local directory, described
+below. It is the check that a continuous integration job runs before building:
+
+```bash
+$ termina verify
+```
+
+## Private repositories
+
+A dependency in a private repository is written with its `https://` URL like
+any other, and `add`, `update` and `restore` fetch it with the credentials that
+`git` has on the machine where they run. On a native installation those are
+the credentials of the user. In Visual Studio Code, the Dev Containers extension
+forwards to the container the credential helper and the SSH agent of the host,
+so the commands work in the integrated terminal as they do on the host.
+
+A user who authenticates with an SSH key keeps the `https://` URL in the
+manifest and tells `git`, on the host, to use SSH for that server:
+
+```bash
+$ git config --global url."git@github.com:".insteadOf "https://github.com/"
+```
+
+The rule belongs to the configuration of the user and not to the project, so
+the same manifest serves those who use SSH and those who use HTTPS. The
+container image includes the SSH client and the host keys of `github.com` and
+`gitlab.com`.
+
+A disposable container started from the command line receives no credentials
+from the host. When it runs with a terminal, `git` asks there for a user name
+and a password, and the repository is fetched if the user gives a personal
+access token of the server as the password. When the clone fails for lack of
+credentials, the command prints a `git clone` command that downloads the
+repository into the
+`.termina/fetch/` directory of the project, to be run on the host, where the
+credentials are. The second run of the command in the container finds the
+clone, checks that the tag resolves to the expected commit and uses it.
+
+The copy of a private library in `vendor/` is part of the repository of the
+project, so anyone who can read the repository of the project can read the code
+of the library, and access to the repository of the project is restricted at
+least as much as access to its private dependencies. A clone of the project
+builds without access to them.
+
+## Version conflicts and overrides
+
+A library appears only once in a build, at one version, since its modules have
+the same names at every version. When two dependencies of a project require the
+same library at different tags, the transpiler reports the conflict, naming the
+library and the tag that each one requires, and writes nothing. The conflict is
+resolved by updating one of the dependencies to a version that requires the
+same tag as the other or, when that version does not exist, with an override in
+the manifest of the project:
+
+```yaml
+overrides:
+  - git: https://github.com/acme/embedded-hal
+    rev: "v0.4.0"
+```
+
+An override forces the version of a library that is already in the graph of
+dependencies, wherever it appears. Only the overrides of the root project are
+applied: those in the manifest of a dependency are ignored, with a warning,
+since a library does not decide the versions of the application that uses it.
+Every build prints each active override together with the tag it replaces, so
+that the decision stays visible while it is in the manifest.
+
+## Local directories
+
+A library under development together with the application that uses it is
+declared by its path, relative to the project:
+
+```yaml
+dependencies:
+  - path: ../acme-drivers
+```
+
+The transpiler reads the library from that directory on every build, without
+cloning it, without an entry in the lock and without a copy in `vendor/`. The
+build is therefore not reproducible from the repository of the project, and
+the transpiler treats the dependency accordingly: a deployment built with the
+`debug` profile prints a warning, a deployment built with the `release` profile
+fails, and `verify` and `deliver` refuse the project. Before a release, the
+entry is replaced by the URL and the tag of the library. In a container, the
+directory of the library has to be visible too, which means mounting the parent
+directory of both projects instead of the project alone.
+
+## Names across packages
+
+The prefixes divide the modules between the libraries, but not the names
+declared inside the modules. A function, a constant, a type or a class keeps its
+name in the generated C, so two modules that a build loads cannot declare the
+same name, even when they belong to different libraries. A build reports such a
+collision with the error of two declarations of the same name, naming the
+module of each side under `vendor/`. The names that a library exports are
+usually prefixed with the name of the library, which makes a collision with
+the names of another library unlikely. The build of a library checks the names
+of its exported modules against each other and against those of every library
+it depends on.

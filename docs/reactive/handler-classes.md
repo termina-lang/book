@@ -98,7 +98,7 @@ handler button : CButtonHandler = {
 ```
 
 Here the `irq` sink is connected to `kbd_irq`, an interrupt source that the
-`posix-gcc` platform provides when its `enable-kbd-irq` option is set, and the
+`posix-gcc` platform provides, and the
 `counter_port` to the `counter` resource. The
 connection operators and the available event sources are treated together with
 the application module later in the book.

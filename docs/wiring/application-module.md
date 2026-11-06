@@ -60,9 +60,9 @@ A task instance is declared like any other, with one addition: the
 task must carry. The priority is a constant, fixed at compile time, and a lower
 number means a higher priority. It may be written as a literal, a constant or an
 expression of constants, which the transpiler evaluates before checking it. The
-runtime reserves priority 0 for itself and 255 for the idle task, so the
-priority of an application task lies between 1 and 254, and no two tasks may
-share one. The declaration also wires each of the task's ports to a
+runtime reserves priority 0 for itself and 255 for the idle task, and priority
+254 belongs to the task that runs the cases of a test, so the priority of an
+application task lies between 1 and 253, and no two tasks may share one. The declaration also wires each of the task's ports to a
 counterpart:
 
 ```termina
@@ -141,17 +141,20 @@ other resource:
 system_port <-> system_entry
 ```
 
-The `system_entry` resource is not deployed unless it is requested, by setting
-`enable-system-port` in the project configuration, as the first example in the
-book did.
+The transpiler generates the code of `system_entry` only when an access port is
+connected to it, and likewise generates the code of a built-in event source,
+such as `system_init` or an interrupt of the platform, only when a sink port is
+connected to it. The manifest of the project therefore has no setting that
+enables them.
 
 ## Annotations
 
 The declarations in the application module may carry three annotations. The
 `#[priority(N)]` annotation, already seen, sets the scheduling priority of a
 task, and the `#[stack_size(N)]` annotation sets the size, in bytes, of the
-task's own stack; when it is omitted, the task is given a
-default stack of 4096 bytes. A task may carry both, each on its own line:
+task's own stack; when it is omitted, the task is given the default stack of
+its platform, 2048 bytes on the NUCLEO-L432KC and 4096 bytes on the other
+platforms. A task may carry both, each on its own line:
 
 ```termina
 #[priority(10)]

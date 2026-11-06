@@ -1,12 +1,13 @@
-# Platforms and the OSAL
+# The Operating System Abstraction Layer
 
 A Termina program never calls an operating system directly. The C code that
 the transpiler emits is written against a fixed interface, the Termina
 Operating System Abstraction Layer (OSAL), and each supported platform
 provides an implementation of that interface on top of its own operating
 system and toolchain. This chapter describes the resulting execution stack,
-the services the OSAL provides, and the platforms that are currently
-supported.
+the services the OSAL provides, and how the OSAL is versioned and ported. The
+platforms that implement it are listed in the chapter on
+[supported platforms](supported.md).
 
 ## The execution stack
 
@@ -24,7 +25,8 @@ each task, the timers behind the periodic emitters, the locks behind resource
 protection, and the atomic operations behind the atomic types. The transpiler
 emits calls such as `termina__msg_queue__recv` or
 `termina__resource__lock`, and the OSAL maps them onto the corresponding
-RTEMS directives, FreeRTOS API calls, or POSIX functions.
+[RTEMS](https://www.rtems.org/) directives,
+[FreeRTOS](https://www.freertos.org/) API calls, or POSIX functions.
 
 Because nothing in the generated code names the operating system underneath,
 the same application that will eventually run on a flight computer can be
@@ -36,8 +38,8 @@ platform.
 Beyond the primitives that the generated code uses internally, the OSAL
 offers a set of services that application code can call explicitly. They are
 exposed through the built-in `SystemAPI` interface, implemented by the
-runtime-provided `system_entry` resource that the installation and
-hello-world chapters introduced. Its procedures fall into three groups:
+runtime-provided `system_entry` resource that the hello-world chapter
+introduced. Its procedures fall into three groups:
 
 - **Time**. `clock_get_uptime` returns the elapsed time since boot as a
   `TimeVal`.
@@ -53,38 +55,9 @@ The time procedures exist on every platform. The console procedures exist on
 `posix-gcc` only, where they use the host terminal; the `SystemAPI` interface
 of the embedded platforms does not include them, so a call to one of them is
 rejected when a project that targets those platforms is type checked. The
-`system_entry` resource is deployed only when `enable-system-port` is set in
-`termina.yaml`, as described in the chapter on the application module.
-
-## Supported platforms
-
-Termina currently supports four platforms:
-
-| Platform | Operating system | Target | Toolchain |
-|:---------|:-----------------|:-------|:----------|
-| `posix-gcc` | POSIX emulator | Linux or macOS host | host `gcc` |
-| `rtems5-leon3sf-nexysa7` | RTEMS 5 | LEON3 (SPARC V8), soft-float | `sparc-gaisler-rtems5-gcc` (Gaisler RCC) |
-| `rtems6-zynq7000-pynqz2` | RTEMS 6 | Zynq-7000 (Arm Cortex-A9) | `arm-rtems6-gcc` (RTEMS Source Builder) |
-| `freertos10-stm32l432-nucleol432kc` | FreeRTOS 10 | STM32L432 (Arm Cortex-M4) | `arm-none-eabi-gcc` |
-
-The `posix-gcc` platform runs Termina applications on a conventional
-Unix-like host, which makes it the usual choice for prototyping and
-functional validation; it preserves the scheduling logic of the reactive
-model, but not its timing. On the embedded platforms the build produces an
-image to be loaded on the board, and tasks are scheduled by the RTOS with the
-priorities declared in the application module.
-
-Each platform has a page of its own, which describes its execution model or
-its board, the servers that debug it from the host, and how its programs and
-its tests are loaded: [posix-gcc](posix-gcc.md),
-[NUCLEO-L432KC](nucleo-l432kc.md), [Nexys A7](nexys-a7.md) and
-[PYNQ-Z2](pynq-z2.md).
-
-The platform is selected per project, in `termina.yaml`, and the chapter on
-the build system describes how the generated `Makefile` invokes the
-corresponding toolchain. The Docker image distributed by the project bundles
-the toolchains of the four platforms, so switching among them does not
-require installing anything.
+transpiler generates the code of the `system_entry` resource when the
+application module connects it to an access port, as described in the chapter
+on the application module.
 
 ## Versioning and compatibility
 

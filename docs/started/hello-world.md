@@ -40,8 +40,8 @@ hello_world/
 └── output/
 ```
 
-The file `termina.yaml` is the project's configuration file, in which the
-project name, build options, and target platform are specified. The `app`
+The file `termina.yaml` is the manifest of the project, in which the project
+name, the target platform and the build profile are specified. The `app`
 directory contains the main application module, named `app.fin` by default,
 whose role is to declare the entities that constitute the system and to define
 the way in which they are connected. The `src` directory holds the additional
@@ -147,25 +147,20 @@ which the task reaches the platform's input and output services:
     };
     ```
 
-## Enabling the system port
+## Sizing the output buffer
 
 The `system_entry` resource referenced above implements the `SystemAPI`
 interface by calling the corresponding services of the Operating System
-Abstraction Layer. It is not instantiated by default. Its deployment is controlled by a configuration
-parameter in the project's `termina.yaml` file, which must be enabled by adding
-the following lines:
+Abstraction Layer. Every program has this resource, and the transpiler
+generates its code when the application module connects it, as this one does.
+The `print` and `println` procedures of the interface take a character array of
+a fixed size, 256 by default, which must match the `[char; 32]` declared in the
+action. The size is set in `termina.yaml` by adding the following line:
 
 === "YAML"
     ```yaml
-    enable-system-port: true
     sys-print-output-buffer-size: 32
     ```
-
-When `enable-system-port` is set, the runtime instantiates and exposes the
-`system_entry` resource during system initialization, making it available for
-connection to the task's access port. The second line sets the size of the
-character array that `print` and `println` take, which must match the
-`[char; 32]` declared in the action; without it, the size defaults to 256.
 
 ## Building and running the application
 
@@ -178,14 +173,12 @@ $ termina build
 
 The `termina build` command invokes the transpiler, which validates the
 program, including its types and port connections, and translates the source
-modules into C code placed in the `output` directory. The generated code
-is then compiled with the build system provided for the `posix-gcc` platform,
-and the resulting executable is run:
+modules into C code placed in the `output/app` directory. It then compiles the
+generated code with the build system provided for the `posix-gcc` platform,
+which leaves the executable in `output/app/bin`, from where it is run:
 
 ```bash
-$ cd output
-$ make
-$ ./bin/hello_world
+$ ./output/app/bin/hello_world
 ```
 
 The program prints the message `Hello, Real-Time World!` to the console once

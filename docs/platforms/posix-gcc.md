@@ -1,9 +1,10 @@
-# posix-gcc
+# POSIX on a Linux or macOS Host
 
 The `posix-gcc` platform runs Termina applications on a conventional
 Unix-like host, Linux or macOS, which makes it the usual choice for
 prototyping and functional validation. It is built with the compiler of the
-host, so it needs no cross-toolchain.
+host, [GCC](https://gcc.gnu.org/) or a compatible one, so it needs no
+cross-toolchain.
 
 ## Execution model
 
@@ -26,7 +27,8 @@ functionality and sequencing, not deadlines.
 
 An application built for `posix-gcc` is an ordinary native program, and the
 Debugging chapter describes how to run it under `gdb`, from the command line
-and from Visual Studio Code, inside the Dev Container or on the host.
+and from Visual Studio Code, inside the Dev Container or on the host. On a
+macOS host, the Termina extension debugs it with `lldb`.
 
 ## Running tests
 

@@ -171,6 +171,13 @@ a concrete instance with one of three operators, chosen by the role of the port:
 | `<-` | a sink or input port to its source | `timer <- tick`, `in_port <- link` |
 | `->` | an output port to a channel | `out_port -> link` |
 
+A channel is connected to exactly one output port and one input port, so each
+channel has a single producer and a single consumer. The transpiler also
+follows, from each emitter, the action it triggers, the messages that action
+sends and the actions that receive them, and rejects a chain that comes back
+to an action already on it, such as two tasks that keep sending messages to
+each other, since the response to the event would never end.
+
 The `<->` operator also wires the access port of one resource to another
 resource, which lets resources be built on top of other resources. These
 connections, and the application module that contains them, are described in the

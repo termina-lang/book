@@ -2,30 +2,35 @@
 
 An application built for the `posix-gcc` platform is an ordinary native
 program, so the usual debugging tools apply to it. This chapter describes how
-to debug such an application with `gdb`, both from the command line and from Visual Studio Code, in the Docker-based setup that the
+to debug such an application with [`gdb`](https://www.sourceware.org/gdb/),
+both from the command line and from Visual Studio Code, in the Docker-based setup that the
 installation chapter recommends. The Docker image ships `gdb` for host-side
 debugging and `gdb-multiarch` for the embedded targets.
 
-With the default `release` profile, debugging operates on the generated C, not
-on the Termina source: breakpoints are set on the C functions and the inspected
-variables are those of the generated code. The translation scheme makes the
-correspondence direct. A procedure or action named `increment` of a class `CCounter` becomes the C
-function `CCounter__increment`, fields keep their names inside the generated
-structs, and each task's thread runs a function named after its class, such
-as `termina__task_entry__CSamplerTask`. The generated sources are in the
-`output/src` tree.
+The transpiler precedes each generated statement with a `#line` directive that
+names the Termina file and line it comes from. The debug information of the
+binary therefore refers to the `.fin` sources instead of the generated C, so a
+breakpoint can be placed on a line of a module. The names of the generated C
+remain those of the Termina program: a procedure or action named `increment`
+of a class `CCounter` becomes the C function `CCounter__increment`, fields keep
+their names inside the generated structs, and each task's thread runs a
+function named after its class, such as `termina__task_entry__CSamplerTask`.
+The generated sources are in the `output/app/src` tree.
 
 ## Debugging from the command line
 
-The build for `posix-gcc` compiles with debug information and without
-optimization (`-O0 -g3`), so the binary is ready for the debugger as it comes
-out of `make`. After a build, the program runs under `gdb` directly:
+The `release` profile compiles with optimization and debug information
+(`-O2 -g`), and the `debug` profile without optimization and with the
+information of macros (`-O0 -g3`). The binary of either profile can be debugged,
+although in a `release` build the optimizer may remove variables and reorder
+statements. After a build, the program runs under `gdb` directly:
 
 ```bash
-$ cd output
-$ make
-$ gdb ./bin/myapp
-(gdb) break CCounter__increment
+$ termina build
+$ gdb ./output/app/bin/hello_world
+(gdb) break hello_world.fin:11
+Breakpoint 1 at 0x663b: file src/tasks/hello_world.fin, line 11.
+(gdb) break CHelloWorldTask__timeout
 (gdb) run
 ```
 
@@ -34,77 +39,89 @@ runtime's own. The `gdb` commands `info threads` and `thread <n>` navigate
 them, and a breakpoint on an action function stops the program on whichever
 task thread executes that action.
 
-## Debugging the Termina source
+## The debug profile
 
-Setting `profile: debug` in `termina.yaml` makes the transpiler precede each
-generated statement with a `#line` directive that names the Termina file and
-line it comes from. The debug information of the binary then refers to the
-`.fin` sources instead of the generated C, so a breakpoint can be placed on a
-line of a module:
-
-```bash
-(gdb) break hello_world.fin:12
-Breakpoint 1 at 0x663b: file src/tasks/hello_world.fin, line 12.
-```
-
-The same profile defines `TERMINA__PROFILE__DEBUG` in the generated
-`config.h`. With this macro defined, the runtime stops at a breakpoint before it
-restarts the system, so the state that led to the restart, such as an
-exception, can still be inspected. On `posix-gcc` the runtime prints the backtrace and raises
-`SIGTRAP`, which stops the program under `gdb` and terminates it when no
-debugger is attached. The default profile, `release`, emits neither the `#line`
-directives nor the macro.
+Setting `profile: debug` in the `app` section of `termina.yaml`, besides
+disabling optimization, defines `TERMINA__PROFILE__DEBUG` in the generated
+`config.h`. With this macro defined, the runtime stops at a breakpoint before
+it restarts the system, so the state that led to the restart, such as an
+exception, can still be inspected. On `posix-gcc` the runtime prints the
+backtrace and raises `SIGTRAP`, which stops the program under `gdb` and
+terminates it when no debugger is attached. The `release` profile does not
+define the macro.
 
 ## Debugging inside the Dev Container
 
-For the container-based workflow, debugging requires two adjustments to the
-configuration shown in the installation chapter, both in
-`.devcontainer/devcontainer.json`. Docker blocks the `ptrace` system call by
-default, which `gdb` needs to attach to a process, so the container must be
-granted it:
+Docker blocks by default the `ptrace` system call, which `gdb` needs to control
+a process, so the `.devcontainer/devcontainer.json` that `termina new --vscode`
+writes grants it to the container. The same file lists the
+`ms-vscode.cpptools` extension, which supplies the debugger integration, next
+to the Termina extension:
 
 ```jsonc
 {
-  "name": "Termina dev container",
-  "image": "ghcr.io/termina-lang/docker-termina:latest",
-  "runArgs": ["--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"],
-  "customizations": {
-    "vscode": {
-      "extensions": ["termina-lang.termina", "ms-vscode.cpptools"]
-    }
-  },
-  "remoteUser": "vscode"
+    "name": "myapp",
+    "image": "ghcr.io/termina-lang/docker-termina:0.7",
+    "runArgs": [
+        "--cap-add=SYS_PTRACE",
+        "--security-opt", "seccomp=unconfined",
+        "--add-host=host.docker.internal:host-gateway"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": ["termina-lang.termina", "ms-vscode.cpptools"]
+        }
+    },
+    "remoteUser": "vscode"
 }
 ```
 
-The `ms-vscode.cpptools` extension supplies the debugger integration for the
-generated C. With the container rebuilt, a launch configuration in
-`.vscode/launch.json` runs the compiled binary under `gdb`:
+The `.vscode/launch.json` holds a single configuration of type `termina`,
+the same for every platform:
 
 ```jsonc
 {
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Debug (posix-gcc)",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/output/bin/myapp",
-      "cwd": "${workspaceFolder}/output",
-      "MIMode": "gdb",
-      "setupCommands": [
-        { "text": "set startup-with-shell off" }
-      ]
-    }
-  ]
+    "version": "0.2.0",
+    "configurations": [
+        { "name": "Debug", "type": "termina", "request": "launch" }
+    ]
 }
 ```
 
-In a container without a controlling terminal, `gdb` fails to launch the
-program with the message "GDB failed to set controlling terminal"; the
-`set startup-with-shell off` command avoids that failure. Breakpoints
-are then set by clicking in the generated C files under `output/src`, and the
-debugging session behaves as it would for any C program.
+When a session starts, the Termina extension builds the application with the
+`debug` profile and starts a `cppdbg` session of the C/C++ extension for the
+platform of the manifest. On `posix-gcc` the session runs the binary under
+`gdb`. Breakpoints are set by clicking on the lines of the `.fin` modules, or
+of the generated C files under `output/app/src`. The command **Run Without
+Debugging** builds the application with the profile of the manifest and runs
+it in a terminal of the editor, on `posix-gcc` only.
+
+## Debugging from Visual Studio Code without the container
+
+With a native installation, the Termina extension runs in Visual Studio Code
+on the host and uses the same `launch.json`. It requires the
+[C/C++ extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools),
+which is not installed together with the Termina extension: the first
+debugging session offers to install it when it is missing. On `posix-gcc`
+the session uses [`lldb`](https://lldb.llvm.org/) on macOS and `gdb` on
+Linux, and on the boards
+`gdb-multiarch`.
+
+The extension runs the `termina` found in the `PATH`. The settings of the
+extension, which describe the machine and therefore belong to the user
+settings rather than to the project, give another location for it and for the
+rest of the installation:
+
+| Setting | Purpose |
+|---|---|
+| `termina.path` | The `termina` executable, `termina` by default |
+| `termina.osalDir` | The folder of the OSAL, passed as `TERMINA_OSAL_DIR` |
+| `termina.toolchains.rccDir`, `termina.toolchains.rtems6Dir`, `termina.toolchains.armNoneEabiDir` | The folders of the toolchains, passed as `TERMINA_RCC_DIR`, `TERMINA_RTEMS6_DIR` and `TERMINA_ARM_NONE_EABI_DIR` |
+| `termina.debug.gdbHost` | The host of the GDB servers of the boards |
+| `termina.debug.gdbPath` | The debugger of the boards, `gdb-multiarch` by default |
+
+A setting left empty keeps the value of the environment, so a toolchain folder
+already exported in the shell does not have to be repeated.
 
 ## Debugging on a board
 
@@ -117,28 +134,34 @@ the host, which has the USB connection to the debug probe of the board:
 | [`rtems5-leon3sf-nexysa7`](../platforms/nexys-a7.md) | [GRMON](https://www.gaisler.com/products/grmon3) | 2222 |
 | [`rtems6-zynq7000-pynqz2`](../platforms/pynq-z2.md) | `hw_server` of [AMD Vitis](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vitis.html) | 3000 |
 | [`freertos10-stm32l432-nucleol432kc`](../platforms/nucleo-l432kc.md) | `ST-LINK_gdbserver` of [STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html) | 61234 |
+| [`rtems6-rv32im-spike`](../platforms/spike.md) | [OpenOCD](https://openocd.org/), connected to Spike | 3333 |
 
 The page of each platform gives the command that starts its server and what
-the board needs before a program is loaded.
+the board needs before a program is loaded. `termina platforms --json` lists,
+for each platform, the address of its server and the GDB commands that load a
+program into it.
 
 ![Debugging on a board from the Dev Container](../diagrams/remote-debugging.svg){ .diagram }
 
 The `.devcontainer/devcontainer.json` that `termina new --vscode` generates
 starts the container with `--add-host=host.docker.internal:host-gateway`,
 which maps the name `host.docker.internal` to the address of the host on the
-`docker0` bridge of Docker. For these platforms, the generated
-`.vscode/launch.json` connects `gdb-multiarch` to the GDB server at that name
-and at the port of the table. Before each session, VS Code asks for the
-address of the server, with that one as the default, so that a server on
-another machine or port can be given. Once connected, the `load` command writes
-the program to the board.
+`docker0` bridge of Docker. Inside the container, `termina platforms --json` gives
+the servers at that name and at the port of the table, and outside it at
+`localhost`. The session of the
+extension connects `gdb-multiarch` to the server of the platform and runs the
+commands that load the program. On the PYNQ-Z2, the extension first has the
+XSDB server run the script of `xsdb-init` of the manifest, as `termina test`
+does. The setting `termina.debug.gdbHost` of VS Code gives another host for
+the servers.
+
 On a Linux host with `ufw`, the default policy drops the connections that come
 from the containers through `docker0`, and `gdb-multiarch` cannot reach the
-server. The following rule opens the default ports of the three servers on the
-bridge, and the one of the XSDB server that `termina test` uses on the PYNQ:
+server. The following rule opens on the bridge the default ports of the
+servers of the table and the one of the XSDB server of the PYNQ:
 
 ```bash
-$ sudo ufw allow in on docker0 to any port 2222,3000,3122,61234 proto tcp
+$ sudo ufw allow in on docker0 to any port 2222,3000,3122,3333,61234 proto tcp
 ```
 
 A server started on another port needs that port in the rule.
@@ -155,4 +178,4 @@ toolchain different from the one expected:
 - The `latest` and `MAJOR.MINOR` tags are mutable: they move with each
   release. A project that must behave identically over time, such as the
   material of a course, should pin the exact release tag, for instance
-  `ghcr.io/termina-lang/docker-termina:v0.6.0`.
+  `ghcr.io/termina-lang/docker-termina:v0.7.0`.

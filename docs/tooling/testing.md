@@ -48,6 +48,148 @@ together with the platforms and the cases of each one. The option `--json`
 produces the same list in JSON, the format that editors read to display the
 tests.
 
+## Unit tests
+
+The command `termina new --test <name>`, run inside a project, creates
+`tests/<name>/test.fin` and adds the entry of the test to the `tests:` section
+of the manifest, with `posix-gcc` as its platform, the platform of the
+application when the project targets a board, and a timeout of 10 seconds:
+
+```bash
+$ termina new --test sampler
+```
+
+A unit test exercises one unit of the program, such as a task class, with the
+rest of the system replaced by test components. The following task class sends
+the number of each activation of its timer through an out port:
+
+```termina
+task class CSampler {
+
+    timer_ev : sink TimeVal triggers tick;
+    samples : out u32;
+
+    count : u32;
+
+    action tick(&priv self, _now : TimeVal) {
+        self->count = self->count + 1;
+        self->samples.send(self->count);
+        return;
+    }
+
+};
+```
+
+The `test.fin` of its test declares the task as in the application module, and
+connects its ports to test components instead of a periodic timer and a
+channel. A `TestEmitter<T>`, declared with `emitter`, takes the place of an
+emitter at a sink port, and a `TestChannel<T; N>`, declared with `channel`,
+receives the messages of an out port and keeps them for the test. A
+`TestPool<T; N>`, declared with `resource`, takes the place of a pool at an
+`Allocator<T>` port. The cases are declared in a `test class` and run by a
+`test` instance of it, whose access ports reach the test components and the
+`test_checks` resource:
+
+```termina
+import sampler.task;
+
+test class CSamplerTests {
+
+    timer : access TestEmitterAccess<TimeVal>;
+    samples : access TestChannelAccess<u32>;
+    t : access TestChecks;
+
+    case first_sample(&mut self) {
+
+        var n : usize = 0;
+        var sample : Option<u32> = None;
+
+        self->timer.fire({tv_sec = 1, tv_usec = 0} : TimeVal);
+
+        self->samples.pending(&mut n);
+        self->t.check_eq_usize(n, 1 : usize);
+
+        self->samples.take(&mut sample);
+        match sample {
+            case Some(value) => {
+                self->t.check_eq_u32(value, 1 : u32);
+            }
+            case None => {
+                self->t.fail();
+            }
+        }
+
+        return;
+
+    }
+
+    case one_sample_per_tick(&mut self) {
+
+        var n : usize = 0;
+
+        for i : usize in 0 .. 3 {
+            self->t.step(i);
+            self->timer.fire({tv_sec = 1, tv_usec = 0} : TimeVal);
+        }
+
+        self->samples.pending(&mut n);
+        self->t.check_eq_usize(n, 3 : usize);
+
+        return;
+
+    }
+
+};
+
+emitter timer : TestEmitter<TimeVal>;
+channel samples : TestChannel<u32; 4>;
+
+#[priority(10)]
+task sampler : CSampler = {
+    timer_ev <- timer,
+    samples -> samples,
+    count = 0
+};
+
+test sampler_tests : CSamplerTests = {
+    timer <-> timer,
+    samples <-> samples,
+    t <-> test_checks
+};
+```
+
+A test class has access and out ports, private methods and cases, and nothing
+else: no fields, no in or sink ports, no actions, procedures or viewers. A case
+takes `&mut self` or `&self` and returns nothing, and only the test harness
+calls it. The harness runs the cases at priority 254, below every task of the
+application, so the action triggered by `fire` has run, and its messages are
+in the test channel, when `fire` returns. Before each case the deployment is
+reset, which is why `one_sample_per_tick` finds three messages and not four.
+
+The test components are reached through the following operations:
+
+| Port type | Operation | Effect |
+|---|---|---|
+| `TestEmitterAccess<T>` | `fire(value)` | delivers an event with `value` to the sink port connected to the emitter |
+| `TestChannelAccess<T>` | `pending(&mut n)` | gives the number of messages in the channel |
+| | `take(&mut opt)` | takes the oldest message into an option, `None` if the channel is empty |
+| `TestPoolAccess` | `in_use(&mut n)`, `max_in_use(&mut n)` | give the number of blocks of the pool in use, now and the most reached |
+| | `fail_allocs(n)` | makes the next `n` allocations from the pool fail |
+
+The `test_checks` resource provides the checks through the `TestChecks`
+interface: `check(cond)`, a `check_eq_<type>(obtained, expected)` for each
+integer type, `bool` and `char`, `check_elapsed(t0, max)`, `fail()`, and
+`step(n)`, which records a number reported together with a failed check, such
+as the iteration of a loop. A unit test runs on a test clock, which only moves
+when a case calls `advance(dt)` on an access port of type `TestClock`
+connected to `test_clock`, so the time that the unit reads is under the
+control of the case.
+
+The test classes, the test instances and the test components are accepted
+only in the build of a test, and the transpiler checks the wiring of a unit
+test: it has no emitter other than its test emitters, and `system_except`,
+which the harness attends, is not connected.
+
 ## Concurrent tests
 
 A test whose `test.fin` declares no `test` instances is a concurrent test. Its
@@ -176,7 +318,8 @@ pass, and 2 when a test cannot be executed, following the convention of
 continuous integration systems.
 
 Each run also writes two files in `output/tests/<name>/<platform>/`. The file
-`report.xml` is in the JUnit XML format, which CI systems display. The file
+`report.xml` is in the [JUnit XML](https://github.com/testmoapp/junitxml)
+format, which CI systems display. The file
 `results.json` contains the verdicts and the values of each failed check, and
 identifies the binary that produced them through the commit of the project,
 the SHA-256 of the binary and of each module object, the profile and the
@@ -210,16 +353,21 @@ runner performs before each run:
 | [`freertos10-stm32l432-nucleol432kc`](../platforms/nucleo-l432kc.md) | `ST-LINK_gdbserver` | 61234 |
 | [`rtems5-leon3sf-nexysa7`](../platforms/nexys-a7.md) | GRMON | 2222 |
 | [`rtems6-zynq7000-pynqz2`](../platforms/pynq-z2.md) | `hw_server` and an XSDB server | 3000 and 3122 |
+| [`rtems6-rv32im-spike`](../platforms/spike.md) | OpenOCD, connected to Spike | 3333 |
 
 In a native installation the runner connects to the servers at `localhost`,
-and inside the container at `host.docker.internal`. The environment variable
-`TERMINA_GDB_HOST` sets a different host for every board. The option `--gdb`
-sets the host, and optionally the port, of the server of a single board, and
-therefore requires a command that selects only one board:
+and inside the container at `host.docker.internal`. The option `--gdb` gives
+another host for the servers of every board. With a port, it gives the server
+of a single board, and therefore requires a command that selects only one
+board:
 
 ```bash
+$ termina test --gdb lab-pc
 $ termina test hk_fdir --platform freertos10-stm32l432-nucleol432kc --gdb lab-pc:61234
 ```
+
+The command `termina platforms --json` lists the platforms with the address
+of the server of each board, and the GDB commands that load a program into it.
 
 When the runner executes inside the container, the connections to these ports
 must be allowed on the `docker0` bridge of the host, with the rule given in the
@@ -230,11 +378,37 @@ the cases, and therefore excludes the time needed to load the binary into the
 board. The load itself is limited to 120 seconds; a test that does not reach
 its cases within that time is reported as `invalid`.
 
+## Running tests from Visual Studio Code
+
+The Termina extension for Visual Studio Code lists the tests of the project in
+the Testing view, grouped by platform, test and case, from
+`termina test --list --json`. Running a platform, a test or a case calls
+`termina test` and marks each case with its verdict from `results.json`. A
+failed check shows the expected and obtained values at its line of the
+`test.fin`, and a case that did not run is marked as skipped. Debugging a case
+from the same view builds the test, starts a debugging session on the platform
+of the test, and selects the case as the runner does.
+
+A configuration of `.vscode/launch.json` can also debug a case. The attribute
+`test` names the test, `platform` the platform when the test runs on more than
+one, and `case` the case, as `<instance>.<case>`; without `case`, every case
+runs:
+
+```jsonc
+{
+    "name": "Debug first_sample",
+    "type": "termina",
+    "request": "launch",
+    "test": "sampler",
+    "case": "sampler_tests.first_sample"
+}
+```
+
 ## Debugging a case
 
 The binary of a test is always `output/tests/<name>/<platform>/bin/<name>`,
-and it is debugged in the same way as the binary of the application, with the
-same launch configuration and this binary as the program. The runner selects
+and it is debugged in the same way as the binary of the application, with this
+binary as the program. The runner selects
 the case to be executed by writing its number into the binary when execution
 stops at `termina__test__init`, before any task exists. The cases are numbered
 from 1, in the order given by `termina test --list`, and the value 0 executes

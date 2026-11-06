@@ -1,7 +1,11 @@
-# NUCLEO-L432KC
+# FreeRTOS 10 on the STM32L432 of the NUCLEO-L432KC
 
-The `freertos10-stm32l432-nucleol432kc` platform targets the STM32L432
-microcontroller, an Arm Cortex-M4, running FreeRTOS 10 on the NUCLEO-L432KC
+The `freertos10-stm32l432-nucleol432kc` platform targets the
+[STM32L432](https://www.st.com/en/microcontrollers-microprocessors/stm32l432kc.html)
+microcontroller, an Arm
+[Cortex-M4](https://www.arm.com/products/silicon-ip-cpu/cortex-m/cortex-m4),
+running FreeRTOS 10 on the
+[NUCLEO-L432KC](https://www.st.com/en/evaluation-tools/nucleo-l432kc.html)
 board, representative of the small Arm-based controllers found in
 instrumentation and robotics. It is built with `arm-none-eabi-gcc`, and the
 program is written into the flash of the microcontroller.
@@ -9,7 +13,9 @@ program is written into the flash of the microcontroller.
 ## The GDB server
 
 The board is debugged through its ST-LINK probe with `ST-LINK_gdbserver`,
-which is part of STM32CubeCLT and runs on the host. It is started with the
+which is part of
+[STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html) and
+runs on the host. It is started with the
 SWD interface, port 61234, the core 0, and the folder of the
 STM32CubeProgrammer that comes with STM32CubeCLT:
 
@@ -25,8 +31,8 @@ every test, needs the server started again.
 
 ## Debugging
 
-The launch configuration that `termina new` generates connects the debugger
-to the server, as the Debugging chapter describes. `monitor reset` resets the
+A debugging session of the Termina extension connects the debugger to the
+server, as the Debugging chapter describes. `monitor reset` resets the
 microcontroller and leaves the core halted, and `load` writes the program into
 the flash. Since the code runs from flash, the breakpoints are hardware ones,
 and the Cortex-M4 has six of them.

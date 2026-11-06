@@ -5,6 +5,15 @@ repo_url: https://github.com/termina-lang/termina
 repo_name: termina-lang/termina
 copyright: "&copy; The Termina Project Contributors"
 
+# The page of each platform is reached from the table of Supported Platforms
+not_in_nav: |
+  /platforms/posix-gcc.md
+  /platforms/nexys-a7.md
+  /platforms/pynq-z2.md
+  /platforms/spike.md
+  /platforms/arty-a7.md
+  /platforms/nucleo-l432kc.md
+
 nav:
   - Home: index.md
   - Foreword: foreword.md
@@ -32,13 +41,11 @@ nav:
     - The Application Module: wiring/application-module.md
     - Memory-Mapped I/O: advanced/memory-mapped-io.md
     - Calling C Code: advanced/c-code.md
-    - Platforms and the OSAL: platforms/osal.md
-    - posix-gcc: platforms/posix-gcc.md
-    - NUCLEO-L432KC: platforms/nucleo-l432kc.md
-    - Nexys A7: platforms/nexys-a7.md
-    - PYNQ-Z2: platforms/pynq-z2.md
+    - The OSAL: platforms/osal.md
+    - Supported Platforms: platforms/supported.md
   - Tooling:
     - Project Structure and Build System: tooling/project-structure.md
+    - Packages and Dependencies: tooling/packages.md
     - Debugging: tooling/debugging.md
     - Running Tests: tooling/testing.md
   - Appendix:

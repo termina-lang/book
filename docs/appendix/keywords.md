@@ -22,7 +22,7 @@ as identifiers. They are listed here by the role they play.
 | `struct` | Structure definition |
 | `enum` | Enumeration definition |
 | `interface` | Interface definition |
-| `class` | Class definition, combined with `task`, `handler`, or `resource` |
+| `class` | Class definition, combined with `task`, `handler`, `resource`, or `test` |
 
 ## Type qualifiers
 
@@ -40,6 +40,7 @@ as identifiers. They are listed here by the role they play.
 | `task` | Task class definition or task instance declaration |
 | `handler` | Handler class definition or handler instance declaration |
 | `resource` | Resource class definition or resource instance declaration |
+| `test` | Test class definition or test instance declaration, in the build of a test only |
 | `emitter` | Event emitter instance declaration |
 | `channel` | Message queue instance declaration |
 | `access` | Access port to a resource |
@@ -70,7 +71,7 @@ as identifiers. They are listed here by the role they play.
 | `var` | Mutable binding |
 | `let` | Immutable binding |
 | `if` / `else` | Conditional execution |
-| `match` / `case` | Branching on a variant |
+| `match` / `case` | Branching on a variant; `case` also declares a case of a test class |
 | `for` / `while` | Bounded iteration and its optional runtime guard |
 | `return` | End of a body, with or without a value |
 | `continue` | Tail transfer to another action of the same task |

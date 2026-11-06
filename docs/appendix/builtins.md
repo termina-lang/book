@@ -20,8 +20,12 @@ them requires an import, and their names cannot be redefined.
 | `SysPrintBase` | `Decimal`, `Hexadecimal` | Numeric base for the print services |
 | `Exception` | `EMsgQueueSendError`, `EMsgQueueRecvError`, `EArrayIndexOutOfBounds`, `EArraySliceOutOfBounds`, `EArraySliceNegativeRange`, `EArraySliceInvalidRange`, `EShiftAmountOutOfBounds`, `EArithmeticOverflow`, `EDivisionByZero`, `ERuntimeFailure`, `EProcessorFault`, `EKernelFailure`, `EStackOverflow` | Runtime exception delivered by `system_except` |
 
-`ERuntimeFailure(u32, i32)` reports a failure of the runtime itself, which the
-application cannot handle. The first value is the operation that failed:
+`ERuntimeFailure(usize, u32, i32)` reports a failure of the runtime itself,
+which the application cannot handle. The first value is the address of the
+call to the runtime that failed, 0 when the runtime ran the operation on its
+own, as when it dispatches an event to a task. `EMsgQueueSendError(usize,
+usize, i32)` carries the same address first, followed by the queue. The second
+value of `ERuntimeFailure` is the operation that failed:
 
 | Operation | Value |
 |:----------|:------|
@@ -108,19 +112,20 @@ Each access port type offers the following operations:
 ## Built-in event sources
 
 These emitters exist without being declared; a sink port is wired to them
-directly:
+directly, and the transpiler generates the code of each one only when a port
+is connected to it:
 
 | Name | Event payload | Fires |
 |:-----|:--------------|:------|
-| `system_init` | `TimeVal` | Once, at system start-up, when `enable-system-init` is set; handlers only |
-| `system_except` | `Exception` | When the runtime raises an exception, when `enable-system-except` is set; handlers only |
+| `system_init` | `TimeVal` | Once, at system start-up; handlers only |
+| `system_except` | `Exception` | When the runtime raises an exception; handlers only |
 | `irq_N` | `u32` (vector) | On hardware interrupt N (per platform) |
-| `kbd_irq` | `u32` | On console input (`posix-gcc`, when `enable-kbd-irq` is set) |
+| `kbd_irq` | `u32` | On console input (`posix-gcc`) |
 
 ## The system interface
 
-The `system_entry` instance implements the `SystemAPI` interface and is
-deployed when `enable-system-port` is set in `termina.yaml`. It is reached
+The `system_entry` instance implements the `SystemAPI` interface, and its code
+is generated when an access port is connected to it. It is reached
 through a port declared `access SystemAPI` and wired with
 `<-> system_entry`. Its procedures are the following:
 
@@ -134,6 +139,27 @@ through a port declared `access SystemAPI` and wired with
 The arrays that `print`, `println` and `read` take have the sizes set by
 `sys-print-output-buffer-size` and `sys-read-input-buffer-size` in
 `termina.yaml`, 256 by default, and an array of any other size is rejected.
+
+## Test components and resources
+
+These exist only in the build of a test, as the chapter on
+[running tests](../tooling/testing.md) describes. The test components replace
+the production ones at the ports of the unit under test:
+
+| Class | Declaration | Access port type and operations |
+|:------|:------------|:--------------------------------|
+| `TestEmitter<T>` | `emitter e : TestEmitter<T>;` | `TestEmitterAccess<T>`: `fire(T)` |
+| `TestChannel<T; N>` | `channel c : TestChannel<T; N>;` | `TestChannelAccess<T>`: `pending(&mut usize)`, `take(&mut Option<T>)` |
+| `TestPool<T; N>` | `resource p : TestPool<T; N>;` | `TestPoolAccess`: `in_use(&mut usize)`, `max_in_use(&mut usize)`, `fail_allocs(usize)`, besides `Allocator<T>` for the unit |
+
+A test also reaches three resources of the runtime, connected with `<->` like
+`system_entry`:
+
+| Resource | Interface | Procedures |
+|:---------|:----------|:-----------|
+| `test_checks` | `TestChecks` | `check(bool)`, `check_eq_<type>(obtained, expected)` for each integer type, `bool` and `char`, `check_elapsed(TimeVal, TimeVal)`, `fail()`, `step(usize)` |
+| `test_clock` | `TestClock` | `advance(TimeVal)`, in a unit test only |
+| `test_scenario` | `TestScenario` | `finish()`, in a concurrent test only |
 
 ## Prelude functions
 
