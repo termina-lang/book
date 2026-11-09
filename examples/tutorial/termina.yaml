@@ -1,0 +1,10 @@
+project:
+  name: "tutorial"
+  version: 0.1.0
+  manifest-version: 1
+
+sys-print-output-buffer-size: 32
+
+app:
+  platform: posix-gcc
+  profile: release

@@ -1,0 +1,51 @@
+constexpr SENSOR_ARRAY_SIZE : usize = 10;
+
+interface ISensorArray {
+
+    procedure get_sensor_value(&mut self, sensor_idx : usize,
+                               value : &mut Option<u32>);
+
+};
+
+resource class CEmuSensorArray provides ISensorArray {
+
+    seed : u32;
+
+    method get_random_u32(&mut self) -> u32 {
+
+        var next : u32 = self-> seed;
+
+        next = next * 1103515245 : u32;
+        next = next + 12345 : u32;
+        var rnd : u32 = (next / 65536 : u32) % 2048 : u32;
+
+        next = next * 1103515245 : u32;
+        next = next + 12345 : u32;
+        rnd = rnd << 10 : u32;
+        rnd = rnd ^(next / 65536 : u32) % 1024 : u32;
+
+        next = next * 1103515245 : u32;
+        next = next + 12345 : u32;
+        rnd = rnd << 10 : u32;
+        rnd = rnd ^ (next / 65536 : u32) % 1024 : u32;
+
+        self->seed = next;
+
+        return rnd;
+
+    }
+
+    procedure get_sensor_value(&mut self, sensor_idx : usize,
+                               value : &mut Option<u32>) {
+
+        *value = None;
+
+        if sensor_idx < SENSOR_ARRAY_SIZE {
+            *value = Some(self->get_random_u32());
+        }
+
+        return;
+
+    }
+
+};

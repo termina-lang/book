@@ -1,0 +1,60 @@
+import common.types;
+
+import resources.sensor_array;
+import resources.sys_data_pool;
+import resources.tm_channel;
+import resources.hk_subsystem;
+import tasks.housekeeping;
+import tasks.manager;
+import handlers.kbdhandler;
+
+emitter hk_timer : PeriodicTimer = {
+    period = {
+        tv_sec = 1,
+        tv_usec = 0
+    }
+};
+
+resource emu_sensor_array : CEmuSensorArray = {
+    seed = 0
+};
+
+resource sys_data_pool : CSystemDataPool = {
+    param_values = [0; SDP_NUM_PARAMS]
+};
+
+resource tm_channel : CTMChannel = {
+    system_port <-> system_entry
+};
+
+resource hk_subsystem : CHKSubsystem = {
+    interval = 5,
+    interval_control = 0,
+    sys_data_pool_port <-> sys_data_pool,
+    tm_channel_port <-> tm_channel,
+    sensor_array_port <-> emu_sensor_array
+};
+
+resource tc_pool : Pool<TCDescriptor; 10>;
+
+channel tc_channel : MsgQueue<box TCDescriptor; 10>;
+
+handler kbd_handler : CKbdIRQHandler = {
+    system_port <-> system_entry,
+    in_kbd_irq <- kbd_irq,
+    tc_pool_port <-> tc_pool,
+    tc_channel_out -> tc_channel
+};
+
+#[priority(20)]
+task hk_task : CHKTask = {
+    hk_subsystem_port <-> hk_subsystem,
+    timer <- hk_timer
+};
+
+#[priority(10)]
+task manager_task : CManagerTask = {
+    tm_channel_port <-> tm_channel,
+    tc_pool_port <-> tc_pool,
+    in_tc_channel <- tc_channel
+};

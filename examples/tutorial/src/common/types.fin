@@ -1,0 +1,4 @@
+struct TCDescriptor {
+    payload : [char; 256];
+    size : usize;
+};

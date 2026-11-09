@@ -1,0 +1,36 @@
+constexpr SDP_NUM_PARAMS : usize = 10;
+
+interface ISystemDataPool {
+
+    procedure get_param(&mut self, idx : usize, value : &mut Option<u32>);
+    procedure set_param(&mut self, idx : usize, value : u32);
+
+};
+
+resource class CSystemDataPool provides ISystemDataPool {
+
+    param_values : [u32; SDP_NUM_PARAMS];
+
+    procedure get_param(&mut self, idx : usize, value : &mut Option<u32>) {
+
+        *value = None;
+
+        if idx < SDP_NUM_PARAMS {
+            *value = Some(self->param_values[idx]);
+        } 
+
+        return;
+
+    }
+
+    procedure set_param(&mut self, idx : usize, value : u32) {
+
+        if idx < SDP_NUM_PARAMS {
+            self->param_values[idx] = value;
+        }
+
+        return;
+
+    }
+
+};

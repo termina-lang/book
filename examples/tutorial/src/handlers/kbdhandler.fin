@@ -1,0 +1,36 @@
+import common.types;
+
+handler class CKbdIRQHandler {
+
+    system_port : access SystemAPI;
+    tc_pool_port : access Allocator<TCDescriptor>;
+    in_kbd_irq : sink u32 triggers receive_tc;
+    tc_channel_out : out box TCDescriptor;
+
+    action receive_tc(&priv self, _vector : u32) {
+
+        var opt_tc_desc : Option<box TCDescriptor> = None;
+        
+        self->tc_pool_port.alloc(&mut opt_tc_desc);
+
+        match opt_tc_desc {
+            case Some(tc_desc) => {
+
+                self->system_port.read(&mut tc_desc.payload, &mut tc_desc.size);
+                if tc_desc.size > 0 {
+                    self->tc_channel_out.send(tc_desc);
+                } else {
+                    self->tc_pool_port.free(tc_desc);
+                }
+
+            }
+            case None => {
+                // No descriptor available: the input is left unread
+            }
+        }
+
+        return;
+        
+    }
+
+};

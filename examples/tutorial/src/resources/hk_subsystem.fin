@@ -1,0 +1,82 @@
+import resources.tm_channel;
+import resources.sensor_array;
+import resources.sys_data_pool;
+
+interface IHKSubsystem {
+
+    procedure update_params(&mut self);
+    procedure do_housekeeping(&mut self);
+
+};
+
+resource class CHKSubsystem provides IHKSubsystem {
+
+    interval : u32;
+    interval_control : u32;
+
+    sys_data_pool_port : access ISystemDataPool;
+    sensor_array_port : access ISensorArray;
+    tm_channel_port : access ITMChannel;
+
+    procedure update_params(&mut self) {
+
+        var opt_value : Option<u32> = None;
+
+        for i : usize in 0 .. SENSOR_ARRAY_SIZE {
+
+            self->sensor_array_port.get_sensor_value(i, &mut opt_value);
+
+            match opt_value {
+
+                case Some(v) => {
+                    self->sys_data_pool_port.set_param(i, v);
+                }
+
+                case None => {
+
+                }
+
+            }
+        }
+
+        return;
+
+    }
+
+    procedure do_housekeeping(&mut self) {
+
+        self->interval_control = self->interval_control + 1;
+
+        if self->interval_control == self->interval {
+
+            self->interval_control = 0;
+
+            var hk_data : [u32; SDP_NUM_PARAMS] = [0; SDP_NUM_PARAMS];
+            var opt_value : Option<u32> = None;
+
+            for i : usize in 0 .. SDP_NUM_PARAMS {
+
+                self->sys_data_pool_port.get_param(i, &mut opt_value);
+
+                match opt_value {
+
+                    case Some(v) => {
+                        hk_data[i] = v;
+                    }
+
+                    case None => {
+
+                    }
+
+                }
+            }            
+
+            self->tm_channel_port.send_tm_3_25(&hk_data);
+
+        }
+
+        return;
+
+    }
+
+};

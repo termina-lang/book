@@ -1,0 +1,18 @@
+import resources.hk_subsystem;
+
+task class CHKTask {
+
+    hk_subsystem_port : access IHKSubsystem;
+
+    timer : sink TimeVal triggers hk_timeout;
+
+    action hk_timeout(&priv self, _current_time : TimeVal) {
+
+        self->hk_subsystem_port.update_params();
+        self->hk_subsystem_port.do_housekeeping();
+
+        return;
+        
+    }
+
+};

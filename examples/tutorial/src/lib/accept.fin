@@ -1,0 +1,17 @@
+import common.types;
+
+function accept_tc(tc : &TCDescriptor) -> Status<u32> {
+
+    var status : Status<u32> = Success;
+
+    if tc->payload[0] == 'e' {
+        status = Failure(0);
+    } else if tc->payload[0] != 'v' {
+        status = Failure(1);
+    } else {
+
+    }
+        
+    return status;
+
+}

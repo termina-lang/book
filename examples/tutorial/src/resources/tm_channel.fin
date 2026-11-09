@@ -1,0 +1,55 @@
+import common.types;
+
+constexpr hk_data_size : usize = 10;
+
+interface ITMChannel {
+
+    procedure send_tm_3_25(&mut self, hk_data : &[u32; hk_data_size]);
+    procedure send_tm_1_1(&mut self);
+    procedure send_tm_1_2(&mut self, value : u32);
+
+};
+
+resource class CTMChannel provides ITMChannel {
+
+    system_port : access SystemAPI;
+
+    procedure send_tm_3_25(&mut self, hk_data : &[u32; hk_data_size]) {
+
+        let msg : [char; 32] = "Send TM(3,25): ";
+        let base : SysPrintBase = SysPrintBase::Decimal;
+
+        self->system_port.print(&msg);
+
+        for i : usize in 0 .. (hk_data_size - 1) {
+            self->system_port.print_u32(hk_data[i], base);
+            self->system_port.print_char(',');
+            self->system_port.print_char(' ');
+        }
+        self->system_port.println_u32(hk_data[hk_data_size - 1], base);
+
+        return;
+
+    }
+
+    procedure send_tm_1_1(&mut self) {
+
+        let msg : [char; 32] = "Send TM(1,1)";
+        self->system_port.println(&msg);
+
+        return;
+
+    }
+
+    procedure send_tm_1_2(&mut self, value : u32) {
+
+        let msg : [char; 32] = "Send TM(1,2) - Error code: ";
+        self->system_port.print(&msg);
+        let base : SysPrintBase = SysPrintBase::Decimal;
+        self->system_port.println_u32(value, base);
+
+        return;
+
+    }
+
+};

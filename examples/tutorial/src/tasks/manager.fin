@@ -1,0 +1,33 @@
+import resources.tm_channel;
+import common.types;
+import lib.accept;
+
+task class CManagerTask {
+
+    tm_channel_port : access ITMChannel;
+    tc_pool_port : access Allocator<TCDescriptor>;
+    in_tc_channel : in box TCDescriptor triggers process_tc;
+
+    action process_tc(&priv self, tc : box TCDescriptor) {
+
+        // Process incoming telecommands here
+        var tc_accept : Status<u32> = accept_tc(&tc);
+
+        match tc_accept {
+            case Failure(code) => {
+                // Telecommand not accepted, send error TM
+                self->tm_channel_port.send_tm_1_2(code);
+            }
+            case Success => {
+                // Telecommand accepted, proceed
+                self->tm_channel_port.send_tm_1_1();
+            }
+        }
+
+        self->tc_pool_port.free(tc);
+
+        return;
+
+    }
+
+};
