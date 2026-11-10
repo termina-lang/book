@@ -66,6 +66,13 @@ catch {stop}
 disconnect
 ```
 
+Vivado exports `ps7_init.tcl` with the hardware of the design, in the `.xsa`
+file that *File → Export → Export Hardware* writes, which is a ZIP archive. The
+script sets the clocks, the DDR controller and the pins of the processing
+system as the design configures them. A project with no logic of its own in
+the programmable logic still needs it, exported from a design that contains
+only the processing system, and its script leaves out the `fpga` command.
+
 A program loaded without this reset starts from the state that the previous
 one left in the processor, with its MMU and caches enabled, and RTEMS fails to
 start over it. The script is therefore run before every session and every

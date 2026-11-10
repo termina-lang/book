@@ -129,12 +129,13 @@ On the embedded platforms, `gdb-multiarch` runs in the container and controls
 the board through the GDB server of the board's debug tool. The server runs on
 the host, which has the USB connection to the debug probe of the board:
 
-| Platform | GDB server on the host | Default port |
-|---|---|---|
-| [`rtems5-leon3sf-nexysa7`](../platforms/nexys-a7.md) | [GRMON](https://www.gaisler.com/products/grmon3) | 2222 |
-| [`rtems6-zynq7000-pynqz2`](../platforms/pynq-z2.md) | `hw_server` of [AMD Vitis](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vitis.html) | 3000 |
-| [`freertos10-stm32l432-nucleol432kc`](../platforms/nucleo-l432kc.md) | `ST-LINK_gdbserver` of [STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html) | 61234 |
-| [`rtems6-rv32im-spike`](../platforms/spike.md) | [OpenOCD](https://openocd.org/), connected to Spike | 3333 |
+| Platform | GDB server on the host | Tested version | Default port |
+|---|---|---|---|
+| [`rtems5-leon3sf-nexysa7`](../platforms/nexys-a7.md) | [GRMON](https://www.gaisler.com/products/grmon3) | 4.1.2 | 2222 |
+| [`rtems6-noel32im-artya7`](../platforms/arty-a7.md) | [GRMON](https://www.gaisler.com/products/grmon3) | 4.1.2 | 2222 |
+| [`rtems6-zynq7000-pynqz2`](../platforms/pynq-z2.md) | `hw_server` of [AMD Vitis](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vitis.html) | 2026.1.1 | 3000 |
+| [`freertos10-stm32l432-nucleol432kc`](../platforms/nucleo-l432kc.md) | `ST-LINK_gdbserver` of [STM32CubeCLT](https://www.st.com/en/development-tools/stm32cubeclt.html) | 1.19.0 | 61234 |
+| [`rtems6-rv32im-spike`](../platforms/spike.md) | [OpenOCD](https://openocd.org/), connected to Spike | xPack 0.12.0-7 | 3333 |
 
 The page of each platform gives the command that starts its server and what
 the board needs before a program is loaded. `termina platforms --json` lists,

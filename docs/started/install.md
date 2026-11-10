@@ -302,13 +302,13 @@ the `posix-gcc` platform with the compiler of the host. Each embedded platform
 requires its cross-toolchain, which the OSAL looks for under a folder of `/opt`
 that an environment variable can change:
 
-| Platform | Toolchain | Default folder | Variable |
-|---|---|---|---|
-| `rtems5-leon3sf-nexysa7` | `sparc-gaisler-rtems5-gcc` | `/opt/rcc` | `TERMINA_RCC_DIR` |
-| `rtems6-zynq7000-pynqz2` | `arm-rtems6-gcc` and its BSP | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
-| `rtems6-rv32im-spike` | `riscv-rtems6-gcc` and its BSP | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
-| `rtems6-noel32im-artya7` | `riscv-rtems6-gcc` and its BSP | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
-| `freertos10-stm32l432-nucleol432kc` | `arm-none-eabi-gcc` | `/opt/arm-none-eabi` | `TERMINA_ARM_NONE_EABI_DIR` |
+| Platform | Toolchain | Version in the image | Default folder | Variable |
+|---|---|---|---|---|
+| `rtems5-leon3sf-nexysa7` | `sparc-gaisler-rtems5-gcc` | RCC 1.3.2 | `/opt/rcc` | `TERMINA_RCC_DIR` |
+| `rtems6-zynq7000-pynqz2` | `arm-rtems6-gcc` and its BSP | RTEMS 6.2 | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
+| `rtems6-rv32im-spike` | `riscv-rtems6-gcc` and its BSP | RTEMS 6.2 | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
+| `rtems6-noel32im-artya7` | `riscv-rtems6-gcc` and its BSP | RTEMS 6.2 | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
+| `freertos10-stm32l432-nucleol432kc` | `arm-none-eabi-gcc` | Arm GNU Toolchain 13.3.rel1 | `/opt/arm-none-eabi` | `TERMINA_ARM_NONE_EABI_DIR` |
 
 The compiler of each platform is in the `bin` folder of its toolchain folder.
 The `rtems5-leon3sf-nexysa7` platform, which targets LEON3 under RTEMS 5,
@@ -325,7 +325,7 @@ microcontroller of the NUCLEO-L432KC board under FreeRTOS 10, relies on the
 bare-metal ARM toolchain `arm-none-eabi-gcc` with its C library, newlib. The
 Arm GNU Toolchain, available from
 [Arm](https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads),
-includes both, and the image ships its release 13.3.rel1. The
+includes both. The
 `GNU-tools-for-STM32` folder of STM32CubeCLT holds the same toolchain, and a
 link to it at `/opt/arm-none-eabi` serves as well. A toolchain folder given in
 a variable is exported in the environment rather than passed on the `make`

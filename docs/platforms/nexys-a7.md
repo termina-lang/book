@@ -5,7 +5,9 @@ The `rtems5-leon3sf-nexysa7` platform targets the
 used in European space missions, running RTEMS 5 on the Digilent
 [Nexys A7](https://digilent.com/reference/programmable-logic/nexys-a7/start)
 development board. The LEON3 is a design of the FPGA of the board,
-which loads it from its flash at power on. The processor has no
+which loads it from its flash at power on. The design is built with GRLIB, the
+IP library of Frontgrade Gaisler, which includes a LEON3 design for the board
+under its former name, `leon3-digilent-nexys4ddr`. The processor has no
 floating-point unit, so the platform compiles for soft-float; the `sf` in its
 name comes from the Gaisler board support package it uses, `leon3_sf`. It is
 built with `sparc-gaisler-rtems5-gcc`, of the
