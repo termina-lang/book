@@ -1,0 +1,2444 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A programming language for real-time critical systems">
+      
+      
+      
+        <link rel="canonical" href="https://termina-lang.org/book/tooling/testing/">
+      
+      
+        <link rel="prev" href="../debugging/">
+      
+      
+        <link rel="next" href="../../appendix/keywords/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo_termina.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Running Tests - The Termina Book</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/termina.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <style>
+    /* wordmark next to the logo in the header */
+    .md-header__button.md-logo + .md-header__title .md-header__topic:first-child .md-ellipsis {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      letter-spacing: .01em;
+    }
+  </style>
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#running-tests" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="The Termina Book" class="md-header__button md-logo" aria-label="The Termina Book" data-md-component="logo">
+      
+  <img src="../../assets/logo_termina.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            The Termina Book
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Running Tests
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/termina-lang/termina" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    termina-lang/termina
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+  
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="The Termina Book" class="md-nav__button md-logo" aria-label="The Termina Book" data-md-component="logo">
+      
+  <img src="../../assets/logo_termina.png" alt="logo">
+
+    </a>
+    The Termina Book
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/termina-lang/termina" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    termina-lang/termina
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foreword/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foreword
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../started/hello-world/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hello, Real-Time World!
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building Our First Application
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Building Our First Application
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A Guided Tour
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Basics
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Basics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types and Constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables and Mutability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/expressions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressions and Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/control-flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/references/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    References
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Reactive Model
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    The Reactive Model
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/resource-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resource Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/task-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/handler-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handler Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Communication and Memory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Communication and Memory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../comm/ports-and-channels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports and Channels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../comm/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Systems and Platforms
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Systems and Platforms
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wiring/application-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Application Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/memory-mapped-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory-Mapped I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/c-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calling C Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../platforms/osal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The OSAL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../platforms/supported/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supported Platforms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tooling
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tooling
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure and Build System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../packages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packages and Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Debugging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrent-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrent tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the report
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-on-posix-gcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests on posix-gcc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-on-a-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests on a board
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests-from-visual-studio-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests from Visual Studio Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-a-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging a case
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendix
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Appendix
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/keywords/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A. Keywords
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B. Operators and Symbols
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/builtins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C. Built-in Types and Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/conventions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    D. Naming Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running the tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrent-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrent tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the report
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-on-posix-gcc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests on posix-gcc
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tests-on-a-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests on a board
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-tests-from-visual-studio-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running tests from Visual Studio Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-a-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging a case
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="running-tests">Running Tests<a class="headerlink" href="#running-tests" title="Permanent link">&para;</a></h1>
+<p>The tests of a project are declared in the <code>tests:</code> section of <code>termina.yaml</code>,
+each with the platforms on which it runs, and are located in <code>tests/&lt;name&gt;/</code>.
+The <code>test.fin</code> of a unit test connects the unit under test to the test
+components and contains the cases. The <code>test.fin</code> of a concurrent test deploys
+tasks, timers and interrupts in the same way as the application module,
+together with a task that performs the checks. The <code>termina test</code> command
+builds each test for each of its platforms, executes it, and reports the
+verdict of every case. This chapter describes how the tests are executed and
+how their results are read, on <code>posix-gcc</code> and on the boards.</p>
+<h2 id="running-the-tests">Running the tests<a class="headerlink" href="#running-the-tests" title="Permanent link">&para;</a></h2>
+<p>Without arguments, <code>termina test</code> builds and executes every test on every
+platform listed in the manifest. A name selects a single test, and the option
+<code>--platform</code> a single platform:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>termina<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>$<span class="w"> </span>termina<span class="w"> </span><span class="nb">test</span><span class="w"> </span>hk_fdir
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>$<span class="w"> </span>termina<span class="w"> </span><span class="nb">test</span><span class="w"> </span>hk_fdir<span class="w"> </span>--platform<span class="w"> </span>posix-gcc
+</code></pre></div>
+<p>A test is built with the profile of the application, unless <code>--profile debug</code>
+or <code>--profile release</code> specifies another one. The modules of the project are
+compiled with the same flags as in the application, so the module objects
+exercised by a test are those of the delivered application.</p>
+<p>By default, all the cases of a unit test are executed in order in a single
+boot of its binary, and the deployment is reset before each case. The
+following options modify this behavior:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>termina<span class="w"> </span><span class="nb">test</span><span class="w"> </span>hk_fdir<span class="w"> </span>--case<span class="w"> </span>hk_tests.high_severity_action
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>$<span class="w"> </span>termina<span class="w"> </span><span class="nb">test</span><span class="w"> </span>hk_fdir<span class="w"> </span>--isolated
+</code></pre></div>
+<p>The option <code>--case</code> executes a single case, identified by its test instance
+and its name as listed by <code>termina test --list</code>. The option <code>--isolated</code>
+executes each case in a separate boot of the binary, which reveals whether a
+case depends on the state left by the previous one. Both options use the same
+binary, since the runner writes the number of the selected case into the
+binary before execution starts.</p>
+<p>The command <code>termina test --list</code> lists the tests without building them,
+together with the platforms and the cases of each one. The option <code>--json</code>
+produces the same list in JSON, the format that editors read to display the
+tests.</p>
+<h2 id="unit-tests">Unit tests<a class="headerlink" href="#unit-tests" title="Permanent link">&para;</a></h2>
+<p>The command <code>termina new --test &lt;name&gt;</code>, run inside a project, creates
+<code>tests/&lt;name&gt;/test.fin</code> and adds the entry of the test to the <code>tests:</code> section
+of the manifest, with <code>posix-gcc</code> as its platform, the platform of the
+application when the project targets a board, and a timeout of 10 seconds:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>termina<span class="w"> </span>new<span class="w"> </span>--test<span class="w"> </span>sampler
+</code></pre></div>
+<p>A unit test exercises one unit of the program, such as a task class, with the
+rest of the system replaced by test components. The following task class sends
+the number of each activation of its timer through an out port:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">task</span> <span class="kd">class</span> <span class="nc">CSampler</span> <span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">timer_ev</span> <span class="p">:</span> <span class="kt">sink</span> <span class="nc">TimeVal</span> <span class="kt">triggers</span> <span class="n">tick</span><span class="p">;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">samples</span> <span class="p">:</span> <span class="kt">out</span> <span class="kt">u32</span><span class="p">;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">count</span> <span class="p">:</span> <span class="kt">u32</span><span class="p">;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="kd">action</span> <span class="n">tick</span><span class="p">(</span><span class="o">&amp;priv</span> <span class="k">self</span><span class="p">,</span> <span class="n">_now</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">)</span> <span class="p">{</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">=</span> <span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">samples</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">);</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>        <span class="k">return</span><span class="p">;</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="p">}</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="p">};</span>
+</code></pre></div>
+<p>The <code>test.fin</code> of its test declares the task as in the application module, and
+connects its ports to test components instead of a periodic timer and a
+channel. A <code>TestEmitter&lt;T&gt;</code>, declared with <code>emitter</code>, takes the place of an
+emitter at a sink port, and a <code>TestChannel&lt;T; N&gt;</code>, declared with <code>channel</code>,
+receives the messages of an out port and keeps them for the test. A
+<code>TestPool&lt;T; N&gt;</code>, declared with <code>resource</code>, takes the place of a pool at an
+<code>Allocator&lt;T&gt;</code> port. The cases are declared in a <code>test class</code> and run by a
+<code>test</code> instance of it, whose access ports reach the test components and the
+<code>test_checks</code> resource:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sampler.task</span><span class="p">;</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">test</span> <span class="kd">class</span> <span class="nc">CSamplerTests</span> <span class="p">{</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">timer</span> <span class="p">:</span> <span class="kt">access</span> <span class="nc">TestEmitterAccess</span><span class="o">&lt;</span><span class="nc">TimeVal</span><span class="o">&gt;</span><span class="p">;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">samples</span> <span class="p">:</span> <span class="kt">access</span> <span class="nc">TestChannelAccess</span><span class="o">&lt;</span><span class="kt">u32</span><span class="o">&gt;</span><span class="p">;</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">t</span> <span class="p">:</span> <span class="kt">access</span> <span class="nc">TestChecks</span><span class="p">;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="k">case</span> <span class="n">first_sample</span><span class="p">(</span><span class="o">&amp;mut</span> <span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="kd">var</span> <span class="n">n</span> <span class="p">:</span> <span class="kt">usize</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="kd">var</span> <span class="n">sample</span> <span class="p">:</span> <span class="nc">Option</span><span class="o">&lt;</span><span class="kt">u32</span><span class="o">&gt;</span> <span class="o">=</span> <span class="nc">None</span><span class="p">;</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">timer</span><span class="p">.</span><span class="n">fire</span><span class="p">({</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tv_usec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">}</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">);</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">samples</span><span class="p">.</span><span class="n">pending</span><span class="p">(</span><span class="o">&amp;mut</span> <span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">t</span><span class="p">.</span><span class="n">check_eq_usize</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span> <span class="p">:</span> <span class="kt">usize</span><span class="p">);</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">samples</span><span class="p">.</span><span class="n">take</span><span class="p">(</span><span class="o">&amp;mut</span> <span class="n">sample</span><span class="p">);</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span class="k">match</span> <span class="n">sample</span> <span class="p">{</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>            <span class="k">case</span> <span class="nc">Some</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>                <span class="k">self</span><span class="o">-&gt;</span><span class="n">t</span><span class="p">.</span><span class="n">check_eq_u32</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">1</span> <span class="p">:</span> <span class="kt">u32</span><span class="p">);</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>            <span class="p">}</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>            <span class="k">case</span> <span class="nc">None</span> <span class="o">=&gt;</span> <span class="p">{</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>                <span class="k">self</span><span class="o">-&gt;</span><span class="n">t</span><span class="p">.</span><span class="n">fail</span><span class="p">();</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>            <span class="p">}</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>        <span class="p">}</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>        <span class="k">return</span><span class="p">;</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>    <span class="p">}</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>    <span class="k">case</span> <span class="n">one_sample_per_tick</span><span class="p">(</span><span class="o">&amp;mut</span> <span class="k">self</span><span class="p">)</span> <span class="p">{</span>
+<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>
+<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a>        <span class="kd">var</span> <span class="n">n</span> <span class="p">:</span> <span class="kt">usize</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a>
+<a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a>        <span class="k">for</span> <span class="n">i</span> <span class="p">:</span> <span class="kt">usize</span> <span class="k">in</span> <span class="mi">0</span> <span class="o">..</span> <span class="mi">3</span> <span class="p">{</span>
+<a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a>            <span class="k">self</span><span class="o">-&gt;</span><span class="n">t</span><span class="p">.</span><span class="n">step</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+<a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a>            <span class="k">self</span><span class="o">-&gt;</span><span class="n">timer</span><span class="p">.</span><span class="n">fire</span><span class="p">({</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tv_usec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">}</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">);</span>
+<a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a>        <span class="p">}</span>
+<a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a>
+<a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">samples</span><span class="p">.</span><span class="n">pending</span><span class="p">(</span><span class="o">&amp;mut</span> <span class="n">n</span><span class="p">);</span>
+<a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">t</span><span class="p">.</span><span class="n">check_eq_usize</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span> <span class="p">:</span> <span class="kt">usize</span><span class="p">);</span>
+<a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a>
+<a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a>        <span class="k">return</span><span class="p">;</span>
+<a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a>
+<a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a>    <span class="p">}</span>
+<a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a>
+<a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a><span class="p">};</span>
+<a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a>
+<a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a><span class="kd">emitter</span> <span class="n">timer</span> <span class="p">:</span> <span class="nc">TestEmitter</span><span class="o">&lt;</span><span class="nc">TimeVal</span><span class="o">&gt;</span><span class="p">;</span>
+<a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a><span class="kd">channel</span> <span class="n">samples</span> <span class="p">:</span> <span class="nc">TestChannel</span><span class="o">&lt;</span><span class="kt">u32</span><span class="p">;</span> <span class="mi">4</span><span class="o">&gt;</span><span class="p">;</span>
+<a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a>
+<a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a><span class="o">#</span><span class="p">[</span><span class="n">priority</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+<a id="__codelineno-4-55" name="__codelineno-4-55" href="#__codelineno-4-55"></a><span class="kd">task</span> <span class="n">sampler</span> <span class="p">:</span> <span class="nc">CSampler</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-4-56" name="__codelineno-4-56" href="#__codelineno-4-56"></a>    <span class="n">timer_ev</span> <span class="o">&lt;-</span> <span class="n">timer</span><span class="p">,</span>
+<a id="__codelineno-4-57" name="__codelineno-4-57" href="#__codelineno-4-57"></a>    <span class="n">samples</span> <span class="o">-&gt;</span> <span class="n">samples</span><span class="p">,</span>
+<a id="__codelineno-4-58" name="__codelineno-4-58" href="#__codelineno-4-58"></a>    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-4-59" name="__codelineno-4-59" href="#__codelineno-4-59"></a><span class="p">};</span>
+<a id="__codelineno-4-60" name="__codelineno-4-60" href="#__codelineno-4-60"></a>
+<a id="__codelineno-4-61" name="__codelineno-4-61" href="#__codelineno-4-61"></a><span class="kd">test</span> <span class="n">sampler_tests</span> <span class="p">:</span> <span class="nc">CSamplerTests</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-4-62" name="__codelineno-4-62" href="#__codelineno-4-62"></a>    <span class="n">timer</span> <span class="o">&lt;-&gt;</span> <span class="n">timer</span><span class="p">,</span>
+<a id="__codelineno-4-63" name="__codelineno-4-63" href="#__codelineno-4-63"></a>    <span class="n">samples</span> <span class="o">&lt;-&gt;</span> <span class="n">samples</span><span class="p">,</span>
+<a id="__codelineno-4-64" name="__codelineno-4-64" href="#__codelineno-4-64"></a>    <span class="n">t</span> <span class="o">&lt;-&gt;</span> <span class="n">test_checks</span>
+<a id="__codelineno-4-65" name="__codelineno-4-65" href="#__codelineno-4-65"></a><span class="p">};</span>
+</code></pre></div>
+<p>A test class has access and out ports, private methods and cases, and nothing
+else: no fields, no in or sink ports, no actions, procedures or viewers. A case
+takes <code>&amp;mut self</code> or <code>&amp;self</code> and returns nothing, and only the test harness
+calls it. The harness runs the cases at priority 254, below every task of the
+application, so the action triggered by <code>fire</code> has run, and its messages are
+in the test channel, when <code>fire</code> returns. Before each case the deployment is
+reset, which is why <code>one_sample_per_tick</code> finds three messages and not four.</p>
+<p>The test components are reached through the following operations:</p>
+<table>
+<thead>
+<tr>
+<th>Port type</th>
+<th>Operation</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TestEmitterAccess&lt;T&gt;</code></td>
+<td><code>fire(value)</code></td>
+<td>delivers an event with <code>value</code> to the sink port connected to the emitter</td>
+</tr>
+<tr>
+<td><code>TestChannelAccess&lt;T&gt;</code></td>
+<td><code>pending(&amp;mut n)</code></td>
+<td>gives the number of messages in the channel</td>
+</tr>
+<tr>
+<td></td>
+<td><code>take(&amp;mut opt)</code></td>
+<td>takes the oldest message into an option, <code>None</code> if the channel is empty</td>
+</tr>
+<tr>
+<td><code>TestPoolAccess</code></td>
+<td><code>in_use(&amp;mut n)</code>, <code>max_in_use(&amp;mut n)</code></td>
+<td>give the number of blocks of the pool in use, now and the most reached</td>
+</tr>
+<tr>
+<td></td>
+<td><code>fail_allocs(n)</code></td>
+<td>makes the next <code>n</code> allocations from the pool fail</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>test_checks</code> resource provides the checks through the <code>TestChecks</code>
+interface: <code>check(cond)</code>, a <code>check_eq_&lt;type&gt;(obtained, expected)</code> for each
+integer type, <code>bool</code> and <code>char</code>, <code>check_elapsed(t0, max)</code>, <code>fail()</code>, and
+<code>step(n)</code>, which records a number reported together with a failed check, such
+as the iteration of a loop. A unit test runs on a test clock, which only moves
+when a case calls <code>advance(dt)</code> on an access port of type <code>TestClock</code>
+connected to <code>test_clock</code>, so the time that the unit reads is under the
+control of the case.</p>
+<p>The test classes, the test instances and the test components are accepted
+only in the build of a test, and the transpiler checks the wiring of a unit
+test: it has no emitter other than its test emitters, and <code>system_except</code>,
+which the harness attends, is not connected.</p>
+<h2 id="concurrent-tests">Concurrent tests<a class="headerlink" href="#concurrent-tests" title="Permanent link">&para;</a></h2>
+<p>A test whose <code>test.fin</code> declares no <code>test</code> instances is a concurrent test. Its
+tasks, timers and interrupts execute as in an application, on the real clock
+of the platform and with the priorities of the deployment. One of these tasks,
+the scenario, is an ordinary task class with access ports connected to
+<code>test_checks</code>, which provides the checks, and to <code>test_scenario</code>, which
+provides <code>finish()</code>. The scenario is started by <code>system_init</code>, through a
+handler that sends the time of the event to a channel read by the scenario:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kd">handler</span> <span class="kd">class</span> <span class="nc">CStarter</span> <span class="p">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">init_ev</span> <span class="p">:</span> <span class="kt">sink</span> <span class="nc">TimeVal</span> <span class="kt">triggers</span> <span class="n">go</span><span class="p">;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">start_out</span> <span class="p">:</span> <span class="kt">out</span> <span class="nc">TimeVal</span><span class="p">;</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="kd">action</span> <span class="n">go</span><span class="p">(</span><span class="o">&amp;priv</span> <span class="k">self</span><span class="p">,</span> <span class="n">now</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">)</span> <span class="p">{</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">start_out</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">now</span><span class="p">);</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="k">return</span><span class="p">;</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="p">}</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="p">};</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="kd">task</span> <span class="kd">class</span> <span class="nc">CScenario</span> <span class="p">{</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="n">start_in</span> <span class="p">:</span> <span class="k">in</span> <span class="nc">TimeVal</span> <span class="kt">triggers</span> <span class="n">start</span><span class="p">;</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="n">tick_in</span> <span class="p">:</span> <span class="kt">sink</span> <span class="nc">TimeVal</span> <span class="kt">triggers</span> <span class="n">tick</span><span class="p">;</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="n">chk</span> <span class="p">:</span> <span class="kt">access</span> <span class="nc">TestChecks</span><span class="p">;</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">scn</span> <span class="p">:</span> <span class="kt">access</span> <span class="nc">TestScenario</span><span class="p">;</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="n">t0</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">;</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span class="n">count</span> <span class="p">:</span> <span class="kt">u32</span><span class="p">;</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>    <span class="kd">action</span> <span class="n">start</span><span class="p">(</span><span class="o">&amp;priv</span> <span class="k">self</span><span class="p">,</span> <span class="n">now</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">)</span> <span class="p">{</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">t0</span> <span class="o">=</span> <span class="n">now</span><span class="p">;</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>        <span class="k">return</span><span class="p">;</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>    <span class="p">}</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>    <span class="kd">action</span> <span class="n">tick</span><span class="p">(</span><span class="o">&amp;priv</span> <span class="k">self</span><span class="p">,</span> <span class="n">_now</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">)</span> <span class="p">{</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">=</span> <span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="kt">u32</span><span class="p">;</span>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">chk</span><span class="p">.</span><span class="n">step</span><span class="p">(</span><span class="mi">2</span> <span class="p">:</span> <span class="kt">usize</span><span class="p">);</span>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>        <span class="k">if</span> <span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">==</span> <span class="mi">3</span> <span class="p">:</span> <span class="kt">u32</span> <span class="p">{</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>            <span class="k">self</span><span class="o">-&gt;</span><span class="n">chk</span><span class="p">.</span><span class="n">check_eq_u32</span><span class="p">(</span><span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">,</span> <span class="mi">3</span> <span class="p">:</span> <span class="kt">u32</span><span class="p">);</span>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>            <span class="k">self</span><span class="o">-&gt;</span><span class="n">chk</span><span class="p">.</span><span class="n">check_elapsed</span><span class="p">(</span><span class="k">self</span><span class="o">-&gt;</span><span class="n">t0</span><span class="p">,</span> <span class="p">{</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tv_usec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">}</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">);</span>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>            <span class="k">self</span><span class="o">-&gt;</span><span class="n">scn</span><span class="p">.</span><span class="n">finish</span><span class="p">();</span>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>        <span class="p">}</span>
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>        <span class="k">return</span><span class="p">;</span>
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>    <span class="p">}</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="p">};</span>
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="kd">channel</span> <span class="n">start</span> <span class="p">:</span> <span class="nc">MsgQueue</span><span class="o">&lt;</span><span class="nc">TimeVal</span><span class="p">;</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">;</span>
+<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>
+<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a><span class="kd">handler</span> <span class="n">starter</span> <span class="p">:</span> <span class="nc">CStarter</span> <span class="o">=</span> <span class="p">{</span> <span class="n">init_ev</span> <span class="o">&lt;-</span> <span class="n">system_init</span><span class="p">,</span> <span class="n">start_out</span> <span class="o">-&gt;</span> <span class="n">start</span> <span class="p">};</span>
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>
+<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a><span class="kd">emitter</span> <span class="n">timer</span> <span class="p">:</span> <span class="nc">PeriodicTimer</span> <span class="o">=</span> <span class="p">{</span> <span class="n">period</span> <span class="o">=</span> <span class="p">{</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">tv_usec</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">}</span> <span class="p">};</span>
+<a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>
+<a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a><span class="o">#</span><span class="p">[</span><span class="n">priority</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a><span class="kd">task</span> <span class="n">scenario</span> <span class="p">:</span> <span class="nc">CScenario</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a>    <span class="n">start_in</span> <span class="o">&lt;-</span> <span class="n">start</span><span class="p">,</span>
+<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a>    <span class="n">tick_in</span> <span class="o">&lt;-</span> <span class="n">timer</span><span class="p">,</span>
+<a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a>    <span class="n">chk</span> <span class="o">&lt;-&gt;</span> <span class="n">test_checks</span><span class="p">,</span>
+<a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a>    <span class="n">scn</span> <span class="o">&lt;-&gt;</span> <span class="n">test_scenario</span><span class="p">,</span>
+<a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a>    <span class="n">t0</span> <span class="o">=</span> <span class="p">{</span><span class="n">tv_sec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">tv_usec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">},</span>
+<a id="__codelineno-5-49" name="__codelineno-5-49" href="#__codelineno-5-49"></a>    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-5-50" name="__codelineno-5-50" href="#__codelineno-5-50"></a><span class="p">};</span>
+</code></pre></div>
+<p>A call to <code>finish()</code> marks the test as finished and returns, without
+interrupting the calling action or the rest of the system. The test ends when
+every task of the deployment is blocked. At that point, a task of the runtime
+with the lowest priority disables the interrupts and closes the record. The
+checks performed between the call to <code>finish()</code> and the end of the test are
+included in the result. Calls to <code>finish()</code> after the first one have no
+effect.</p>
+<p>A concurrent test is reported as a single case whose name is the name of the
+test. The options <code>--case</code> and <code>--isolated</code> are therefore rejected for a
+concurrent test:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>scenario (posix-gcc)
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  ok       scenario    1 check
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>           tests/scenario/test.fin:29  self-&gt;chk.check_elapsed(self-&gt;t0, {tv_sec = 1, tv_usec = 0} : TimeVal)  took 0 s 300000 us, limit 1 s 0 us, measured without a verdict
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  1 passed
+</code></pre></div>
+<p>The <code>posix-gcc</code> platform provides no timing guarantees, so on it
+<code>check_elapsed</code> records the elapsed time without a verdict, and the report
+presents it as a measurement. On a board, <code>check_elapsed</code> passes or fails. A
+test that does not call <code>finish()</code> before the timeout of the manifest is
+stopped and reported as <code>TIMEOUT</code>, together with the last step reached. A test
+that calls <code>finish()</code> while some task never blocks is also stopped at the
+timeout, and the report states that <code>finish()</code> was called.</p>
+<h2 id="reading-the-report">Reading the report<a class="headerlink" href="#reading-the-report" title="Permanent link">&para;</a></h2>
+<p>The runner writes one block per test and platform:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>outcomes (posix-gcc)
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  ok       outcomes_tests.passes               1 check
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>  FAIL     outcomes_tests.fails_with_values    1 check
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>           tests/outcomes/test.fin:15  self-&gt;t.check_eq_u32(runner_sum(2 : u32, 2 : u32), 5 : u32)  expected 5, got 4
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>  FAIL     outcomes_tests.fails_in_loop        4 checks
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>           tests/outcomes/test.fin:22  self-&gt;t.check(i != 2 : usize)  step 2
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>  ok       outcomes_tests.no_checks            0 checks
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>           warning: the case ran no checks
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>  2 passed, 2 failed
+</code></pre></div>
+<p>A failed check is reported with its file and line, its expression, and the
+expected and obtained values. For a check inside a loop, the report also gives
+the last value passed to <code>step()</code>, which identifies the iteration. The verdict
+of a case is one of the following:</p>
+<table>
+<thead>
+<tr>
+<th>Mark</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ok</code></td>
+<td>every check of the case passed</td>
+</tr>
+<tr>
+<td><code>FAIL</code></td>
+<td>at least one check failed</td>
+</tr>
+<tr>
+<td><code>EXCEPT</code></td>
+<td>the case raised an exception, which is reported with its variant, the task and its fields</td>
+</tr>
+<tr>
+<td><code>TIMEOUT</code></td>
+<td>the case did not end before the timeout of the test</td>
+</tr>
+<tr>
+<td><code>STOPPED</code></td>
+<td>the record read with <code>--record</code> ends in the middle of the case, where the debugging session stopped the binary</td>
+</tr>
+<tr>
+<td><code>--</code></td>
+<td>the case did not run, because a case before it raised an exception or hung</td>
+</tr>
+<tr>
+<td><code>??</code></td>
+<td>the record of the results was full before the case ended; the entry <code>test-log-size</code> of the manifest sets its size</td>
+</tr>
+</tbody>
+</table>
+<p>A test whose binary cannot be built, or whose binary does not match its
+descriptor, is reported as <code>invalid</code>, together with the reason. The exit
+status of the command is 0 when every case passes, 1 when a case does not
+pass, and 2 when a test cannot be executed, following the convention of
+continuous integration systems.</p>
+<p>Each run also writes two files in <code>output/tests/&lt;name&gt;/&lt;platform&gt;/</code>. The file
+<code>report.xml</code> is in the <a href="https://github.com/testmoapp/junitxml">JUnit XML</a>
+format, which CI systems display. The file
+<code>results.json</code> contains the verdicts and the values of each failed check, and
+identifies the binary that produced them through the commit of the project,
+the SHA-256 of the binary and of each module object, the profile and the
+executor; it is the file to be kept as evidence of a run. The output of the
+binary, or the log of GDB on a board, is written to <code>test.log</code>.</p>
+<h2 id="tests-on-posix-gcc">Tests on posix-gcc<a class="headerlink" href="#tests-on-posix-gcc" title="Permanent link">&para;</a></h2>
+<p>On <code>posix-gcc</code>, the runner starts the binary of the test as a process of the
+host or, with the option <code>--with-gdb</code>, under the native <code>gdb</code>, which adds the
+backtrace of an exception to the report. The <a href="../../platforms/posix-gcc/">page of the
+platform</a> gives the hosts where <code>gdb</code> cannot run
+the tests.</p>
+<h2 id="tests-on-a-board">Tests on a board<a class="headerlink" href="#tests-on-a-board" title="Permanent link">&para;</a></h2>
+<p>On a board, the runner loads the binary of the test through the GDB server of
+the board, executes it, and reads the results from the RAM of the board when
+the test ends; the report includes the backtrace of an exception. The runner
+uses <code>gdb-multiarch</code>, which must be available in the <code>PATH</code> and is included in
+the Docker image, together with the <code>addr2line</code> and <code>nm</code> of the toolchain with
+which the test was built. The version of GDB is recorded in <code>results.json</code>.
+The GDB server runs on the host connected to the debug probe by USB, and must
+be started before <code>termina test</code>. The PYNQ-Z2 additionally requires an XSDB
+server, which prepares the board before each run. The page of each board
+gives the commands that start these servers and describes the steps that the
+runner performs before each run:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Servers on the host</th>
+<th>Ports</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../../platforms/nucleo-l432kc/"><code>freertos10-stm32l432-nucleol432kc</code></a></td>
+<td><code>ST-LINK_gdbserver</code></td>
+<td>61234</td>
+</tr>
+<tr>
+<td><a href="../../platforms/nexys-a7/"><code>rtems5-leon3sf-nexysa7</code></a></td>
+<td>GRMON</td>
+<td>2222</td>
+</tr>
+<tr>
+<td><a href="../../platforms/pynq-z2/"><code>rtems6-zynq7000-pynqz2</code></a></td>
+<td><code>hw_server</code> and an XSDB server</td>
+<td>3000 and 3122</td>
+</tr>
+<tr>
+<td><a href="../../platforms/spike/"><code>rtems6-rv32im-spike</code></a></td>
+<td>OpenOCD, connected to Spike</td>
+<td>3333</td>
+</tr>
+</tbody>
+</table>
+<p>In a native installation the runner connects to the servers at <code>localhost</code>,
+and inside the container at <code>host.docker.internal</code>. The option <code>--gdb</code> gives
+another host for the servers of every board. With a port, it gives the server
+of a single board, and therefore requires a command that selects only one
+board:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$<span class="w"> </span>termina<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--gdb<span class="w"> </span>lab-pc
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>$<span class="w"> </span>termina<span class="w"> </span><span class="nb">test</span><span class="w"> </span>hk_fdir<span class="w"> </span>--platform<span class="w"> </span>freertos10-stm32l432-nucleol432kc<span class="w"> </span>--gdb<span class="w"> </span>lab-pc:61234
+</code></pre></div>
+<p>The command <code>termina platforms --json</code> lists the platforms with the address
+of the server of each board, and the GDB commands that load a program into it.</p>
+<p>When the runner executes inside the container, the connections to these ports
+must be allowed on the <code>docker0</code> bridge of the host, with the rule given in the
+Debugging chapter.</p>
+<p>The timeout of a test is measured from the moment the binary starts executing
+the cases, and therefore excludes the time needed to load the binary into the
+board. The load itself is limited to 120 seconds; a test that does not reach
+its cases within that time is reported as <code>invalid</code>.</p>
+<h2 id="running-tests-from-visual-studio-code">Running tests from Visual Studio Code<a class="headerlink" href="#running-tests-from-visual-studio-code" title="Permanent link">&para;</a></h2>
+<p>The Termina extension for Visual Studio Code lists the tests of the project in
+the Testing view, grouped by platform, test and case, from
+<code>termina test --list --json</code>. Running a platform, a test or a case calls
+<code>termina test</code> and marks each case with its verdict from <code>results.json</code>. A
+failed check shows the expected and obtained values at its line of the
+<code>test.fin</code>, and a case that did not run is marked as skipped. Debugging a case
+from the same view builds the test, starts a debugging session on the platform
+of the test, and selects the case as the runner does.</p>
+<p>A configuration of <code>.vscode/launch.json</code> can also debug a case. The attribute
+<code>test</code> names the test, <code>platform</code> the platform when the test runs on more than
+one, and <code>case</code> the case, as <code>&lt;instance&gt;.&lt;case&gt;</code>; without <code>case</code>, every case
+runs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>{
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    "name": "Debug first_sample",
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    "type": "termina",
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    "request": "launch",
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    "test": "sampler",
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    "case": "sampler_tests.first_sample"
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>}
+</code></pre></div>
+<h2 id="debugging-a-case">Debugging a case<a class="headerlink" href="#debugging-a-case" title="Permanent link">&para;</a></h2>
+<p>The binary of a test is always <code>output/tests/&lt;name&gt;/&lt;platform&gt;/bin/&lt;name&gt;</code>,
+and it is debugged in the same way as the binary of the application, with this
+binary as the program. The runner selects
+the case to be executed by writing its number into the binary when execution
+stops at <code>termina__test__init</code>, before any task exists. The cases are numbered
+from 1, in the order given by <code>termina test --list</code>, and the value 0 executes
+all of them. The same selection can be made by hand:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="k">break</span><span class="w"> </span>termina__test__init
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span>var<span class="w"> </span>termina__test__header.selected_case<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="k">break</span><span class="w"> </span>termina__shared__test__fail
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="k">continue</span>
+</code></pre></div>
+<p>On a board, <code>run</code> is replaced by the connection to the GDB server, the reset
+of the board and <code>load</code>, as described in the page of the board, and the case
+is written at the same stop. The breakpoint on <code>termina__shared__test__fail</code>
+stops execution at every failed check, with the frame of the case a few
+levels up the stack. A concurrent test has no case to select; a session
+therefore sets only the two breakpoints that the runner sets:
+<code>termina__test__end</code>, at the end of the test, and <code>termina__exec__reboot</code>, at
+an exception.</p>
+<p>The results of a session remain in the record, in the memory of the program.
+With execution stopped at <code>termina__test__end</code>, or at any other point, the
+session dumps the header and the area of the record into two files of a
+folder:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>dump<span class="w"> </span>binary<span class="w"> </span>memory<span class="w"> </span>rec/header.bin<span class="w"> </span><span class="o">(</span>char*<span class="o">)</span><span class="p">&amp;</span>termina__test__header<span class="w"> </span><span class="o">(</span>char*<span class="o">)</span><span class="p">&amp;</span>termina__test__header+sizeof<span class="o">(</span>termina__test__header<span class="o">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>dump<span class="w"> </span>binary<span class="w"> </span>memory<span class="w"> </span>rec/area.bin<span class="w"> </span><span class="o">(</span>char*<span class="o">)</span><span class="p">&amp;</span>termina__test__area<span class="w"> </span><span class="o">(</span>char*<span class="o">)</span><span class="p">&amp;</span>termina__test__area+termina__test__capacity
+</code></pre></div>
+<p>The option <code>--record</code> reads these two files and writes the report,
+<code>results.json</code> and <code>report.xml</code>, in the same way as a run of the runner:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>$<span class="w"> </span>termina<span class="w"> </span><span class="nb">test</span><span class="w"> </span>hk_fdir<span class="w"> </span>--platform<span class="w"> </span>posix-gcc<span class="w"> </span>--record<span class="w"> </span>rec
+</code></pre></div>
+<p>The command does not build the test, so the binary must be the one produced
+by its last build. The option <code>--platform</code> is required when the test has
+several platforms, and the options <code>--case</code> and <code>--isolated</code> are not admitted,
+since the cases are those selected in the header. A case that is still
+running when the session dumps the record is reported as <code>STOPPED</code>, together
+with its last step.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; The Termina Project Contributors
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.tracking", "navigation.indexes", "toc.follow", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../javascripts/lightbox.js"></script>
+      
+    
+  </body>
+</html>

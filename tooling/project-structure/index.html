@@ -1,0 +1,2240 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A programming language for real-time critical systems">
+      
+      
+      
+        <link rel="canonical" href="https://termina-lang.org/book/tooling/project-structure/">
+      
+      
+        <link rel="prev" href="../../platforms/supported/">
+      
+      
+        <link rel="next" href="../packages/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo_termina.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Project Structure and Build System - The Termina Book</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/termina.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <style>
+    /* wordmark next to the logo in the header */
+    .md-header__button.md-logo + .md-header__title .md-header__topic:first-child .md-ellipsis {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      letter-spacing: .01em;
+    }
+  </style>
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#project-structure-and-build-system" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="The Termina Book" class="md-header__button md-logo" aria-label="The Termina Book" data-md-component="logo">
+      
+  <img src="../../assets/logo_termina.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            The Termina Book
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Project Structure and Build System
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/termina-lang/termina" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    termina-lang/termina
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+  
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="The Termina Book" class="md-nav__button md-logo" aria-label="The Termina Book" data-md-component="logo">
+      
+  <img src="../../assets/logo_termina.png" alt="logo">
+
+    </a>
+    The Termina Book
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/termina-lang/termina" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    termina-lang/termina
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foreword/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foreword
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../started/hello-world/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hello, Real-Time World!
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building Our First Application
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Building Our First Application
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A Guided Tour
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Basics
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Basics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types and Constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables and Mutability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/expressions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressions and Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/control-flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/references/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    References
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Reactive Model
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    The Reactive Model
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/resource-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resource Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/task-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/handler-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handler Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Communication and Memory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Communication and Memory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../comm/ports-and-channels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports and Channels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../comm/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Systems and Platforms
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Systems and Platforms
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wiring/application-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Application Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/memory-mapped-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory-Mapped I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/c-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calling C Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../platforms/osal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The OSAL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../platforms/supported/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supported Platforms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tooling
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tooling
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure and Build System
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure and Build System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a project
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-project-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The project layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The manifest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building a project
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#static-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-deliverable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The deliverable
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-the-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking the installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platforms
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../packages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packages and Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Debugging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendix
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Appendix
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/keywords/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A. Keywords
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B. Operators and Symbols
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/builtins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C. Built-in Types and Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/conventions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    D. Naming Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creating a project
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-project-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The project layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-manifest" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The manifest
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-a-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Building a project
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#static-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Static analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-deliverable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The deliverable
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-the-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking the installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platforms
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="project-structure-and-build-system">Project Structure and Build System<a class="headerlink" href="#project-structure-and-build-system" title="Permanent link">&para;</a></h1>
+<p>A Termina program is organized as a project: a directory with a fixed layout, a
+manifest that describes the project, and the source modules that make up the
+program. This chapter describes that layout, the manifest, and the commands
+that turn the sources into a running program and into a deliverable.</p>
+<h2 id="creating-a-project">Creating a project<a class="headerlink" href="#creating-a-project" title="Permanent link">&para;</a></h2>
+<p>A project is created with the <code>new</code> command, which takes the name of the
+project and, optionally, the target platform of the application with <code>-p</code> or
+<code>--platform</code>. When no platform is given, the project is created for
+<code>posix-gcc</code>, the development platform:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>termina<span class="w"> </span>new<span class="w"> </span>hello_world
+</code></pre></div>
+<p>The command generates the project directory with its initial structure:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>hello_world/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├──<span class="w"> </span>.gitignore
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>├──<span class="w"> </span>termina.yaml
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>├──<span class="w"> </span>app/
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│<span class="w">   </span>└──<span class="w"> </span>app.fin
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>├──<span class="w"> </span>src/
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>└──<span class="w"> </span>output/
+</code></pre></div>
+<p>The command also initializes a Git repository in the new directory, unless the
+directory already lies inside one, and writes a <code>.gitignore</code> that excludes the
+<code>output/</code> and <code>.termina/</code> directories, whose contents the transpiler generates
+again on every build. The option <code>--vcs none</code> skips the repository, although
+the <code>.gitignore</code> is still written. The option <code>--vscode</code> adds the files that
+Visual Studio Code needs to work on the project inside the Termina development
+container: <code>.devcontainer/devcontainer.json</code>, which names the container image
+of the same <code>MAJOR.MINOR</code> version as the transpiler, <code>.vscode/tasks.json</code>, with
+a <code>termina: build</code> task, and <code>.vscode/launch.json</code>, with a debug configuration
+of type <code>termina</code> that the Termina extension resolves for the platform of the
+application.</p>
+<p>A project is either an application or a library. An application has an
+<code>app/</code> directory with the application module, <code>app.fin</code>, where the system is
+assembled, and is built into a program. A library has no <code>app/</code> directory: it
+publishes source modules for other projects to import, and the programs built
+from it are its tests. The option <code>--lib</code> creates a library, and
+<code>--exports</code> gives the module prefix it publishes, whose directory is created
+under <code>src/</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>termina<span class="w"> </span>new<span class="w"> </span>acme_sensors<span class="w"> </span>--lib<span class="w"> </span>--exports<span class="w"> </span>acme.sensors
+</code></pre></div>
+<p>The chapter on <a href="../packages/">packages and dependencies</a> describes how a library
+is published and how a project depends on it.</p>
+<h2 id="the-project-layout">The project layout<a class="headerlink" href="#the-project-layout" title="Permanent link">&para;</a></h2>
+<p>The layout of a project is fixed, so the transpiler, the editor and any other
+tool find every part of a project without reading its configuration:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>my_project/
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>├──<span class="w"> </span>termina.yaml<span class="w">        </span>the<span class="w"> </span>manifest
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>├──<span class="w"> </span>termina.lock<span class="w">        </span>the<span class="w"> </span>resolved<span class="w"> </span>dependencies,<span class="w"> </span><span class="k">if</span><span class="w"> </span>any
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>├──<span class="w"> </span>app/
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>│<span class="w">   </span>└──<span class="w"> </span>app.fin<span class="w">         </span>the<span class="w"> </span>application<span class="w"> </span>module<span class="w"> </span><span class="o">(</span>applications<span class="w"> </span>only<span class="o">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>├──<span class="w"> </span>src/<span class="w">                </span>the<span class="w"> </span><span class="nb">source</span><span class="w"> </span>modules
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>├──<span class="w"> </span>extern/<span class="w">             </span>the<span class="w"> </span>C<span class="w"> </span>code<span class="w"> </span>that<span class="w"> </span>the<span class="w"> </span>program<span class="w"> </span>calls,<span class="w"> </span><span class="k">if</span><span class="w"> </span>any
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>├──<span class="w"> </span>tests/
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>│<span class="w">   </span>└──<span class="w"> </span>&lt;name&gt;/
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>│<span class="w">       </span>├──<span class="w"> </span>test.fin<span class="w">    </span>the<span class="w"> </span>main<span class="w"> </span>module<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span><span class="nb">test</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>│<span class="w">       </span>└──<span class="w"> </span>src/<span class="w">        </span>the<span class="w"> </span>modules<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>test,<span class="w"> </span><span class="k">if</span><span class="w"> </span>any
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>├──<span class="w"> </span>vendor/<span class="w">             </span>a<span class="w"> </span>copy<span class="w"> </span>of<span class="w"> </span>every<span class="w"> </span>dependency,<span class="w"> </span><span class="k">if</span><span class="w"> </span>any
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>├──<span class="w"> </span>output/<span class="w">             </span>the<span class="w"> </span>generated<span class="w"> </span>C<span class="w"> </span>and<span class="w"> </span>the<span class="w"> </span>compiled<span class="w"> </span>programs
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>└──<span class="w"> </span>.termina/<span class="w">           </span>working<span class="w"> </span>files<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>transpiler
+</code></pre></div>
+<p>The <code>app/</code> directory contains <code>app.fin</code> and nothing else. The <code>src</code> directory
+holds the source modules that define the component classes and functions of
+the program, organized in subdirectories whose structure mirrors the dotted
+paths used in <code>import</code> declarations. A module at <code>src/resources/counter.fin</code> is
+imported as <code>resources.counter</code>, and one at <code>src/common/types.fin</code> as
+<code>common.types</code>. A module always belongs to a subdirectory, since the root of
+<code>src</code> holds directories and not modules. Every directory and file name under
+<code>src</code> is written in lowercase <code>snake_case</code>, the convention of module names,
+which also rules out two modules whose names differ only in case on the
+case-insensitive file systems of macOS and Windows.</p>
+<p>Each directory under <code>tests/</code> holds one test, with its main module <code>test.fin</code>
+and, optionally, a <code>src</code> directory with modules that only that test uses, as
+the chapter on <a href="../testing/">running tests</a> describes. The <code>extern</code> directory
+holds the C code that the program calls, as the chapter on
+<a href="../../advanced/c-code/">calling C code</a> describes. The <code>vendor</code> directory and
+the <code>termina.lock</code> file appear when the project has dependencies and are
+written by the commands of the package manager. Both are committed together
+with the rest of the project, so a project builds from its own repository
+without network access.</p>
+<h2 id="the-manifest">The manifest<a class="headerlink" href="#the-manifest" title="Permanent link">&para;</a></h2>
+<p>The file <code>termina.yaml</code> is the manifest of the project. The manifest that
+<code>termina new</code> writes for an application contains the following:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">project</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"hello_world"</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.1.0</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">manifest-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="nt">app</span><span class="p">:</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nt">platform</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">posix-gcc</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="nt">profile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug</span>
+</code></pre></div>
+<p>The <code>project</code> section identifies the project. The <code>name</code> is used in the
+messages of the transpiler and as the name of the program, and the <code>version</code> is
+the version of the project, which appears in the name of the archive of the
+deliverable and plays no other role in the build. The <code>manifest-version</code> is the
+version of the format of the manifest. A transpiler reads only the formats it
+knows, and fails on any other instead of guessing its meaning. The flat
+<code>termina.yaml</code> of the versions before 0.7.0 has no <code>manifest-version</code> and is
+rejected; such a project is migrated by rewriting its manifest in this form.</p>
+<p>The <code>app</code> section configures the application. The <code>platform</code> is the target the
+application is built for. The <code>profile</code> selects how the generated code is
+compiled: <code>release</code>, with <code>-O2 -g</code>, or <code>debug</code>, with <code>-O0 -g3</code> and the
+behavior of the runtime that the chapter on <a href="../debugging/">debugging</a>
+describes. The optional
+<code>microseconds-per-tick</code> sets the length of the tick of the system clock, 10000
+by default, which has to divide 1000000. The periods of the timers of the
+application are multiples of the tick. On the embedded platforms, the optional
+<code>linker-script</code> names a linker script of the project, which replaces the one
+of the platform when the program is linked. On the PYNQ-Z2, the optional
+<code>xsdb-init</code> names the Tcl script that prepares the board before each run, as
+the <a href="../../platforms/pynq-z2/">page of the platform</a> describes.</p>
+<p>The manifest of a library has an <code>exports</code> section, with the list of module
+prefixes it publishes, instead of the <code>app</code> section. The remaining sections are
+optional and shared by both kinds of project. The <code>dependencies</code> section lists
+the libraries the project depends on, and the <code>overrides</code> section fixes the
+version of a library that two dependencies require at different versions; both
+are described in the chapter on <a href="../packages/">packages and dependencies</a>. The
+<code>tests</code> section declares the tests of the project, one entry per directory of
+<code>tests/</code>, with the platforms on which each one runs, as the chapter on
+<a href="../testing/">running tests</a> describes. The <code>extern</code> section lists the C code of
+the <code>extern</code> directory. Finally, the keys <code>sys-print-output-buffer-size</code> and
+<code>sys-read-input-buffer-size</code> set the size, in bytes, of the buffers of the
+<code>print</code> and <code>read</code> procedures of the system interface, 256 by default.</p>
+<p>The manifest does not enable the parts of the runtime that a program uses.
+Every program has the <code>system_init</code> and <code>system_except</code> emitters, the
+<code>system_entry</code> resource and the interrupts of its platform, and the transpiler
+generates code only for those that the application module connects.</p>
+<h2 id="building-a-project">Building a project<a class="headerlink" href="#building-a-project" title="Permanent link">&para;</a></h2>
+<p>Building a project is a two-stage process: the transpiler turns the Termina
+sources into C, and the build system of the platform compiles that C into a
+program.</p>
+<figure>
+<img alt="Building a project" class="diagram" src="../../diagrams/build-stages.svg" />
+
+<figcaption>The two build stages: termina build, then make</figcaption>
+</figure>
+<p>The <code>build</code> command, run from any directory of the project, carries out both
+stages:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$<span class="w"> </span>termina<span class="w"> </span>build
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>$<span class="w"> </span>./output/app/bin/hello_world
+</code></pre></div>
+<p>The transpiler reads the application module and the source modules, checks the
+program, and writes the resulting C into <code>output/app/</code>, with a <code>src</code> tree of C
+files, an <code>include</code> tree of headers, and a <code>Makefile</code> that compiles them
+against the Operating System Abstraction Layer (OSAL) of the platform. The
+command then runs <code>make</code> in that directory, which leaves the program in
+<code>output/app/bin/</code>. On <code>posix-gcc</code> the program is an executable for the host.
+On an embedded platform the same two stages produce, with the cross-toolchain
+of the platform, an image to be loaded onto the board.</p>
+<p>The <code>generate</code> command carries out only the first stage. It writes the C and
+the <code>Makefile</code> without compiling them, so it does not require the
+cross-toolchain of the platform, and the generated code can be compiled later
+with <code>make</code> in <code>output/app/</code>, on a machine that has it. Both commands build the
+application by default. The option <code>--test</code> selects a test instead, <code>--tests</code>
+selects every test, and <code>--all</code> selects the application and every test, which
+is the selection of a continuous integration job that runs the tests on
+another machine. The option <code>--profile</code> builds with another profile than the
+one of the manifest, as the Termina extension for Visual Studio Code does with
+<code>--profile debug</code> before a debugging session.</p>
+<p>The transpiler generates the C of each deployment twice. The C in
+<code>output/app/</code> contains <code>#line</code> directives that relate each line of C to the
+line of Termina it comes from, so the debugger and the diagnostics of the C
+compiler refer to the <code>.fin</code> files. The C in <code>output/plain/app/</code> is the same
+code without those directives, and is the code that static analysis tools
+read and that the deliverable contains. The output directory has the
+following structure:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>output/
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>├──<span class="w"> </span>app/<span class="w">                        </span>the<span class="w"> </span>application,<span class="w"> </span>built
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>├──<span class="w"> </span>tests/&lt;name&gt;/&lt;platform&gt;/<span class="w">    </span>each<span class="w"> </span><span class="nb">test</span><span class="w"> </span>on<span class="w"> </span>each<span class="w"> </span>of<span class="w"> </span>its<span class="w"> </span>platforms
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>└──<span class="w"> </span>plain/
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span>├──<span class="w"> </span>app/<span class="w">                    </span>the<span class="w"> </span>C<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>application,<span class="w"> </span>without<span class="w"> </span><span class="c1">#line</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span>└──<span class="w"> </span>tests/&lt;name&gt;/&lt;platform&gt;/
+</code></pre></div>
+<p>Each build writes a <code>provenance.json</code> file next to the program, which records
+the versions of the transpiler and of the OSAL, the compiler, the platform and
+the profile, and the source of every module with its object file. When the
+<code>objcopy</code> of the platform is available, the file also records the SHA-256 hash
+of each module object without its debugging information, and that of the
+program, so the code exercised by a test can be compared with the code of the
+application.</p>
+<p>The generated <code>Makefile</code> includes <code>platform/common.mk</code> from the OSAL, which
+compiles every platform in C11 with <code>-pedantic-errors</code> and a set of warnings
+beyond <code>-Wall</code> and <code>-Wextra</code>, among them <code>-Wconversion</code> and <code>-Wshadow</code>. The
+code the transpiler emits is expected to compile without warnings under those
+flags, so a warning comes either from the transpiler or from C code written by
+hand, such as a platform driver. A build compiles again only the files whose
+content, compilation flags or OSAL have changed since the previous one.</p>
+<h2 id="static-analysis">Static analysis<a class="headerlink" href="#static-analysis" title="Permanent link">&para;</a></h2>
+<p>The same <code>Makefile</code> provides two targets that run
+<a href="https://cppcheck.sourceforge.io/">Cppcheck</a> over the generated sources. The
+<code>cppcheck</code> target runs the analysis with the warning, style, performance and
+portability checks enabled, and <code>cppcheck-misra</code> adds the MISRA addon of
+Cppcheck, restricted to the mandatory and required rules of
+<a href="https://www.misra.org.uk/">MISRA C</a>. Both are
+run on the C without <code>#line</code> directives, so that the findings refer to lines of
+the generated C:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>output/plain/app
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>$<span class="w"> </span>make<span class="w"> </span>cppcheck
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>$<span class="w"> </span>make<span class="w"> </span>cppcheck-misra
+</code></pre></div>
+<p>The OSAL is analyzed in its own repository, so both targets analyze only the
+sources of the project. Each target keeps its results in a directory of its
+own under the build directory, and a second run only analyzes the files that
+have changed. The targets report their findings without failing; setting
+<code>CPPCHECK_ERROR_EXITCODE=1</code> on the <code>make</code> command line makes them fail when
+there is any, which is the setting for a continuous integration job. The Docker
+image ships Cppcheck, whereas a native installation requires it on the host.</p>
+<p>Findings of the MISRA addon are identified by the number of the rule, such as
+<code>misra-c2012-11.5</code>. A class member receives its instance as a <code>void *</code> and
+converts it into a pointer to its class, so every project gets findings under
+Rule 11.5 that come from the way the generated code is built.</p>
+<h2 id="the-deliverable">The deliverable<a class="headerlink" href="#the-deliverable" title="Permanent link">&para;</a></h2>
+<p>The <code>deliver</code> command builds a self-contained copy of the application in
+<code>output/deliverable/app/</code>, which compiles with the toolchain of the platform
+alone, without the transpiler, the OSAL or the rest of the project. The copy
+contains the C without <code>#line</code> directives, the C code of <code>extern/</code>, the files of
+the OSAL that the build uses together with their licenses, a flat <code>Makefile</code>
+and the <code>provenance.json</code> of the build:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$<span class="w"> </span>termina<span class="w"> </span>deliver
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>$<span class="w"> </span>termina<span class="w"> </span>deliver<span class="w"> </span>--tests<span class="w"> </span>--archive
+</code></pre></div>
+<p>The deliverable is always built with the <code>release</code> profile, whatever the
+profile of the manifest. The option <code>--tests</code> delivers every test as well, on
+each of its platforms, and <code>--archive</code> packs each deliverable into a <code>.tar.gz</code>
+file named after the project, its version and the platform. Before building,
+the command checks without network access that <code>vendor/</code> matches
+<code>termina.lock</code>, and it refuses a project with a dependency on a local
+directory, so that a deliverable always corresponds to the state of the
+repository. Once the deliverable is built, the command checks that its binary,
+stripped of its debugging information, is identical to the one built from the C
+with <code>#line</code> directives, a comparison that requires the <code>objcopy</code> of the
+platform.</p>
+<h2 id="checking-the-installation">Checking the installation<a class="headerlink" href="#checking-the-installation" title="Permanent link">&para;</a></h2>
+<p>The <code>doctor</code> command reports the version of the transpiler, the OSAL it finds
+and its version, the versions of <code>make</code>, <code>git</code> and <code>gdb-multiarch</code>, and, for
+each platform, the compiler of its toolchain or the variable that has to be set
+when the compiler is not found:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>$<span class="w"> </span>termina<span class="w"> </span>doctor
+</code></pre></div>
+<p>Inside a project, the command marks the platforms that the application and the
+tests use, and compares the image named in <code>.devcontainer/devcontainer.json</code>
+with the version of the transpiler. It exits with an error when the OSAL,
+<code>make</code>, or the compiler of a platform of the project is missing.</p>
+<p>The <code>clean</code> command removes the <code>output/</code> and <code>.termina/</code> directories of the
+project, whose contents the next build writes again.</p>
+<h2 id="platforms">Platforms<a class="headerlink" href="#platforms" title="Permanent link">&para;</a></h2>
+<p>The <code>posix-gcc</code> platform builds the application for a conventional Unix-like
+host, using the system's own compiler, and is intended for development and
+validation. The embedded platforms are <code>rtems5-leon3sf-nexysa7</code>,
+<code>rtems6-zynq7000-pynqz2</code>, <code>rtems6-rv32im-spike</code>, <code>rtems6-noel32im-artya7</code> and
+<code>freertos10-stm32l432-nucleol432kc</code>, which the chapter on
+<a href="../../platforms/supported/">supported platforms</a> lists, with a page for each one. The platform of the application is
+chosen when the project is created, with the <code>--platform</code> option of the <code>new</code>
+command, or changed afterwards in the <code>platform</code> field of the <code>app</code> section of
+<code>termina.yaml</code>. Each target beyond <code>posix-gcc</code> requires its cross-toolchain, as
+described in the chapter on installation, and <code>termina doctor</code> reports whether
+it is found. The <code>platforms</code> command lists the supported platforms. With
+<code>--json</code> it also gives, for each board, the address of its GDB server and the
+GDB commands that load a program into it, which is the list that the Termina
+extension reads:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$<span class="w"> </span>termina<span class="w"> </span>platforms
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>$<span class="w"> </span>termina<span class="w"> </span>platforms<span class="w"> </span>--json
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; The Termina Project Contributors
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.tracking", "navigation.indexes", "toc.follow", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../javascripts/lightbox.js"></script>
+      
+    
+  </body>
+</html>
