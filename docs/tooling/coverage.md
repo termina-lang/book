@@ -167,11 +167,13 @@ $ termina coverage --report-only
 ## Reading the report
 
 The report is a set of static HTML pages, opened from
-`output/coverage/index.html`. The landing page gives the totals of the project
-in four measures: the lines with code, which are the lines where a statement
-or a decision starts; the functions, each covered when some run executed one
-of its statements; the outcomes of the decisions; and the values of the
-conditions. Below the totals are the views and the table of runs. A view is a
+`output/coverage/index.html`. The landing page names the project and its
+version, the version of the transpiler and the time at which the report was
+written, and gives the totals of the project in four measures: the lines with
+code, which are the lines where a statement or a decision starts; the
+functions, each covered when some run executed one of its statements; the
+outcomes of the decisions; and the values of the conditions. Below the totals
+are the views and the table of runs. A view is a
 selection of the results: all of them, those of the tests, those of the
 application, those of each platform, and each run alone, so that one campaign
 can be inspected without removing the others. For the example of this
@@ -187,6 +189,15 @@ give the following totals:
 The view of the tests includes `tests/monitor/test.fin`, whose `for` is also a
 decision. The campaign of the application lasted for more than four
 activations and covered the alarm.
+
+The table of runs gives, for each run, its platform, its start and end times,
+how it ended and the number of reboots. A run of the application ends with
+`timeout`, `interrupted` after a Ctrl-C, or `signal` followed by the signal
+that stopped the program. A test ends with the summary of the verdicts of its
+run with coverage, such as `1 passed`. A run taken with `--record` ends with
+`recorded`, and its times and reboots, which the runner does not know, are
+shown as `–`. The page of the view of a single run repeats these data above
+its totals.
 
 Each view lists its sources, and the page of a source shows its totals, its
 functions in a column on the left, each with a link to its first line and the
