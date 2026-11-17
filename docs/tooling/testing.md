@@ -340,8 +340,8 @@ On a board, the runner loads the binary of the test through the GDB server of
 the board, executes it, and reads the results from the RAM of the board when
 the test ends; the report includes the backtrace of an exception. The runner
 uses `gdb-multiarch`, which must be available in the `PATH` and is included in
-the Docker image, together with the `addr2line` and `nm` of the toolchain with
-which the test was built. The version of GDB is recorded in `results.json`.
+the Docker image, together with the `addr2line` of the toolchain with which the test
+was built. The version of GDB is recorded in `results.json`.
 The GDB server runs on the host connected to the debug probe by USB, and must
 be started before `termina test`. The PYNQ-Z2 additionally requires an XSDB
 server, which prepares the board before each run. The page of each board

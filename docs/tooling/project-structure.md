@@ -145,7 +145,9 @@ are described in the chapter on [packages and dependencies](packages.md). The
 `tests` section declares the tests of the project, one entry per directory of
 `tests/`, with the platforms on which each one runs, as the chapter on
 [running tests](testing.md) describes. The `extern` section lists the C code of
-the `extern` directory. Finally, the keys `sys-print-output-buffer-size` and
+the `extern` directory. The `coverage` section names a stylesheet of the
+project for the coverage report, as the chapter on [measuring
+coverage](coverage.md#customizing-the-report) describes. Finally, the keys `sys-print-output-buffer-size` and
 `sys-read-input-buffer-size` set the size, in bytes, of the buffers of the
 `print` and `read` procedures of the system interface, 256 by default.
 
@@ -205,9 +207,10 @@ following structure:
 output/
 ├── app/                        the application, built
 ├── tests/<name>/<platform>/    each test on each of its platforms
-└── plain/
-    ├── app/                    the C of the application, without #line
-    └── tests/<name>/<platform>/
+├── plain/
+│   ├── app/                    the C of the application, without #line
+│   └── tests/<name>/<platform>/
+└── coverage/                   the builds, the results and the report of termina coverage
 ```
 
 Each build writes a `provenance.json` file next to the program, which records
@@ -225,6 +228,34 @@ code the transpiler emits is expected to compile without warnings under those
 flags, so a warning comes either from the transpiler or from C code written by
 hand, such as a platform driver. A build compiles again only the files whose
 content, compilation flags or OSAL have changed since the previous one.
+
+## Running the application
+
+The `run` command builds the application when needed and runs it on the
+platform of the manifest:
+
+```bash
+$ termina run
+[info] Running the application; Ctrl-C stops it
+```
+
+On `posix-gcc` the program runs as a process of the host, with its output in
+the terminal, or under the native `gdb` with the option `--with-gdb`. On an
+embedded platform the command loads the program into the board through the GDB
+server of the board and starts it, in the same way as `termina test` runs the
+binary of a test. The servers that each board requires, and the options `--gdb`
+and `--xsdb` that give their addresses, are described in the chapter on
+[running tests](testing.md#tests-on-a-board). The run ends with Ctrl-C, when
+the program ends, or, with the option `--timeout`, after the given number of
+seconds. Under GDB, a reboot of the program does not end the run, and the
+program starts again in the same session. A `posix-gcc` process without GDB
+built with the `debug` profile ends at its first reboot, as the chapter on
+[debugging](debugging.md#the-debug-profile) describes. The option `--profile`
+runs the application with another profile than the one of the manifest.
+
+The command `termina coverage` runs the application in the same way and also
+measures which parts of the program the run executed, as the chapter on
+[measuring coverage](coverage.md) describes.
 
 ## Static analysis
 

@@ -48,6 +48,7 @@ nav:
     - Packages and Dependencies: tooling/packages.md
     - Debugging: tooling/debugging.md
     - Running Tests: tooling/testing.md
+    - Measuring Coverage: tooling/coverage.md
   - Appendix:
     - A. Keywords: appendix/keywords.md
     - B. Operators and Symbols: appendix/operators.md

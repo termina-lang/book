@@ -329,8 +329,8 @@ includes both. The
 `GNU-tools-for-STM32` folder of STM32CubeCLT holds the same toolchain, and a
 link to it at `/opt/arm-none-eabi` serves as well. A toolchain folder given in
 a variable is exported in the environment rather than passed on the `make`
-command line, since `termina test` reads it to find the `addr2line` and `nm` of
-the toolchain. Running the tests on a board also requires `gdb-multiarch`,
+command line, since `termina test` reads it to find the `addr2line` of the
+toolchain. Running the tests on a board also requires `gdb-multiarch`,
 which on Ubuntu comes in the package of the same name.
 
 The target platform of the application is selected when the project is
