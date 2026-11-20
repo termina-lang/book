@@ -1,0 +1,2359 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A programming language for real-time critical systems">
+      
+      
+      
+        <link rel="canonical" href="https://termina-lang.org/book/tooling/coverage/">
+      
+      
+        <link rel="prev" href="../testing/">
+      
+      
+        <link rel="next" href="../../appendix/keywords/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo_termina.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Measuring Coverage - The Termina Book</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/termina.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <style>
+    /* wordmark next to the logo in the header */
+    .md-header__button.md-logo + .md-header__title .md-header__topic:first-child .md-ellipsis {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 500;
+      letter-spacing: .01em;
+    }
+  </style>
+
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#measuring-coverage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="The Termina Book" class="md-header__button md-logo" aria-label="The Termina Book" data-md-component="logo">
+      
+  <img src="../../assets/logo_termina.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            The Termina Book
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Measuring Coverage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/termina-lang/termina" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    termina-lang/termina
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+  
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="The Termina Book" class="md-nav__button md-logo" aria-label="The Termina Book" data-md-component="logo">
+      
+  <img src="../../assets/logo_termina.png" alt="logo">
+
+    </a>
+    The Termina Book
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/termina-lang/termina" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    termina-lang/termina
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../foreword/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Foreword
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../started/install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../started/hello-world/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hello, Real-Time World!
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building Our First Application
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Building Our First Application
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A Guided Tour
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Language Basics
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Language Basics
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types and Constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Variables and Mutability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/expressions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Expressions and Operators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/control-flow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Control Flow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../basics/references/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    References
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Reactive Model
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    The Reactive Model
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/resource-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Resource Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/task-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Task Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reactive/handler-classes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handler Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Communication and Memory
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Communication and Memory
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../comm/ports-and-channels/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ports and Channels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../comm/memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Systems and Platforms
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Systems and Platforms
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../wiring/application-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The Application Module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/memory-mapped-io/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory-Mapped I/O
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced/c-code/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Calling C Code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../platforms/osal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The OSAL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../platforms/supported/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supported Platforms
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tooling
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tooling
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure and Build System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../packages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packages and Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../debugging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Debugging
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Running Tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measuring Coverage
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measuring Coverage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-measured" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is measured
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the report
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coverage-outside-the-runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage outside the runner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-the-flags-are-placed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the flags are placed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-the-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customizing the report
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Appendix
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Appendix
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/keywords/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    A. Keywords
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/operators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    B. Operators and Symbols
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/builtins/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C. Built-in Types and Classes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix/conventions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    D. Naming Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-measured" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is measured
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-the-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the report
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#coverage-outside-the-runner" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage outside the runner
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-the-flags-are-placed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where the flags are placed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customizing-the-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customizing the report
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="measuring-coverage">Measuring Coverage<a class="headerlink" href="#measuring-coverage" title="Permanent link">&para;</a></h1>
+<p>Structural coverage records which parts of a program a set of runs has
+executed. The command <code>termina coverage</code> measures it on the Termina source:
+the transpiler generates the C of the program with a flag before each
+statement and a call that records the outcome of each decision, the runner
+reads the flags of each run through GDB, and the report presents them over the
+<code>.fin</code> files. The runtime checks that the transpiler adds to the generated C,
+such as the check of an array index, have no flags, so the branch of a check
+that never fails does not appear in the report as code that the runs did not
+reach. The verdict of a test is still taken from its run without
+instrumentation, whose object code is the one of the delivered application.
+This chapter describes what is measured, how the application and the tests
+are run with coverage, and how the report is read.</p>
+<h2 id="what-is-measured">What is measured<a class="headerlink" href="#what-is-measured" title="Permanent link">&para;</a></h2>
+<p>The report counts three kinds of items. A statement is covered when some run
+started to execute it. A decision is the condition of an <code>if</code> or an
+<code>else if</code>, the guard of a <code>for</code>, the test of each <code>case</code> of a <code>match</code>, or any
+other expression that contains <code>&amp;&amp;</code> or <code>||</code>. Each decision has two outcomes,
+TRUE and FALSE, and an outcome is covered when some run evaluated the decision
+to that value. A condition is an operand of <code>&amp;&amp;</code> or <code>||</code> within a decision,
+and each of its two values is covered when some run evaluated the condition to
+that value. These are the items that <code>gcov</code> reports as lines and branches of a
+C program, counted here on the constructs of Termina.</p>
+<p>Consider the following task class, whose <code>if</code> is a decision with the
+conditions <code>self-&gt;level &gt; 5</code> and <code>self-&gt;count &gt; 3</code>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Termina</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">task</span> <span class="kd">class</span> <span class="nc">CMonitor</span> <span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">timer_port</span> <span class="p">:</span> <span class="kt">sink</span> <span class="nc">TimeVal</span> <span class="kt">triggers</span> <span class="n">sample</span><span class="p">;</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">alarms</span> <span class="p">:</span> <span class="kt">out</span> <span class="kt">u32</span><span class="p">;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">count</span> <span class="p">:</span> <span class="kt">u32</span><span class="p">;</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">level</span> <span class="p">:</span> <span class="kt">u32</span><span class="p">;</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="kd">action</span> <span class="n">sample</span><span class="p">(</span><span class="o">&amp;priv</span> <span class="k">self</span><span class="p">,</span> <span class="n">_now</span> <span class="p">:</span> <span class="nc">TimeVal</span><span class="p">)</span> <span class="p">{</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">=</span> <span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="k">self</span><span class="o">-&gt;</span><span class="n">level</span> <span class="o">=</span> <span class="mi">7</span> <span class="o">-</span> <span class="k">self</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="k">if</span> <span class="k">self</span><span class="o">-&gt;</span><span class="n">level</span> <span class="o">&gt;</span> <span class="mi">5</span> <span class="o">&amp;&amp;</span> <span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span> <span class="o">&gt;</span> <span class="mi">3</span> <span class="p">{</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>            <span class="k">self</span><span class="o">-&gt;</span><span class="n">alarms</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="k">self</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">);</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        <span class="p">}</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        <span class="k">return</span><span class="p">;</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="p">}</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="p">};</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The action alternates the level between 7 and 0 and sends an alarm when the
+level is high from the fourth activation on. In a run with four activations,
+<code>self-&gt;level &gt; 5</code> is TRUE in the first and the third and FALSE in the second
+and the fourth. The operator <code>&amp;&amp;</code> does not evaluate its right operand when the
+left one is FALSE, so <code>self-&gt;count &gt; 3</code> is evaluated only in the first and the
+third activations, where it is FALSE. The decision is FALSE in every
+activation. Its outcome TRUE, the value TRUE of <code>self-&gt;count &gt; 3</code> and the
+statement that sends the alarm are therefore not covered by this run.</p>
+<p>Termina has no negation operator, and a Boolean expression is negated by
+comparing it with <code>false</code>. Such a comparison keeps the conditions of the
+expression it negates: the decision of <code>if (a &gt; 1 &amp;&amp; b &gt; 2) == false</code> has the
+conditions <code>a &gt; 1</code> and <code>b &gt; 2</code>, as the negation of the same expression has in
+C.</p>
+<p>A runtime check that fails ends the current execution of the program through
+<code>reboot</code>. The statement that contains the check counts as executed, the
+statements after it do not, and a decision whose evaluation is interrupted
+counts neither of its outcomes.</p>
+<h2 id="running-coverage">Running coverage<a class="headerlink" href="#running-coverage" title="Permanent link">&para;</a></h2>
+<p>Without options, <code>termina coverage</code> builds the application with coverage when
+needed, runs it on its platform under GDB, and writes the result of the run
+and the report:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>termina<span class="w"> </span>coverage<span class="w"> </span>--timeout<span class="w"> </span><span class="m">4</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>Running<span class="w"> </span>the<span class="w"> </span>application<span class="p">;</span><span class="w"> </span>Ctrl-C<span class="w"> </span>stops<span class="w"> </span>it
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>application<span class="w"> </span>ended<span class="w"> </span><span class="o">(</span>timeout<span class="o">)</span><span class="w"> </span>after<span class="w"> </span><span class="m">0</span><span class="w"> </span>reboots
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>coverage<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>run<span class="w"> </span>is<span class="w"> </span><span class="k">in</span><span class="w"> </span>output/coverage/runs/app-posix-gcc-2026-11-16T23-52-26.json
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>coverage<span class="w"> </span>report<span class="w"> </span>is<span class="w"> </span>output/coverage/index.html
+</code></pre></div>
+<p>An application does not end by itself. The run is stopped with Ctrl-C or, with
+the option <code>--timeout</code>, after the given number of seconds, counted from the
+start of the application. In both cases the runner interrupts the program and
+reads the flags before ending. At each reboot, the runner reads the flags,
+clears them and lets the program start again, so a reboot does not end the
+run, and the result holds the flags of all the stretches between reboots
+together with the number of reboots. A test campaign of the application,
+driven from a ground segment or a test PC, is measured by starting
+<code>termina coverage</code> without <code>--timeout</code> before the campaign and stopping it
+with Ctrl-C when the campaign ends.</p>
+<p>The option <code>--test</code> selects a test, and <code>--tests</code> every test. The command then
+runs each test as <code>termina test</code> does, first without instrumentation, which
+gives the verdict, and then with it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>termina<span class="w"> </span>coverage<span class="w"> </span>--test<span class="w"> </span>monitor
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>monitor<span class="w"> </span><span class="o">(</span>posix-gcc<span class="o">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>ok<span class="w">       </span>monitor_tests.no_alarm_in_four_samples<span class="w">    </span><span class="m">1</span><span class="w"> </span>check
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="m">1</span><span class="w"> </span>passed
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>coverage<span class="w"> </span>of<span class="w"> </span>monitor<span class="w"> </span><span class="o">(</span>posix-gcc<span class="o">)</span><span class="w"> </span>is<span class="w"> </span><span class="k">in</span><span class="w"> </span>output/coverage/runs/test-monitor-posix-gcc.json
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>coverage<span class="w"> </span>report<span class="w"> </span>is<span class="w"> </span>output/coverage/index.html
+</code></pre></div>
+<p>The options <code>--platform</code>, <code>--case</code> and <code>--isolated</code> select the platforms and
+the cases as in <code>termina test</code>. When the verdicts of the two runs of a test
+differ, the command reports it with a warning. The options that do not apply to
+what is run are rejected, such as <code>--timeout</code> with the tests, whose timeout is
+given in the manifest, or <code>--case</code> with the application.</p>
+<p>The instrumented build is written to <code>output/coverage/</code>, apart from the build
+of <code>termina build</code> and <code>termina test</code>, and is never delivered. The option
+<code>--profile</code> selects its profile, which by default is the profile of the
+application, and <code>debug</code> for the tests of a library. Only the modules of the
+project are instrumented: those of <code>src/</code> and, in a test, those of
+<code>tests/&lt;name&gt;/</code>. The option <code>--include-deps</code> also instruments the modules of
+the dependencies, both those of <code>vendor/</code> and those of local folders.</p>
+<p>The runner executes the program under GDB on every platform: on <code>posix-gcc</code>
+with the native <code>gdb</code>, and on a board through its GDB server, with the
+connections and options described in the chapter on <a href="../testing/#tests-on-a-board">running
+tests</a>. On macOS, a binary of <code>posix-gcc</code> is a
+Mach-O file that GDB cannot run, and the command rejects a run on <code>posix-gcc</code>;
+the coverage of <code>posix-gcc</code> is measured inside the Dev Container described in
+the chapter on <a href="../debugging/">debugging</a>.</p>
+<h2 id="results">Results<a class="headerlink" href="#results" title="Permanent link">&para;</a></h2>
+<p>Each run writes its result to <code>output/coverage/runs/</code>. A test produces the
+same flags on every run, so the result of a test on a platform is named after
+both and replaced by the next run of the same test on the same platform. Each
+run of the application is a campaign of its own, whose result is named after
+the platform and the start time and kept together with the earlier ones:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>output/coverage/runs/test-monitor-posix-gcc.json
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>output/coverage/runs/app-posix-gcc-2026-11-16T23-52-26.json
+</code></pre></div>
+<p>After each run, the command writes the report again from all the results,
+those of the tests and of the campaigns on every platform. The build records,
+for each module, the SHA-256 of its source and the version of the transpiler,
+and a result counts for a module only when both are still the current ones. A
+result of a module whose source has been edited since the run, or that was
+built by another version of the transpiler, is left out of the report, and
+the table of runs marks the number of such modules as stale. Removing a file
+from <code>output/coverage/runs/</code> leaves that run out of the report, and removing
+the folder starts the measurement from zero. The option <code>--report-only</code> writes
+the report again from the results in the folder, without building or running:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>$<span class="w"> </span>termina<span class="w"> </span>coverage<span class="w"> </span>--report-only
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>coverage<span class="w"> </span>report<span class="w"> </span>is<span class="w"> </span>output/coverage/index.html
+</code></pre></div>
+<h2 id="reading-the-report">Reading the report<a class="headerlink" href="#reading-the-report" title="Permanent link">&para;</a></h2>
+<p>The report is a set of static HTML pages, opened from
+<code>output/coverage/index.html</code>. The landing page names the project and its
+version, the version of the transpiler and the time at which the report was
+written, and gives the totals of the project in four measures: the lines with
+code, which are the lines where a statement or a decision starts; the
+functions, each covered when some run executed one of its statements; the
+outcomes of the decisions; and the values of the conditions. Below the totals
+are the views and the table of runs. A view is a
+selection of the results: all of them, those of the tests, those of the
+application, those of each platform, and each run alone, so that one campaign
+can be inspected without removing the others. For the example of this
+chapter, after the test above and a campaign of the application, the views
+give the following totals:</p>
+<table>
+<thead>
+<tr>
+<th>View</th>
+<th>Lines</th>
+<th>Functions</th>
+<th>Decision outcomes</th>
+<th>Condition values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Everything</td>
+<td>15/15</td>
+<td>3/3</td>
+<td>4/4</td>
+<td>4/4</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td>11/12</td>
+<td>2/2</td>
+<td>3/4</td>
+<td>3/4</td>
+</tr>
+<tr>
+<td>Application</td>
+<td>8/8</td>
+<td>2/2</td>
+<td>2/2</td>
+<td>4/4</td>
+</tr>
+</tbody>
+</table>
+<p>The view of the tests includes <code>tests/monitor/test.fin</code>, whose <code>for</code> is also a
+decision. The campaign of the application lasted for more than four
+activations and covered the alarm.</p>
+<p>The table of runs gives, for each run, its platform, its start and end times,
+how it ended and the number of reboots. A run of the application ends with
+<code>timeout</code>, <code>interrupted</code> after a Ctrl-C, or <code>signal</code> followed by the signal
+that stopped the program. A test ends with the summary of the verdicts of its
+run with coverage, such as <code>1 passed</code>. A run taken with <code>--record</code> ends with
+<code>recorded</code>, and its times and reboots, which the runner does not know, are
+shown as <code>–</code>. The page of the view of a single run repeats these data above
+its totals.</p>
+<p>Each view lists its sources, and the page of a source shows its totals, its
+functions in a column on the left, each with a link to its first line and the
+number of its lines covered, and the code. A line without code is white, a
+line that some run executed is green, and a line that no run executed is red.
+The line of a <code>case</code> is green when some run entered the case. To the left of
+each line with decisions, a letter shows each outcome, green when some run
+took it and red otherwise:</p>
+<table>
+<thead>
+<tr>
+<th>Letters</th>
+<th>Construct</th>
+<th>Outcomes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>T</code> <code>F</code></td>
+<td><code>if</code>, <code>else if</code>, an expression with <code>&amp;&amp;</code> or <code>\|\|</code></td>
+<td>TRUE and FALSE</td>
+</tr>
+<tr>
+<td><code>E</code></td>
+<td>each <code>case</code> of a <code>match</code></td>
+<td>the case was entered</td>
+</tr>
+<tr>
+<td><code>I</code> <code>R</code> <code>W</code></td>
+<td><code>for</code></td>
+<td>the body was entered; the range was exhausted; the <code>while</code> ended the loop</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>E</code> of the last case of a <code>match</code> and of <code>case _</code> is the outcome FALSE of
+the test of the case before it. The <code>W</code> appears when the <code>while</code> of a <code>for</code> is
+a single condition; a <code>while</code> with <code>&amp;&amp;</code> or <code>||</code> has its conditions shown on
+the code. The first bound of the range, the last bound and the <code>while</code> are
+colored on the code as their letters <code>I</code>, <code>R</code> and <code>W</code>.</p>
+<p>Each condition is underlined on the code, in green when the runs gave it both
+values, in amber when they gave it only one, and in red with a dashed line
+when it was never evaluated. The expression of an <code>if</code> without <code>&amp;&amp;</code> or <code>||</code>
+is underlined in the same way, as a decision with a single condition. A legend
+above the code explains the letters and the underlines, and the tooltip of
+each mark names what is missing, such as <code>self-&gt;count &gt; 3: TRUE never
+exercised</code>. In the view of the tests of the example, the line of the <code>if</code> has
+a red <code>T</code> and a green <code>F</code>, <code>self-&gt;level &gt; 5</code> is underlined in green,
+<code>self-&gt;count &gt; 3</code> in amber, and the line that sends the alarm is red.</p>
+<p>The flags record whether an item was executed and not how many times, so the
+report gives no counts of executions.</p>
+<p>A module whose functions the program never calls is left out of the binary by
+the linker, together with its flags. The page of the source states that it was
+not linked in any run of the view, and its lines count as not covered.</p>
+<p>For other tools, each view also has a file in the format of lcov,
+<code>output/coverage/&lt;view&gt;.info</code>, such as <code>all.info</code> or <code>tests.info</code>, with the
+lines, the functions, and a branch for each outcome and each value, named
+after the text of its decision or condition. These files are read by GitLab,
+SonarQube and the other tools that accept the format of lcov.</p>
+<h2 id="coverage-outside-the-runner">Coverage outside the runner<a class="headerlink" href="#coverage-outside-the-runner" title="Permanent link">&para;</a></h2>
+<p>A continuous integration system may build the program in one place and run it
+on the boards of a laboratory with tools of its own. The option <code>--build-only</code>
+builds with coverage without running, and writes two GDB scripts next to each
+binary, in <code>gdb/</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$<span class="w"> </span>termina<span class="w"> </span>coverage<span class="w"> </span>--build-only
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>GDB<span class="w"> </span>scripts<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>application<span class="w"> </span>are<span class="w"> </span><span class="k">in</span><span class="w"> </span>output/coverage/app/gdb
+</code></pre></div>
+<p>The script <code>clear.gdb</code> sets the flags to zero. It is run after the binary is
+loaded and before the program starts, since on some boards the flags are in
+memory that the startup code does not clear. The script <code>dump.gdb</code> writes each
+array of flags to a file of the current folder:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a># Dumps the coverage flags to the current folder, for termina coverage --record
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>dump binary memory termina__cov_stmt__tasks__logger.bin (char*)&amp;termina__cov_stmt__tasks__logger (char*)&amp;termina__cov_stmt__tasks__logger+3
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>dump binary memory termina__cov_stmt__tasks__monitor.bin (char*)&amp;termina__cov_stmt__tasks__monitor (char*)&amp;termina__cov_stmt__tasks__monitor+5
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>dump binary memory termina__cov_cond__tasks__monitor.bin (char*)&amp;termina__cov_cond__tasks__monitor (char*)&amp;termina__cov_cond__tasks__monitor+6
+</code></pre></div>
+<p>The function <code>termina__app__init</code>, which every platform calls before the first
+action of the application, is the point at which <code>clear.gdb</code> is run. The
+following session runs the application of the example on <code>posix-gcc</code> from a
+folder <code>dumps</code> and dumps the flags when the first alarm reaches the logger:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="k">break</span><span class="w"> </span>termina__app__init
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>../output/coverage/app/gdb/clear.gdb
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="k">break</span><span class="w"> </span>CLogger__log
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="k">continue</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>../output/coverage/app/gdb/dump.gdb
+</code></pre></div>
+<p>On a board, <code>run</code> is replaced by the connection to the GDB server, the reset
+of the board and <code>load</code>, as described in the page of the board. The option
+<code>--record</code> takes the files of a folder as a run of the application or, with
+<code>--test</code>, of a test, writes its result, and writes the report again:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>$<span class="w"> </span>termina<span class="w"> </span>coverage<span class="w"> </span>--record<span class="w"> </span>dumps
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>coverage<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>record<span class="w"> </span>is<span class="w"> </span><span class="k">in</span><span class="w"> </span>output/coverage/runs/app-posix-gcc-2026-11-16T23-53-24.json
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="o">[</span>info<span class="o">]</span><span class="w"> </span>The<span class="w"> </span>coverage<span class="w"> </span>report<span class="w"> </span>is<span class="w"> </span>output/coverage/index.html
+</code></pre></div>
+<p>The command does not build, so the binary must be the one of the last build
+with coverage. A file whose size differs from the size of its array in the
+build is rejected, and an array without a file is taken as not linked. The
+option <code>--platform</code> is required when the test runs on several platforms.</p>
+<h2 id="where-the-flags-are-placed">Where the flags are placed<a class="headerlink" href="#where-the-flags-are-placed" title="Permanent link">&para;</a></h2>
+<p>The flags of each module are two arrays of bytes: one with a flag for each
+statement, and one with two flags for each decision and each condition. By
+default they are placed in the <code>.bss</code> and cleared by the startup code of the
+platform. The OSAL of a platform can place them in a section of their own. On
+the NUCLEO-L432KC they are in the section <code>.termina_cov</code>, at the start of
+SRAM2, which the linker script of the platform declares as <code>NOLOAD</code>; the
+runner clears them before each run. An application that uses the start of
+SRAM2 places the section elsewhere with a <code>linker-script</code> of its own in the
+manifest, a copy of the script of the platform with <code>.termina_cov</code> at another
+address.</p>
+<h2 id="customizing-the-report">Customizing the report<a class="headerlink" href="#customizing-the-report" title="Permanent link">&para;</a></h2>
+<p>The pages of the report use the colors and the fonts of Termina. The fonts are
+not loaded from the network, and a machine that does not have them uses those
+of the system. A project can add its own stylesheet in the <code>coverage</code> section
+of the manifest:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">YAML</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">coverage</span><span class="p">:</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">style</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docs/coverage.css</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The path is relative to the root of the project and cannot point outside it,
+and the file must exist. The report copies the file as
+<code>output/coverage/project.css</code>, and every page links it after the stylesheet of
+the report, so its rules take precedence over those of the report with the
+same specificity, and the rest of the style stays as it is. Every color and
+font of the report is a variable of <code>:root</code>, and a project that only changes
+the palette redefines these variables:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">:</span><span class="nd">root</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nv">--navy</span><span class="p">:</span><span class="w"> </span><span class="mh">#4A1D6E</span><span class="p">;</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nv">--hit</span><span class="p">:</span><span class="w"> </span><span class="mh">#1F7A8C</span><span class="p">;</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Variables</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--navy</code>, <code>--header-text</code>, <code>--header-muted</code>, <code>--sky</code>, <code>--on-dark</code></td>
+<td>the header, the tooltips, and the text on a dark background</td>
+</tr>
+<tr>
+<td><code>--ink</code>, <code>--muted</code>, <code>--paper</code>, <code>--paper2</code>, <code>--card</code>, <code>--hair</code></td>
+<td>the text, the backgrounds, the panels and the borders</td>
+</tr>
+<tr>
+<td><code>--accent</code>, <code>--note</code>, <code>--line-number</code></td>
+<td>the links, the notes and the numbers of the lines</td>
+</tr>
+<tr>
+<td><code>--hit</code>, <code>--hit-soft</code>, <code>--hit-line</code>, <code>--hit-mark</code></td>
+<td>what was covered</td>
+</tr>
+<tr>
+<td><code>--part</code>, <code>--part-soft</code></td>
+<td>a condition that took only one of its values</td>
+</tr>
+<tr>
+<td><code>--miss</code>, <code>--miss-soft</code></td>
+<td>what was not covered</td>
+</tr>
+<tr>
+<td><code>--display</code>, <code>--body</code>, <code>--mono</code></td>
+<td>the fonts of the titles, the text and the code</td>
+</tr>
+</tbody>
+</table>
+<p>When the <code>coverage</code> section is removed from the manifest, the next report
+removes <code>output/coverage/project.css</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; The Termina Project Contributors
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.tracking", "navigation.indexes", "toc.follow", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../javascripts/lightbox.js"></script>
+      
+    
+  </body>
+</html>
