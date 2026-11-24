@@ -264,11 +264,12 @@ An entity reaches the deque through an access port of type `DequeAccess<T>`, and
 exactly one task, handler or resource may be connected to it. The deque holds
 the blocks of that entity between its activations, and since no other entity
 reaches it, the generated code takes no lock around its operations. The port
-offers five operations:
+offers six operations:
 
 | Operation | Effect |
 |:----------|:-------|
 | `take(&mut opt)` | Moves the block at the front out into `opt`, which is left `None` when the deque is empty |
+| `take_back(&mut opt)` | Moves the block at the back out into `opt`, which is left `None` when the deque is empty |
 | `put(b)` | Moves `b` in at the back |
 | `put_front(b)` | Moves `b` in at the front |
 | `try_put(b, &mut rejected)` | Moves `b` in at the back if there is room, and otherwise gives it back in `rejected` |
@@ -368,7 +369,8 @@ returned to its pool:
 The deque keeps its blocks between activations, so it may be full when an action
 starts. The transpiler therefore accepts a `put` or a `put_front` only where the
 deque has room on every path that reaches it, which is the case in `on_tick`,
-where the `take` that delivered `cmd` has just freed a place. A `put` in
+where the `take` that delivered `cmd` has just freed a place; a `take_back`
+frees a place in the same way. A `put` in
 `on_command`, where nothing has been taken out, is rejected:
 
 ```text
