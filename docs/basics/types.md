@@ -842,4 +842,25 @@ just as when constructing it:
     ```
 
 The `is` operator evaluates to a `bool` and can be used in any expression
-context where a condition is expected.
+context where a condition is expected. Its left operand is any value: an
+object, as in the examples above, a call to a function or a method, or an
+expression in parentheses, but not a constant. A test with `is` is a single
+term of the expression, so several of them are combined with `&&` and `||`
+without parentheses:
+
+=== "Termina"
+    ```termina
+    if read_status(dev) is Success && cmd is Command::Reset || pending is None {
+        r = true;
+    }
+    ```
+=== "C"
+    ```c
+    if ((read_status(dev)._variant == Status__Success
+         && cmd._variant == Command__Reset)
+        || pending._variant == Option__None) {
+
+        r = true;
+
+    }
+    ```
