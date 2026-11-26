@@ -69,7 +69,8 @@ those of the platform, so they are decoded with the platform at hand:
   that failed and the faulting address (0 when the architecture gives none).
   On the Cortex-A9 of the Zynq-7000 they come from the exception frame of
   RTEMS and from `DFSR` and `DFAR`, or `IFSR` and `IFAR`; on the Cortex-M4 of
-  the Nucleo, from the HardFault with `CFSR` and `MMFAR` or `BFAR`; on LEON3,
+  the Nucleo, from the `IPSR` (the NMI, the HardFault or DebugMon), `CFSR`
+  and `MMFAR` or `BFAR`; on LEON3,
   from the trap type and its program counter; on `posix-gcc`, from the signal,
   its `si_code` and `si_addr`.
 - `EKernelFailure(u32, usize)` is a fatal error raised by the operating system
