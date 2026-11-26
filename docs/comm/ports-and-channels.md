@@ -33,7 +33,7 @@ The same kind of port is used to reach the generic resources of the memory
 model. A port of type `access Allocator<T>` grants the use of a memory pool, one
 of type `access DequeAccess<T>` the use of a deque, one of type
 `access AtomicAccess<T>` the use of an atomic variable, and one of type
-`access AtomicArrayAccess<T; N>` the use of an atomic array; all four are
+`access AtomicArrayAccess<T, N>` the use of an atomic array; all four are
 described in the chapter on memory management.
 
 ## Sink ports
@@ -60,7 +60,7 @@ in the application module with the `channel` keyword, the element type, and the
 capacity of the queue:
 
 ```termina
-channel link : MsgQueue<u32; 4>;
+channel link : MsgQueue<u32, 4>;
 ```
 
 The queue `link` holds up to four `u32` messages. Its bound is part of its type,

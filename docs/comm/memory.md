@@ -16,7 +16,7 @@ the same type. It is declared in the application module with the built-in
 `Pool` type, the type of the blocks, and how many of them the pool contains:
 
 ```termina
-resource sample_pool : Pool<Sample; 8>;
+resource sample_pool : Pool<Sample, 8>;
 ```
 
 This pool holds eight blocks, each large enough for one `Sample`. The blocks
@@ -257,7 +257,7 @@ type of its blocks and its capacity, which is at least one. A deque always
 starts empty and therefore takes no initial value:
 
 ```termina
-resource pending_commands : Deque<Command; 4>;
+resource pending_commands : Deque<Command, 4>;
 ```
 
 An entity reaches the deque through an access port of type `DequeAccess<T>`, and
@@ -393,11 +393,11 @@ The instance of the task connects the port to the deque like any other access
 port:
 
 ```termina
-resource command_pool : Pool<Command; 8>;
+resource command_pool : Pool<Command, 8>;
 
-resource pending_commands : Deque<Command; 4>;
+resource pending_commands : Deque<Command, 4>;
 
-channel commands : MsgQueue<box Command; 4>;
+channel commands : MsgQueue<box Command, 4>;
 
 #[priority(11)]
 task scheduler : CScheduler = {
@@ -463,11 +463,11 @@ and writes it with `load` and `store`:
 An atomic array applies the same idea to a fixed number of elements. It is
 declared with the `AtomicArray` type, its element type, its size, and its initial
 values, and it is reached through an access port of type
-`AtomicArrayAccess<T; N>`, whose `load_index` and `store_index` operations read
+`AtomicArrayAccess<T, N>`, whose `load_index` and `store_index` operations read
 and write one element at a time:
 
 ```termina
-resource bank : AtomicArray<u32; 4> = {
+resource bank : AtomicArray<u32, 4> = {
     values = [0; 4]
 };
 ```

@@ -32,11 +32,11 @@ keeps and how many it can hold, and a channel the type and capacity of its
 queue:
 
 ```termina
-resource sample_pool : Pool<Sample; 8>;
+resource sample_pool : Pool<Sample, 8>;
 
-resource pending_samples : Deque<Sample; 4>;
+resource pending_samples : Deque<Sample, 4>;
 
-channel samples : MsgQueue<box Sample; 8>;
+channel samples : MsgQueue<box Sample, 8>;
 ```
 
 Unlike a pool, which any number of entities may use, a deque is connected to

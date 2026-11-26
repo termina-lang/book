@@ -9,7 +9,7 @@ them requires an import, and their names cannot be redefined.
 |:-----|:--------------------|:--------|
 | `Option<T>` | `Some(T)`, `None` | A value that may be absent |
 | `Status<T>` | `Success`, `Failure(T)` | Outcome of an operation with no produced value |
-| `Result<T; E>` | `Ok(T)`, `Error(E)` | Outcome of a computation that produces a value |
+| `Result<T, E>` | `Ok(T)`, `Error(E)` | Outcome of a computation that produces a value |
 | `box T` | owned block holding a `T` | Linear handle to pool memory |
 
 ## Structures and enumerations
@@ -88,10 +88,10 @@ Instances of these classes are declared in the application module:
 
 | Class | Declaration | Access port type |
 |:------|:------------|:-----------------|
-| `Pool<T; N>` | `resource p : Pool<T; N>;` | `access Allocator<T>` |
-| `Deque<T; N>` | `resource d : Deque<T; N>;` | `access DequeAccess<T>` (one element only) |
+| `Pool<T, N>` | `resource p : Pool<T, N>;` | `access Allocator<T>` |
+| `Deque<T, N>` | `resource d : Deque<T, N>;` | `access DequeAccess<T>` (one element only) |
 | `Atomic<T>` | `resource a : Atomic<T> = { value = ... };` | `access AtomicAccess<T>` |
-| `AtomicArray<T; N>` | `resource a : AtomicArray<T; N> = { values = [...] };` | `access AtomicArrayAccess<T; N>` |
+| `AtomicArray<T, N>` | `resource a : AtomicArray<T, N> = { values = [...] };` | `access AtomicArrayAccess<T, N>` |
 
 Each access port type offers the following operations:
 
@@ -100,13 +100,13 @@ Each access port type offers the following operations:
 | `Allocator<T>` | `alloc(&mut Option<box T>)`, `free(box T)` |
 | `DequeAccess<T>` | `take(&mut Option<box T>)`, `take_back(&mut Option<box T>)`, `put(box T)`, `put_front(box T)`, `try_put(box T, &mut Option<box T>)`, `replace(box T, &mut Option<box T>)` |
 | `AtomicAccess<T>` | `load(&mut T)`, `store(T)` |
-| `AtomicArrayAccess<T; N>` | `load_index(usize, &mut T)`, `store_index(usize, T)` |
+| `AtomicArrayAccess<T, N>` | `load_index(usize, &mut T)`, `store_index(usize, T)` |
 
 ## Channels and emitters
 
 | Class | Declaration |
 |:------|:------------|
-| `MsgQueue<T; N>` | `channel c : MsgQueue<T; N>;` |
+| `MsgQueue<T, N>` | `channel c : MsgQueue<T, N>;` |
 | `PeriodicTimer` | `emitter e : PeriodicTimer = { period = { tv_sec = ..., tv_usec = ... } };` |
 
 ## Built-in event sources
@@ -149,8 +149,8 @@ the production ones at the ports of the unit under test:
 | Class | Declaration | Access port type and operations |
 |:------|:------------|:--------------------------------|
 | `TestEmitter<T>` | `emitter e : TestEmitter<T>;` | `TestEmitterAccess<T>`: `fire(T)` |
-| `TestChannel<T; N>` | `channel c : TestChannel<T; N>;` | `TestChannelAccess<T>`: `pending(&mut usize)`, `take(&mut Option<T>)` |
-| `TestPool<T; N>` | `resource p : TestPool<T; N>;` | `TestPoolAccess`: `in_use(&mut usize)`, `max_in_use(&mut usize)`, `fail_allocs(usize)`, besides `Allocator<T>` for the unit |
+| `TestChannel<T, N>` | `channel c : TestChannel<T, N>;` | `TestChannelAccess<T>`: `pending(&mut usize)`, `take(&mut Option<T>)` |
+| `TestPool<T, N>` | `resource p : TestPool<T, N>;` | `TestPoolAccess`: `in_use(&mut usize)`, `max_in_use(&mut usize)`, `fail_allocs(usize)`, besides `Allocator<T>` for the unit |
 
 A test also reaches three resources of the runtime, connected with `<->` like
 `system_entry`:

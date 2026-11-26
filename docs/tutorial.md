@@ -1195,9 +1195,9 @@ Once the modules have been imported, we can now add the remaining elements at th
 
 === "Termina"
     ```termina
-    resource tc_pool : Pool<TCDescriptor; 10>;
+    resource tc_pool : Pool<TCDescriptor, 10>;
 
-    channel tc_channel : MsgQueue<box TCDescriptor; 10>;
+    channel tc_channel : MsgQueue<box TCDescriptor, 10>;
 
     handler kbd_handler : CKbdIRQHandler = {
         system_port <-> system_entry,

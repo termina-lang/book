@@ -636,7 +636,7 @@ produce a result; a procedure may succeed or fail; a computation may return a
 value or an error. Rather than leaving programmers to encode these patterns
 with ad-hoc integer flags and output parameters, as is common in C, Termina
 provides three built-in generic types: `Option<T>`, `Status<T>`, and
-`Result<T; E>`.
+`Result<T, E>`.
 
 These types behave like enumerations with predefined variants. The transpiler
 rejects a `match` on one of these types that does not cover all its variants.
@@ -646,7 +646,7 @@ and the `is` operator for inspecting variants.
 
 These types are instantiated by supplying a type argument between angle
 brackets: `Option<u32>` is an optional `u32`, `Status<i32>` an outcome whose
-failure carries an `i32`, and `Result<u32; i32>` a computation that returns a
+failure carries an `i32`, and `Result<u32, i32>` a computation that returns a
 `u32` or fails with an `i32`. The argument may be a primitive type, a struct,
 or an enumeration. The transpiler generates a separate C type for each
 distinct instantiation, with a name derived from the arguments, such as
@@ -728,7 +728,7 @@ fail.
 
 ### Result
 
-`Result<T; E>` represents a computation that produces either a value of type
+`Result<T, E>` represents a computation that produces either a value of type
 `T` on success or an error of type `E` on failure. It has two variants:
 
 - `Ok(value)` indicates success, carrying a result of type `T`.
@@ -736,7 +736,7 @@ fail.
 
 === "Termina"
     ```termina
-    var result : Result<u32; i32> = Ok(100);
+    var result : Result<u32, i32> = Ok(100);
     if overflow {
         result = Error(-1);
     }
@@ -755,11 +755,6 @@ fail.
 
 A function that computes a value and can fail returns a `Result`; one that only
 reports whether it succeeded returns a `Status`.
-
-!!! note
-    Generic type parameters in Termina are separated by semicolons, not
-    commas. This convention applies to all built-in generic types that take
-    multiple parameters, such as `Result<T; E>`.
 
 ### Inspecting variants with `match`
 

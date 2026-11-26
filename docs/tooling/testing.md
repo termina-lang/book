@@ -83,9 +83,9 @@ task class CSampler {
 The `test.fin` of its test declares the task as in the application module, and
 connects its ports to test components instead of a periodic timer and a
 channel. A `TestEmitter<T>`, declared with `emitter`, takes the place of an
-emitter at a sink port, and a `TestChannel<T; N>`, declared with `channel`,
+emitter at a sink port, and a `TestChannel<T, N>`, declared with `channel`,
 receives the messages of an out port and keeps them for the test. A
-`TestPool<T; N>`, declared with `resource`, takes the place of a pool at an
+`TestPool<T, N>`, declared with `resource`, takes the place of a pool at an
 `Allocator<T>` port. The cases are declared in a `test class` and run by a
 `test` instance of it, whose access ports reach the test components and the
 `test_checks` resource:
@@ -142,7 +142,7 @@ test class CSamplerTests {
 };
 
 emitter timer : TestEmitter<TimeVal>;
-channel samples : TestChannel<u32; 4>;
+channel samples : TestChannel<u32, 4>;
 
 #[priority(10)]
 task sampler : CSampler = {
@@ -236,7 +236,7 @@ task class CScenario {
     }
 };
 
-channel start : MsgQueue<TimeVal; 1>;
+channel start : MsgQueue<TimeVal, 1>;
 
 handler starter : CStarter = { init_ev <- system_init, start_out -> start };
 
