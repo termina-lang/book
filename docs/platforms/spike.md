@@ -4,9 +4,8 @@ The `rtems6-rv32im-spike` platform targets a 32-bit
 [RISC-V](https://riscv.org/) processor with the
 RV32IM instruction set, running RTEMS 6 on
 [Spike](https://github.com/riscv-software-src/riscv-isa-sim), the reference
-simulator of the RISC-V instruction set. The platform needs no board, so it
-serves to run on the host a program built for the same processor as the
-`rtems6-noel32im-artya7` platform. It is built with `riscv-rtems6-gcc`, of the
+simulator of the RISC-V instruction set, so it needs no board. It is built
+with `riscv-rtems6-gcc`, of the
 [RTEMS Source Builder](https://docs.rtems.org/docs/main/user/rsb/index.html),
 and the `rv32im` board support package of RTEMS 6.
 

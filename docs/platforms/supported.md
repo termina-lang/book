@@ -10,7 +10,7 @@ currently supports six platforms:
 | [`rtems5-leon3sf-nexysa7`](nexys-a7.md) | RTEMS 5 | LEON3 (SPARC V8), soft-float, on the Nexys A7 | `sparc-gaisler-rtems5-gcc` (Gaisler RCC) |
 | [`rtems6-zynq7000-pynqz2`](pynq-z2.md) | RTEMS 6 | Zynq-7000 (Arm Cortex-A9) on the PYNQ-Z2 | `arm-rtems6-gcc` (RTEMS Source Builder) |
 | [`rtems6-rv32im-spike`](spike.md) | RTEMS 6 | RV32IM on the Spike simulator | `riscv-rtems6-gcc` (RTEMS Source Builder) |
-| [`rtems6-noel32im-artya7`](arty-a7.md) | RTEMS 6 | NOEL-V (RV32IM) on the Arty A7 | `riscv-rtems6-gcc` (RTEMS Source Builder) |
+| [`rtems6-noel32imafd-artya7`](arty-a7.md) | RTEMS 6 | NOEL-V (RV32IMAFD) on the Arty A7 | `riscv-rtems6-gcc` (RTEMS Source Builder) |
 | [`freertos10-stm32l432-nucleol432kc`](nucleo-l432kc.md) | FreeRTOS 10 | STM32L432 (Arm Cortex-M4) on the NUCLEO-L432KC | `arm-none-eabi-gcc` |
 
 The `posix-gcc` platform runs Termina applications on a conventional

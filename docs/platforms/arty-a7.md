@@ -1,27 +1,29 @@
 # RTEMS 6 on a NOEL-V in the Arty A7
 
-The `rtems6-noel32im-artya7` platform targets the
+The `rtems6-noel32imafd-artya7` platform targets the
 [NOEL-V](https://www.gaisler.com/products/noel-v), a RISC-V processor of
 Frontgrade Gaisler, running RTEMS 6 on the Digilent
 [Arty A7](https://digilent.com/reference/programmable-logic/arty-a7/start)
 development board.
 The NOEL-V is a design of the FPGA of the board, loaded as a bitstream, and the
-platform uses it with the RV32IM instruction set, the same as the
-`rtems6-rv32im-spike` platform. It is built with `riscv-rtems6-gcc`, of the
-RTEMS Source Builder, and the `noel32im` board support package of RTEMS 6.
+platform uses it with the RV32IMAFD instruction set and the `ilp32d` ABI, which
+passes floating-point values in registers. It is built with
+`riscv-rtems6-gcc`, of the RTEMS Source Builder, and the `noel32imafd` board
+support package of RTEMS 6.
 
-The RV32IM instruction set has neither floating-point instructions nor the
-atomic extension, so the operations that read and write a variable in one step
-are calls to `libatomic`, which RTEMS implements by disabling interrupts.
+The atomic extension (A) makes the operations that read and write a variable
+in one step single instructions, and the floating-point extensions (F and D)
+run the operations on `f32` and `f64` in the FPU of the core.
 
 ## The board
 
 The platform is tested on the Arty A7-100T with the `GP32L-SC` configuration
 of the example bitstreams of Frontgrade Gaisler for the board, release 2023.05.
-The design runs at 40 MHz and its core implements RV32IMAFDC, a superset of
-the RV32IM instruction set of the platform. The bitstream is written to the
-configuration flash of the board, from which the FPGA loads it at power on,
-for instance with [openFPGALoader](https://github.com/trabucayre/openFPGALoader):
+The design runs at 40 MHz and its core implements RV32IMAFDC, of which the
+platform uses all but the compressed instructions (C). The bitstream is
+written to the configuration flash of the board, from which the FPGA loads it
+at power on, for instance with
+[openFPGALoader](https://github.com/trabucayre/openFPGALoader):
 
 ```bash
 $ openFPGALoader -b arty_a7_100t -f --verify noelvmp.bit

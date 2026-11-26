@@ -19,7 +19,7 @@ and must not be typed by the reader.
 
 The image bundles the transpiler, the OSAL, the cross-toolchains of the
 `rtems5-leon3sf-nexysa7`, `rtems6-zynq7000-pynqz2`, `rtems6-rv32im-spike`,
-`rtems6-noel32im-artya7` and `freertos10-stm32l432-nucleol432kc` platforms,
+`rtems6-noel32imafd-artya7` and `freertos10-stm32l432-nucleol432kc` platforms,
 `make`, `gdb-multiarch`, [`git`](https://git-scm.com/) and an SSH client, at the versions fixed by each
 release of the image.
 
@@ -307,7 +307,7 @@ that an environment variable can change:
 | `rtems5-leon3sf-nexysa7` | `sparc-gaisler-rtems5-gcc` | RCC 1.3.2 | `/opt/rcc` | `TERMINA_RCC_DIR` |
 | `rtems6-zynq7000-pynqz2` | `arm-rtems6-gcc` and its BSP | RTEMS 6.2 | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
 | `rtems6-rv32im-spike` | `riscv-rtems6-gcc` and its BSP | RTEMS 6.2 | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
-| `rtems6-noel32im-artya7` | `riscv-rtems6-gcc` and its BSP | RTEMS 6.2 | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
+| `rtems6-noel32imafd-artya7` | `riscv-rtems6-gcc` and its BSP | RTEMS 6.2 | `/opt/rtems/6` | `TERMINA_RTEMS6_DIR` |
 | `freertos10-stm32l432-nucleol432kc` | `arm-none-eabi-gcc` | Arm GNU Toolchain 13.3.rel1 | `/opt/arm-none-eabi` | `TERMINA_ARM_NONE_EABI_DIR` |
 
 The compiler of each platform is in the `bin` folder of its toolchain folder.
@@ -319,7 +319,7 @@ RTEMS 6 platforms rely on the toolchains and board support packages of RTEMS
 [RTEMS Source Builder](https://docs.rtems.org/docs/main/user/rsb/index.html) and installed in the same
 folder: `arm-rtems6-gcc` and the `xilinx_zynq_pynq` board support package for
 the Zynq-7000 of the PYNQ-Z2 board, and `riscv-rtems6-gcc` and the `rv32im` and
-`noel32im` board support packages for the RISC-V platforms. The
+`noel32imafd` board support packages for the RISC-V platforms. The
 `freertos10-stm32l432-nucleol432kc` platform, which targets the STM32L432
 microcontroller of the NUCLEO-L432KC board under FreeRTOS 10, relies on the
 bare-metal ARM toolchain `arm-none-eabi-gcc` with its C library, newlib. The

@@ -355,7 +355,7 @@ project, whose contents the next build writes again.
 The `posix-gcc` platform builds the application for a conventional Unix-like
 host, using the system's own compiler, and is intended for development and
 validation. The embedded platforms are `rtems5-leon3sf-nexysa7`,
-`rtems6-zynq7000-pynqz2`, `rtems6-rv32im-spike`, `rtems6-noel32im-artya7` and
+`rtems6-zynq7000-pynqz2`, `rtems6-rv32im-spike`, `rtems6-noel32imafd-artya7` and
 `freertos10-stm32l432-nucleol432kc`, which the chapter on
 [supported platforms](../platforms/supported.md) lists, with a page for each one. The platform of the application is
 chosen when the project is created, with the `--platform` option of the `new`
