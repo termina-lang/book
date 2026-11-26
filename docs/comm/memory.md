@@ -195,8 +195,7 @@ takes them back through a second procedure:
 
         CSampleSource * self = (CSampleSource *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         if (self->enabled) {
 
@@ -208,8 +207,7 @@ takes them back through a second procedure:
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 

@@ -303,8 +303,7 @@ Both the interface and the resource class will be defined in a new module locate
 
         CEmuSensorArray * self = (CEmuSensorArray *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         (*value)._variant = Option__None;
 
@@ -315,8 +314,7 @@ Both the interface and the resource class will be defined in a new module locate
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -409,8 +407,7 @@ We will define both the interface and the resource class in a new file called `s
 
         CSystemDataPool * self = (CSystemDataPool *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         (*value)._variant = Option__None;
 
@@ -421,8 +418,7 @@ We will define both the interface and the resource class in a new file called `s
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -434,8 +430,7 @@ We will define both the interface and the resource class in a new file called `s
 
         CSystemDataPool * self = (CSystemDataPool *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         if (idx < 10U) {
 
@@ -443,8 +438,7 @@ We will define both the interface and the resource class in a new file called `s
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -568,16 +562,14 @@ The telemetry resource is implemented in a new module, `src/resources/tm_channel
 
         CTMChannel * self = (CTMChannel *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         const char msg[32U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '1',
                                 ',', '1', ')' };
 
         self->system_port.println(termina__ev, msg);
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -588,8 +580,7 @@ The telemetry resource is implemented in a new module, `src/resources/tm_channel
 
         CTMChannel * self = (CTMChannel *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         const char msg[32U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '1',
                                 ',', '2', ')', ' ', '-', ' ', 'E', 'r', 'r',
@@ -601,8 +592,7 @@ The telemetry resource is implemented in a new module, `src/resources/tm_channel
 
         self->system_port.println_u32(termina__ev, value, base);
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -614,8 +604,7 @@ The telemetry resource is implemented in a new module, `src/resources/tm_channel
 
         CTMChannel * self = (CTMChannel *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         const char msg[32U] = { 'S', 'e', 'n', 'd', ' ', 'T', 'M', '(', '3',
                                 ',', '2', '5', ')', ':', ' ' };
@@ -636,8 +625,7 @@ The telemetry resource is implemented in a new module, `src/resources/tm_channel
 
         self->system_port.println_u32(termina__ev, hk_data[9U], base);
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -825,8 +813,7 @@ The resource is implemented in a new module, `src/resources/hk_subsystem.fin`:
 
         CHKSubsystem * self = (CHKSubsystem *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         self->interval_control = self->interval_control + 1U;
 
@@ -863,8 +850,7 @@ The resource is implemented in a new module, `src/resources/hk_subsystem.fin`:
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -875,8 +861,7 @@ The resource is implemented in a new module, `src/resources/hk_subsystem.fin`:
 
         CHKSubsystem * self = (CHKSubsystem *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         Option__u32 opt_value = { ._variant = Option__None };
 
@@ -901,8 +886,7 @@ The resource is implemented in a new module, `src/resources/hk_subsystem.fin`:
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 

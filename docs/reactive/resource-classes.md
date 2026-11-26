@@ -89,8 +89,7 @@ reads it; in either case the call runs under mutual exclusion. The procedures of
 
         CCounter * self = (CCounter *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         if (CCounter__at_limit(termina__ev, self) == false) {
 
@@ -98,8 +97,7 @@ reads it; in either case the call runs under mutual exclusion. The procedures of
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -236,8 +234,7 @@ through the `ICounterCtl` interface introduced above:
 
         CWatchdog * self = (CWatchdog *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         if (self->expired) {
 
@@ -247,8 +244,7 @@ through the `ICounterCtl` interface introduced above:
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 

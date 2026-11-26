@@ -176,8 +176,7 @@ RAM, a frame buffer, or a DMA window. The driver below covers a 4-KiB bank:
 
         CMemBank * self = (CMemBank *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         if (offset < 4096U) {
 
@@ -185,8 +184,7 @@ RAM, a frame buffer, or a DMA window. The driver below covers a 4-KiB bank:
 
         }
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
