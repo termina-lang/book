@@ -243,8 +243,8 @@ On `posix-gcc` the program runs as a process of the host, with its output in
 the terminal, or under the native `gdb` with the option `--with-gdb`. On an
 embedded platform the command loads the program into the board through the GDB
 server of the board and starts it, in the same way as `termina test` runs the
-binary of a test. The servers that each board requires, and the options `--gdb`
-and `--xsdb` that give their addresses, are described in the chapter on
+binary of a test. The servers that each board requires, and the options `--gdb`,
+`--gdb-port` and `--xsdb` that give their addresses, are described in the chapter on
 [running tests](testing.md#tests-on-a-board). The run ends with Ctrl-C, when
 the program ends, or, with the option `--timeout`, after the given number of
 seconds. Under GDB, a reboot of the program does not end the run, and the

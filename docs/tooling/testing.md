@@ -366,6 +366,16 @@ $ termina test --gdb lab-pc
 $ termina test hk_fdir --platform freertos10-stm32l432-nucleol432kc --gdb lab-pc:61234
 ```
 
+The option `--gdb-port`, given once per platform, changes the port of the
+GDB server of the boards of one platform and leaves the others at the port
+of the table. It allows two boards whose servers have the same default port
+to run in the same command, and a platform that runs no test of the
+selection ignores it:
+
+```bash
+$ termina test --gdb lab-pc --gdb-port rtems6-noel32imafd-artya7:2223
+```
+
 The command `termina platforms --json` lists the platforms with the address
 of the server of each board, and the GDB commands that load a program into it.
 

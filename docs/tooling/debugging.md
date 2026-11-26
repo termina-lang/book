@@ -118,6 +118,8 @@ rest of the installation:
 | `termina.osalDir` | The folder of the OSAL, passed as `TERMINA_OSAL_DIR` |
 | `termina.toolchains.rccDir`, `termina.toolchains.rtems6Dir`, `termina.toolchains.armNoneEabiDir` | The folders of the toolchains, passed as `TERMINA_RCC_DIR`, `TERMINA_RTEMS6_DIR` and `TERMINA_ARM_NONE_EABI_DIR` |
 | `termina.debug.gdbHost` | The host of the GDB servers of the boards |
+| `termina.debug.gdbPorts` | The port of the GDB server of the boards of a platform, one entry per platform, passed as `--gdb-port` |
+| `termina.debug.xsdbPort` | The port of the XSDB server of the PYNQ-Z2, passed as `--xsdb` |
 | `termina.debug.gdbPath` | The debugger of the boards, `gdb-multiarch` by default |
 
 A setting left empty keeps the value of the environment, so a toolchain folder
@@ -154,7 +156,8 @@ extension connects `gdb-multiarch` to the server of the platform and runs the
 commands that load the program. On the PYNQ-Z2, the extension first has the
 XSDB server run the script of `xsdb-init` of the manifest, as `termina test`
 does. The setting `termina.debug.gdbHost` of VS Code gives another host for
-the servers.
+the servers, and `termina.debug.gdbPorts` another port for the server of a
+platform.
 
 On a Linux host with `ufw`, the default policy drops the connections that come
 from the containers through `docker0`, and `gdb-multiarch` cannot reach the
