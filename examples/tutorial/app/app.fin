@@ -35,9 +35,9 @@ resource hk_subsystem : CHKSubsystem = {
     sensor_array_port <-> emu_sensor_array
 };
 
-resource tc_pool : Pool<TCDescriptor; 10>;
+resource tc_pool : Pool<TCDescriptor, 10>;
 
-channel tc_channel : MsgQueue<box TCDescriptor; 10>;
+channel tc_channel : MsgQueue<box TCDescriptor, 10>;
 
 handler kbd_handler : CKbdIRQHandler = {
     system_port <-> system_entry,

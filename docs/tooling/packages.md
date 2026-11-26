@@ -72,10 +72,10 @@ following:
 ```yaml
 dependencies:
   - git: https://github.com/acme/acme-drivers
-    rev: "v0.2.0"
+    tag: "v0.2.0"
 ```
 
-The `rev` is always a tag. A branch would change its commit over time, so the
+The version of a dependency is always a tag. A branch would change its commit over time, so the
 same manifest would build different code on different days, and a commit hash
 is reproducible but tells nothing to the reader of the manifest. A library
 whose version has to be pinned at a commit without a tag is tagged first. The
@@ -113,8 +113,8 @@ transpiler writes it and it is never edited by hand:
 version: 1
 packages:
   - git: https://github.com/acme/acme-drivers
-    rev: "v0.2.0"
-    resolved-rev: 9876543210fedcba9876543210fedcba98765432
+    tag: "v0.2.0"
+    commit: 9876543210fedcba9876543210fedcba98765432
     content-hash: sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
 ```
 
@@ -136,7 +136,7 @@ the lock, and stops with an error if a copy has been modified.
 
 ## Updating a dependency
 
-A dependency moves to another version when its `rev` is changed in
+A dependency moves to another version when its `tag` is changed in
 `termina.yaml`. The next build sees that the tag of the manifest and the tag of
 the lock differ, fetches the new version, checks it as `add` does, and rewrites
 the lock and the copy in `vendor/`. A build never fetches a dependency whose tag
@@ -223,7 +223,7 @@ the manifest of the project:
 ```yaml
 overrides:
   - git: https://github.com/acme/embedded-hal
-    rev: "v0.4.0"
+    tag: "v0.4.0"
 ```
 
 An override forces the version of a library that is already in the graph of
