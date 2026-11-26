@@ -323,13 +323,17 @@ with the rest:
 $ termina deliver --docs --archive
 ```
 
-A warning of Doxygen stops the command. The pages have the graphs of the
-includes of each file, of the structures and of the groups, which `dot` of
-Graphviz draws; the option `--no-graphs` leaves them out, and with it the
-command does not need Graphviz. The container image has the version of Doxygen
-that the documentation is checked with, and the command warns when the one in
-the `PATH` is another. The `provenance.json` of the deliverable records the
-versions of both tools.
+A warning of Doxygen stops the command. With the option `--graphs`, the pages
+have the graphs of the includes of each file, of the structures and of the
+groups, which `dot` of Graphviz draws; only then does the command need
+Graphviz. The container image has the version of Doxygen that the
+documentation is checked with, and the command warns when the one in the `PATH`
+is another. The `provenance.json` of the deliverable records the versions of
+the tools used.
+
+The deliverable carries the license files of the project at its root, and those
+of each dependency in `licenses/<package>`, since its C includes the code of
+the dependencies.
 
 ## Checking the installation
 

@@ -127,7 +127,8 @@ program contains.
 The `vendor` directory holds a copy of each library of the lock, in a
 subdirectory named after its URL, such as
 `vendor/github.com/acme/acme-drivers/`. Each copy contains the exported modules
-of the library, its manifest and its C code, and nothing else. Both
+of the library, its manifest, its C code and the license files at its root, and
+nothing else. Both
 `termina.lock` and `vendor/` are committed together with the project, so that a
 clone of the project builds without network access and without access to the
 repositories of its dependencies, and so that every change of a dependency
