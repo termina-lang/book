@@ -34,12 +34,16 @@ every test, needs the server started again.
 A debugging session of the Termina extension connects the debugger to the
 server, as the Debugging chapter describes. `monitor reset` resets the
 microcontroller and leaves the core halted, and `load` writes the program into
-the flash. Since the code runs from flash, the breakpoints are hardware ones,
-and the Cortex-M4 has six of them.
+the flash. With the bit PEMPTY of `FLASH_SR` (`0x40022010`, bit 17) set, a
+reset starts the system bootloader of the STM32 instead of the program, so the
+session clears the bit after the load and resets the microcontroller again.
+Since the code runs from flash, the breakpoints are hardware ones, and the
+Cortex-M4 has six of them.
 
 ## Running tests
 
 Before each run of a test, and before each case with `--isolated`, the runner
-resets the microcontroller with `monitor reset` and writes the binary of the
-test with `load`. It uses three of the hardware breakpoints, so three remain
-for a debugging session on the binary of a test.
+resets the microcontroller with `monitor reset`, writes the binary of the test
+with `load` and clears PEMPTY as a debugging session does. It uses three of the
+hardware breakpoints, so three remain for a debugging session on the binary of
+a test.
