@@ -75,9 +75,10 @@ dependencies:
     tag: "v0.2.0"
 ```
 
-The version of a dependency is always a tag. A branch would change its commit over time, so the
-same manifest would build different code on different days, and a commit hash
-is reproducible but tells nothing to the reader of the manifest. A library
+The version of a dependency is always a tag. A branch would change its commit
+over time, so the same manifest would build different code on different days,
+and a commit hash is reproducible but tells nothing to the reader of the
+manifest. A library
 whose version has to be pinned at a commit without a tag is tagged first. The
 URL is always an `https://` one, so that a public library can be fetched
 without credentials by every consumer, including a continuous integration job.

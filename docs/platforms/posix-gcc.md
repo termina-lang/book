@@ -8,9 +8,8 @@ cross-toolchain.
 
 ## Execution model
 
-The OSAL of this platform does not simply map tasks onto host threads: it
-implements a single-core, fixed-priority preemptive scheduler of its own on
-top of POSIX. Each task is a pthread, but the OSAL keeps per-priority ready
+The OSAL of this platform implements a single-core, fixed-priority preemptive
+scheduler of its own on top of POSIX. Each task is a pthread, but the OSAL keeps per-priority ready
 queues and suspends and resumes the threads explicitly, so that at any instant
 exactly one task runs, chosen by the same policy an RTOS would apply.
 Interrupts are emulated with POSIX signals, and a timer signal drives the

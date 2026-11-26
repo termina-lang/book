@@ -2,9 +2,9 @@
 
 Software for critical real-time embedded systems is held to a standard that
 most software never faces. An on-board computer, a flight controller, or an
-industrial protection system must not only compute the right results; it must
-deliver them within known time bounds, with known memory usage, and it must
-keep doing so for years without intervention. The engineering practice that
+industrial protection system must compute the right results within known time
+bounds and with known memory usage, and keep doing so for years without
+intervention. The engineering practice that
 achieves this is dominated by verification and validation: coding standards,
 static analysis, reviews, and testing campaigns that routinely cost more than
 the implementation itself.

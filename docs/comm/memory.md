@@ -92,7 +92,7 @@ through a channel to the task in charge of fault handling.
 A `box T` is an owned handle to a block of memory taken from a pool. Ownership in Termina is
 linear: a `box` must be consumed exactly once. It can be released back to its
 pool, handed to another component, or kept in a deque, but it cannot be copied, and it
-cannot simply go out of scope while still holding a block. The transpiler tracks
+cannot go out of scope while still holding a block. The transpiler tracks
 each `box` through the body that holds it and rejects any path that would leave a
 block neither released nor passed on, or that would use a block after it has
 already been given away. Consequently, the memory managed by a pool is never
