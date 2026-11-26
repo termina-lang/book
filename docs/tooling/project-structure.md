@@ -304,7 +304,8 @@ $ termina deliver --tests --archive
 The deliverable is always built with the `release` profile, whatever the
 profile of the manifest. The option `--tests` delivers every test as well, on
 each of its platforms, and `--archive` packs each deliverable into a `.tar.gz`
-file named after the project, its version and the platform. Before building,
+file named after the project and its version, with the name of the test and its
+platform for a test, which unpacks into a folder of the same name. Before building,
 the command checks without network access that `vendor/` matches
 `termina.lock`, and it refuses a project with a dependency on a local
 directory, so that a deliverable always corresponds to the state of the
@@ -312,6 +313,23 @@ repository. Once the deliverable is built, the command checks that its binary,
 stripped of its debugging information, is identical to the one built from the C
 with `#line` directives, a comparison that requires the `objcopy` of the
 platform.
+
+The option `--docs` prints the documentation comments of the program in the C
+of the deliverable, writes a `Doxyfile` at its root and runs Doxygen on it, so
+the deliverable gets its documentation in `doc/html`, which `--archive` packs
+with the rest:
+
+```bash
+$ termina deliver --docs --archive
+```
+
+A warning of Doxygen stops the command. The pages have the graphs of the
+includes of each file, of the structures and of the groups, which `dot` of
+Graphviz draws; the option `--no-graphs` leaves them out, and with it the
+command does not need Graphviz. The container image has the version of Doxygen
+that the documentation is checked with, and the command warns when the one in
+the `PATH` is another. The `provenance.json` of the deliverable records the
+versions of both tools.
 
 ## Checking the installation
 
