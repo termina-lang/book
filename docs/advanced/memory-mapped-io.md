@@ -45,13 +45,11 @@ three 32-bit registers:
 
         CUartDrv * self = (CUartDrv *)termina__this;
 
-        termina__lock_t termina__lock = termina__resource__lock(&termina__ev->owner,
-                                                                &self->_lock_type);
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
 
         self->registers->ctrl = 1U;
 
-        termina__resource__unlock(&termina__ev->owner, &self->_lock_type,
-                                  termina__lock);
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
 
         return;
 
@@ -72,6 +70,47 @@ field therefore becomes a pointer to the mapped structure, declared `volatile`
 so that the C compiler performs every access the program writes, in the order
 it writes them, rather than caching or eliminating accesses whose effect it
 cannot see.
+
+## Discarding a read
+
+Reading some registers changes the state of the device: a read of the data
+register of a UART takes a byte out of its receive FIFO, and a read of a status
+register often clears the flags it reports. A driver sometimes needs the read
+and not the value, for instance to clear the error flags of the device before
+a transfer. The statement `_ = e;` reads `e` and discards its value:
+
+=== "Termina"
+    ```termina
+    procedure clear_errors(&mut self) {
+        _ = self->registers.status;
+        return;
+    }
+    ```
+=== "C"
+    ```c
+    void CUartDrv__clear_errors(const termina__event_t * const termina__ev,
+                                void * const termina__this) {
+
+        CUartDrv * self = (CUartDrv *)termina__this;
+
+        termina__resource__lock(&termina__ev->owner, &self->_lock_type);
+
+        (void)self->registers->status;
+
+        termina__resource__unlock(&termina__ev->owner, &self->_lock_type);
+
+        return;
+
+    }
+    ```
+
+A function has no effects, so discarding its result would leave a statement
+that does nothing, and the value that a method returns has to be used. The
+expression of the statement is therefore the read of a located field or of a
+part of one, such as a field of a located structure or an element of a located
+array, and the transpiler rejects any other expression (SE-244). In the C, the
+statement is the read cast to `void`, and the access stays because the field
+is `volatile`.
 
 ## Binding the address
 
