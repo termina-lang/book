@@ -71,6 +71,9 @@ register `a1`:
 (gdb) continue
 ```
 
+The runner of `termina test` does not load the device tree yet, so the tests
+of a project do not run on this platform.
+
 When the program calls `reboot`, the platform disables interrupts and halts the
 processor, which waits until the board is reset.
 

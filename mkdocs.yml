@@ -29,6 +29,7 @@ nav:
     - Control Flow: basics/control-flow.md
     - Functions: basics/functions.md
     - References: basics/references.md
+    - Documentation Comments: basics/documentation.md
   - The Reactive Model:
     - Overview: reactive/overview.md
     - Resource Classes: reactive/resource-classes.md
@@ -49,6 +50,7 @@ nav:
     - Debugging: tooling/debugging.md
     - Running Tests: tooling/testing.md
     - Measuring Coverage: tooling/coverage.md
+    - Measuring the Source: tooling/metrics.md
   - Appendix:
     - A. Keywords: appendix/keywords.md
     - B. Operators and Symbols: appendix/operators.md

@@ -373,7 +373,7 @@ to run in the same command, and a platform that runs no test of the
 selection ignores it:
 
 ```bash
-$ termina test --gdb lab-pc --gdb-port rtems6-noel32imafd-artya7:2223
+$ termina test --gdb lab-pc --gdb-port rtems5-leon3sf-nexysa7:2223
 ```
 
 The command `termina platforms --json` lists the platforms with the address

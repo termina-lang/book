@@ -169,7 +169,11 @@ The third annotation, `#[unprotected]`, is placed instead on a resource, to
 suppress the automatic insertion of protection described in the reactive model.
 A resource without data fields has no state whose consistency the protection
 would guard, so it may be marked unprotected even when it holds access ports to
-other resources; the transpiler rejects the annotation on a resource that has
-data fields. Every annotation is written on the line
+other resources. A resource whose procedures and methods all take `&self` never
+writes its fields after its initializer sets them, so it may be marked
+unprotected even when it has data fields, as a resource that holds the
+configuration of a component does. The transpiler rejects the annotation on a
+resource whose class has data fields and a member that takes `&mut self` or
+`&priv self`. Every annotation is written on the line
 above the declaration it modifies, and none may appear twice on the same
 declaration.

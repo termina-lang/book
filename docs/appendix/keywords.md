@@ -101,7 +101,10 @@ These are the keywords of C, such as `static` or `volatile`, and the identifiers
 of the C standard library, such as `memcpy` or `abs`. The C standard also keeps
 for the compiler and its library any name that begins with an underscore
 followed by an uppercase letter, and the headers of the target platform declare
-names of their own.
+names of their own. The fields of structs and classes and the procedures of
+interfaces become members of a struct in C, where only the keywords of C and the
+names that C reserves at every scope can collide, so the transpiler checks them
+against those alone.
 
 The names of the platform headers depend on the platform selected in
 `termina.yaml`. The
@@ -134,3 +137,11 @@ generated code shares with the OSAL begins with `termina__`. Since no Termina
 identifier can contain the separator, none can coincide with a generated name.
 A single leading underscore is still allowed, as in the unused parameters of
 Appendix D, provided it is not followed by an uppercase letter.
+
+A name that the transpiler builds from several identifiers can still coincide
+with a name of the platform, although neither identifier does on its own. The
+procedure `generate_random` of a class `uuid` becomes `uuid__generate_random`
+in C, which is a symbol of the RTEMS of the Nexys A7. Before writing each file of
+C, the build looks up every name that the file declares in the same lists as the
+checks above, and stops with error CE-001 at the first one that C or the
+platform keeps for itself. The names that begin with `termina__` are left out.

@@ -100,8 +100,8 @@ Each access port type offers the following operations:
 |:----------|:-----------|
 | `Allocator<T>` | `alloc(&mut Option<box T>)`, `free(box T)` |
 | `DequeAccess<T>` | `take(&mut Option<box T>)`, `take_back(&mut Option<box T>)`, `put(box T)`, `put_front(box T)`, `try_put(box T, &mut Option<box T>)`, `replace(box T, &mut Option<box T>)` |
-| `AtomicAccess<T>` | `load(&mut T)`, `store(T)` |
-| `AtomicArrayAccess<T, N>` | `load_index(usize, &mut T)`, `store_index(usize, T)` |
+| `AtomicAccess<T>` | `load(&mut T)`, `store(T)`, `fetch_add(T, &mut T)` |
+| `AtomicArrayAccess<T, N>` | `load_index(usize, &mut T)`, `store_index(usize, T)`, `fetch_add_index(usize, T, &mut T)` |
 
 ## Channels and emitters
 

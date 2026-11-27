@@ -59,4 +59,6 @@ These appear in class definitions and in the application module:
 ## Comments
 
 Termina uses C-style comments: `//` to the end of the line, and `/* ... */`
-for block comments, which do not nest.
+for block comments, which do not nest. A comment that starts with `///`, `/**`,
+`///<`, `/**<`, `//!` or `/*!` is a documentation comment, described in the
+chapter on documentation comments.

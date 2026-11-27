@@ -482,8 +482,34 @@ resource bank : AtomicArray<u32, 4> = {
     atomic_store(&self->bank_port[1U], v + 1U);
     ```
 
+A `load` followed by a `store`, as in `tick` above, is two accesses, and an
+entity that preempts the task between them can write a value that the `store`
+then overwrites. The operations `fetch_add` and `fetch_add_index` add a value to
+the atomic, or to one of its elements, in a single access, and leave the
+previous value in their last argument:
+
+=== "Termina"
+    ```termina
+    var prev : u32 = 0;
+    self->flag_port.fetch_add(1, &mut prev);
+    self->bank_port.fetch_add_index(2, 10, &mut prev);
+    ```
+=== "C"
+    ```c
+    uint32_t prev = 0U;
+
+    prev = atomic_fetch_add(self->flag_port, 1U);
+
+    prev = atomic_fetch_add(&self->bank_port[2U], 10U);
+    ```
+
+They take atomics of type `u8`, `u16`, `u32` and `usize`, and the sum wraps
+around as the `+` of an unsigned integer does. The transpiler rejects them on
+any other type. The index of `fetch_add_index` goes through the same bounds
+check as that of `load_index` and `store_index`.
+
 Each access, whether to a variable or to one element of an array, compiles to a
-single atomic load or store, with no lock taken. Atomics are therefore suited to
+single atomic operation, with no lock taken. Atomics are therefore suited to
 small, independent values that are shared across entities and read or written one
 at a time, where the cost and the blocking of a mutex would be unwarranted.
 Unlike an ordinary resource, whose procedures run under mutual exclusion, an
