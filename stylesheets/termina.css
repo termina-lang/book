@@ -1,0 +1,248 @@
+/* =============================================================
+   Termina — brand theme for Material for MkDocs
+   Drop-in: docs/stylesheets/termina.css  (see mkdocs.yml → extra_css)
+   Tunes Material's tokens to the Termina design system.
+   ============================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ---- brand palette ---- */
+  --t-navy:      #0B2140;
+  --t-navy-deep: #06182F;
+  --t-panel:     #102541;   /* code block surface */
+  --t-sky:       #87C7F2;
+  --t-sky-deep:  #2C6FA6;   /* links / active — readable on white */
+  --t-amber:     #A35D17;
+  --t-ink:       #15243A;
+  --t-muted:     #5A6B7E;
+  --t-hair:      #E3EAF1;
+  --t-paper-2:   #F4F8FB;
+
+  /* ---- map onto Material tokens ---- */
+  --md-primary-fg-color:        var(--t-navy);
+  --md-primary-fg-color--light: #16314F;
+  --md-primary-fg-color--dark:  var(--t-navy-deep);
+  --md-accent-fg-color:         var(--t-sky-deep);
+  --md-typeset-a-color:         var(--t-sky-deep);
+
+  --md-text-font:  "IBM Plex Sans";
+  --md-code-font:  "JetBrains Mono";
+
+  /* ---- Mermaid diagrams in brand colors ---- */
+  --md-mermaid-font-family:    "IBM Plex Sans", system-ui, sans-serif;
+  --md-mermaid-node-bg-color:  #EEF6FD;
+  --md-mermaid-node-fg-color:  var(--t-ink);
+  --md-mermaid-edge-color:     var(--t-sky-deep);
+  --md-mermaid-label-bg-color: transparent;
+  --md-mermaid-label-fg-color: var(--t-ink);
+}
+
+/* Mermaid: center diagrams and keep them off the hairline borders */
+.md-typeset .mermaid { text-align: center; margin: 1.6em 0; }
+
+/* Structural diagrams (committed SVGs) embedded as images */
+.md-typeset img.diagram { display: block; margin: 1.6em auto; max-width: 100%; height: auto; }
+
+/* Numbered figures with captions (per page) */
+.md-typeset { counter-reset: figure; }
+.md-typeset figure { counter-increment: figure; margin: 1.8em auto; text-align: center; }
+.md-typeset figure img.diagram, .md-typeset figure .mermaid { margin: 0 auto; }
+.md-typeset figure > figcaption { font-size: .82rem; color: #5B6B82; margin: .55em auto 0; max-width: 42rem; }
+.md-typeset figure > figcaption::before { content: "Figure " counter(figure) ". "; font-weight: 700; color: #15243A; }
+
+/* Lightbox: click a diagram to view it large in an overlay (see lightbox.js) */
+.diagram-lightbox { position: fixed; inset: 0; z-index: 1000; display: none;
+  align-items: center; justify-content: center; padding: 2.5vmin;
+  background: rgba(11, 33, 64, .82); cursor: zoom-out; }
+.diagram-lightbox.open { display: flex; }
+.diagram-lightbox img { max-width: 96vw; max-height: 95vh; background: #fff;
+  border-radius: 8px; box-shadow: 0 12px 48px rgba(0, 0, 0, .45); padding: 12px; }
+
+/* Headings in the display face */
+.md-typeset h1, .md-typeset h2, .md-typeset h3,
+.md-typeset h4, .md-header__title {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.md-typeset h1 { color: var(--t-ink); font-size: 2.1rem; margin-bottom: .8em; }
+.md-typeset h2 { margin-top: 1.5em; margin-bottom: .55em; font-size: 1.5rem; }
+.md-typeset h3 { margin-top: 1.2em; margin-bottom: .5em; }
+.md-typeset h4 { margin-top: 1em; margin-bottom: .45em; }
+.md-typeset h2 + p, .md-typeset h3 + p, .md-typeset h4 + p { margin-top: .35em; }
+
+/* Breathing room at the end of every page */
+.md-content__inner { padding-bottom: 5rem; }
+
+/* Body */
+body, .md-typeset { font-family: "IBM Plex Sans", system-ui, sans-serif; }
+.md-typeset { font-size: .82rem; line-height: 1.72; color: var(--t-ink); }
+
+/* ---- Header (wordmark bar) ---- */
+.md-header { background: var(--t-navy); box-shadow: 0 1px 0 rgba(135,199,242,.12); }
+.md-header__title { font-family: "JetBrains Mono", monospace; font-weight: 500; letter-spacing: .01em; }
+
+/* Search box on navy */
+.md-search__input { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(135,199,242,.2); border-radius: 9px; }
+.md-search__input::placeholder { color: #8FA8C2; }
+
+/* ---- Left nav active state ---- */
+.md-nav__link--active, .md-nav__item .md-nav__link--active { color: var(--t-sky-deep); font-weight: 600; }
+.md-nav__item--section > .md-nav__link {
+  font-family: "JetBrains Mono", monospace; font-size: .62rem;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--t-muted);
+}
+
+/* ---- TOC (right) active ---- */
+.md-nav--secondary .md-nav__link--active { color: var(--t-sky-deep); }
+
+/* ---- Content tabs (=== "Termina" / === "C") ---- */
+.md-typeset .tabbed-labels > label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: .6rem; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--t-muted);
+}
+.md-typeset .tabbed-labels > label:hover { color: var(--t-sky-deep); }
+.md-typeset .tabbed-set { margin-top: .9em; }
+.md-typeset .tabbed-content { padding-top: .2em; }
+
+/* Slimmer permalink anchors */
+.md-typeset .headerlink { color: var(--t-hair); transition: color .15s; }
+.md-typeset .headerlink:hover, .md-typeset :target > .headerlink { color: var(--t-sky-deep); }
+
+/* Footer prev/next in brand */
+.md-footer__link:hover .md-footer__title { color: var(--t-sky); }
+
+/* =============================================================
+   Code blocks — navy panel + Termina syntax palette
+   Works for any language (token classes are Pygments-generic).
+   ============================================================= */
+.md-typeset pre > code,
+.md-typeset .highlight pre {
+  background: var(--t-panel);
+  color: #D7E4F1;
+  border-radius: 13px;
+}
+.md-typeset .highlight { border-radius: 13px; }
+/* copy-to-clipboard button: legible on the navy panel */
+/* Material >=9.6 renamed it to .md-code__nav (the box) + .md-code__button (the icon);
+   older versions used .md-clipboard. The nav box blends with the panel; the icon
+   stays faint and brightens on hover. */
+.md-typeset .md-code__nav { background: transparent !important; box-shadow: none !important; }
+.md-typeset .md-code__button,
+.md-typeset .md-clipboard { background: transparent !important; box-shadow: none !important; color: rgba(135, 199, 242, .45); }
+.md-typeset .md-code__button:hover,
+.md-typeset .highlight:hover .md-code__button,
+.md-typeset .md-clipboard:hover,
+.md-typeset .highlight:hover .md-clipboard { color: rgba(135, 199, 242, .8); }
+.md-typeset code {
+  font-family: "JetBrains Mono", monospace;
+}
+/* inline code on light surface */
+.md-typeset :not(pre) > code {
+  background: var(--t-paper-2);
+  color: #1d3a5c;
+  border: 1px solid var(--t-hair);
+  border-radius: 6px;
+  padding: .1em .4em;
+}
+
+/* Pygments token → Termina palette (scoped to highlighted blocks) */
+.md-typeset .highlight .k,  .md-typeset .highlight .kd,
+.md-typeset .highlight .kn, .md-typeset .highlight .kr { color: #74AEEA; }        /* keyword */
+.md-typeset .highlight .kt, .md-typeset .highlight .nc,
+.md-typeset .highlight .nn, .md-typeset .highlight .nb { color: #57B8AE; }        /* type / class */
+.md-typeset .highlight .nf, .md-typeset .highlight .fm { color: #87C7F2; }        /* function */
+.md-typeset .highlight .mi, .md-typeset .highlight .mf,
+.md-typeset .highlight .mh, .md-typeset .highlight .il { color: #F2A33C; }        /* number */
+.md-typeset .highlight .s,  .md-typeset .highlight .s1,
+.md-typeset .highlight .s2, .md-typeset .highlight .sb { color: #7FC78C; }        /* string */
+.md-typeset .highlight .c,  .md-typeset .highlight .c1,
+.md-typeset .highlight .cm, .md-typeset .highlight .cs { color: #8299B4; font-style: italic; }  /* comment */
+.md-typeset .highlight .nd { color: #B6A0E2; }                                    /* decorator/attribute */
+.md-typeset .highlight .o,  .md-typeset .highlight .p,
+.md-typeset .highlight .ow { color: #AFC4DA; }                                    /* operator/punct */
+.md-typeset .highlight .n,  .md-typeset .highlight .nx,
+.md-typeset .highlight .ne, .md-typeset .highlight .err { color: #D7E4F1; }       /* name / fallback */
+.md-typeset .highlight .nt, .md-typeset .highlight .na { color: #87C7F2; }        /* markup/YAML keys, attributes */
+.md-typeset .highlight .nv, .md-typeset .highlight .vc,
+.md-typeset .highlight .vg, .md-typeset .highlight .vi,
+.md-typeset .highlight .vm { color: #BBDDF7; }                                    /* variables ($PWD) */
+.md-typeset .highlight .si, .md-typeset .highlight .se,
+.md-typeset .highlight .sa, .md-typeset .highlight .sr,
+.md-typeset .highlight .ss, .md-typeset .highlight .sx,
+.md-typeset .highlight .sc, .md-typeset .highlight .dl { color: #E8B270; }        /* escapes/interpol */
+.md-typeset .highlight .sd, .md-typeset .highlight .sh { color: #7FC78C; }        /* doc/heredoc strings */
+.md-typeset .highlight .m,  .md-typeset .highlight .mo,
+.md-typeset .highlight .mb { color: #F2A33C; }                                    /* other numbers */
+.md-typeset .highlight .kc, .md-typeset .highlight .kp,
+.md-typeset .highlight .kv { color: #74AEEA; }                                    /* keyword constants */
+.md-typeset .highlight .cp, .md-typeset .highlight .cpf { color: #B6A0E2; }       /* preprocessor */
+.md-typeset .highlight .no { color: #F2A33C; }                                    /* constants */
+.md-typeset .highlight .gp { color: #7C97B5; }                                    /* shell prompt */
+.md-typeset .highlight .w  { color: inherit; }                                    /* whitespace */
+/* line numbers */
+.md-typeset .highlight .linenos, .md-typeset .highlight .lineno { color: #7C97B5; }
+
+/* code title bar (when using ```lang title="file.termina") */
+.md-typeset .highlight > span[class^="filename"],
+.md-typeset .highlighttable .filename {
+  background: var(--t-navy-deep); color: #9FB6CE;
+  font-family: "JetBrains Mono", monospace; font-size: .68rem;
+  border-radius: 13px 13px 0 0;
+}
+
+/* =============================================================
+   Admonitions — Termina note / warning / tip
+   ============================================================= */
+.md-typeset .admonition, .md-typeset details {
+  border-radius: 11px; border-width: 1px; border-left-width: 4px;
+  font-size: .76rem; box-shadow: none;
+}
+.md-typeset .admonition-title { font-family: "Space Grotesk", sans-serif; font-weight: 600; }
+
+.md-typeset .admonition.note, .md-typeset .admonition.info {
+  border-color: #BBD9F2; border-left-color: var(--t-sky-deep); background: #EEF6FD;
+}
+.md-typeset .note > .admonition-title, .md-typeset .info > .admonition-title { background: rgba(44,111,166,.10); color: var(--t-sky-deep); }
+
+.md-typeset .admonition.warning, .md-typeset .admonition.important {
+  border-color: #EDD3AC; border-left-color: var(--t-amber); background: #FBF2E6;
+}
+.md-typeset .warning > .admonition-title, .md-typeset .important > .admonition-title { background: rgba(163,93,23,.12); color: var(--t-amber); }
+
+.md-typeset .admonition.tip, .md-typeset .admonition.success {
+  border-color: #BEE3CD; border-left-color: #1F7A48; background: #EBF7F0;
+}
+.md-typeset .tip > .admonition-title, .md-typeset .success > .admonition-title { background: rgba(31,122,72,.12); color: #1F7A48; }
+
+/* =============================================================
+   Tables
+   ============================================================= */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--t-hair); border-radius: 12px; overflow: hidden; font-size: .74rem;
+}
+/* center tables on the page (plain markup and the JS scroll wrapper alike) */
+.md-typeset table:not([class]) { display: table; margin-left: auto; margin-right: auto; }
+.md-typeset .md-typeset__scrollwrap { text-align: center; }
+.md-typeset .md-typeset__table { display: inline-block; text-align: initial; }
+.md-typeset table:not([class]) th {
+  background: var(--t-paper-2); color: var(--t-navy);
+  font-family: "JetBrains Mono", monospace; font-size: .64rem;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+
+/* =============================================================
+   Buttons (.md-button) → brand
+   ============================================================= */
+.md-typeset .md-button {
+  border-radius: 11px; font-weight: 600; border-color: var(--t-hair);
+}
+.md-typeset .md-button--primary {
+  background: var(--t-sky-deep); border-color: var(--t-sky-deep); color: #fff;
+}
+.md-typeset .md-button--primary:hover { background: var(--t-navy); border-color: var(--t-navy); }
+
+/* footer */
+.md-footer, .md-footer-meta { background: var(--t-navy-deep); }
