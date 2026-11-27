@@ -61,7 +61,7 @@ to the Termina extension:
 ```jsonc
 {
     "name": "myapp",
-    "image": "ghcr.io/termina-lang/docker-termina:0.7",
+    "image": "ghcr.io/termina-lang/docker-termina:0.8",
     "runArgs": [
         "--cap-add=SYS_PTRACE",
         "--security-opt", "seccomp=unconfined",
@@ -182,4 +182,4 @@ toolchain different from the one expected:
 - The `latest` and `MAJOR.MINOR` tags are mutable: they move with each
   release. A project that must behave identically over time, such as the
   material of a course, should pin the exact release tag, for instance
-  `ghcr.io/termina-lang/docker-termina:v0.7.0`.
+  `ghcr.io/termina-lang/docker-termina:v0.8.0`.

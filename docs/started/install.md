@@ -35,7 +35,7 @@ Desktop is used with the WSL 2 backend, and projects are kept inside the file
 system of the WSL distribution and not on `C:\`, where builds are slow and line
 endings are converted.
 
-A tag of the image such as `v0.7.0` names one release and never changes, a tag
+A tag of the image such as `v0.8.0` names one release and never changes, a tag
 such as `0.7` follows the latest release of that `MAJOR.MINOR` version, and
 `latest` follows the latest release. The transpiler and the OSAL of a `0.7`
 image are compatible with any project written for the `0.7` versions of
@@ -43,7 +43,7 @@ Termina, and `0.7` is the tag that `termina new` writes in the configuration of
 Visual Studio Code. The image is retrieved with the following command:
 
 ```bash
-$ docker pull ghcr.io/termina-lang/docker-termina:0.7
+$ docker pull ghcr.io/termina-lang/docker-termina:0.8
 ```
 
 The image is used from a disposable container, through an alias, or from
@@ -61,14 +61,14 @@ of the host directory, and every file produced in it remains on the host.
 
     ```bash
     $ docker run --rm -it -v "$PWD":/work -w /work \
-        ghcr.io/termina-lang/docker-termina:0.7 bash
+        ghcr.io/termina-lang/docker-termina:0.8 bash
     ```
 
 === "Windows (PowerShell)"
 
     ```powershell
     $ docker run --rm -it -v "${PWD}:/work" -w /work `
-        ghcr.io/termina-lang/docker-termina:0.7 bash
+        ghcr.io/termina-lang/docker-termina:0.8 bash
     ```
 
 The resulting shell provides the complete toolchain. A project is created with
@@ -107,7 +107,7 @@ toolchains.
 === "macOS / Linux (bash/zsh)"
 
     ```bash
-    $ alias termina='docker run --rm -it -v "$PWD":/work -w /work ghcr.io/termina-lang/docker-termina:0.7 termina'
+    $ alias termina='docker run --rm -it -v "$PWD":/work -w /work ghcr.io/termina-lang/docker-termina:0.8 termina'
     ```
 
     Adding this line to the `~/.bashrc` or `~/.zshrc` file makes the alias
@@ -116,7 +116,7 @@ toolchains.
 === "Windows (PowerShell)"
 
     ```powershell
-    function termina { docker run --rm -it -v "${PWD}:/work" -w /work ghcr.io/termina-lang/docker-termina:0.7 termina @args }
+    function termina { docker run --rm -it -v "${PWD}:/work" -w /work ghcr.io/termina-lang/docker-termina:0.8 termina @args }
     ```
 
     Adding this function to the PowerShell profile (`$PROFILE`) makes it
@@ -194,20 +194,20 @@ The package is downloaded and checked against its hash, and then unpacked in
 === "Linux"
 
     ```bash
-    $ curl -fLO https://github.com/termina-lang/termina/releases/download/v0.7.0/termina-0.7.0-x86_64-linux.tar.gz
-    $ curl -fLO https://github.com/termina-lang/termina/releases/download/v0.7.0/SHA256SUMS
+    $ curl -fLO https://github.com/termina-lang/termina/releases/download/v0.8.0/termina-0.8.0-x86_64-linux.tar.gz
+    $ curl -fLO https://github.com/termina-lang/termina/releases/download/v0.8.0/SHA256SUMS
     $ sha256sum --ignore-missing -c SHA256SUMS
-    $ sudo tar -xzf termina-0.7.0-x86_64-linux.tar.gz -C /opt
+    $ sudo tar -xzf termina-0.8.0-x86_64-linux.tar.gz -C /opt
     $ sudo ln -sfn /opt/termina-0.7.0 /opt/termina
     ```
 
 === "macOS"
 
     ```bash
-    $ curl -fLO https://github.com/termina-lang/termina/releases/download/v0.7.0/termina-0.7.0-aarch64-macos.tar.gz
-    $ curl -fLO https://github.com/termina-lang/termina/releases/download/v0.7.0/SHA256SUMS
+    $ curl -fLO https://github.com/termina-lang/termina/releases/download/v0.8.0/termina-0.8.0-aarch64-macos.tar.gz
+    $ curl -fLO https://github.com/termina-lang/termina/releases/download/v0.8.0/SHA256SUMS
     $ shasum -a 256 --ignore-missing -c SHA256SUMS
-    $ sudo tar -xzf termina-0.7.0-aarch64-macos.tar.gz -C /opt
+    $ sudo tar -xzf termina-0.8.0-aarch64-macos.tar.gz -C /opt
     $ sudo ln -sfn /opt/termina-0.7.0 /opt/termina
     ```
 
@@ -255,13 +255,13 @@ $ curl -sSL https://get.haskellstack.org/ | sh
 Stack reads the exact GHC version required by the project from its `stack.yaml`
 file and downloads it automatically, so no compiler needs to be installed
 manually and a single `stack install` command produces the binary. The
-repository is cloned at the release tag, `v0.7.0` at the time of writing, and
+repository is cloned at the release tag, `v0.8.0` at the time of writing, and
 then built; `stack install` places the resulting `termina` executable in
 Stack's local binary directory, which is `~/.local/bin` by default and should
 therefore be present in the `PATH`:
 
 ```bash
-$ git clone --branch v0.7.0 https://github.com/termina-lang/termina.git
+$ git clone --branch v0.8.0 https://github.com/termina-lang/termina.git
 $ cd termina
 $ stack install
 ```
@@ -277,13 +277,13 @@ termina 0.7.0
 The code emitted by the transpiler is compiled against the OSAL, which must
 likewise be present on the system. The OSAL is cloned at the corresponding
 release tag. The transpiler and the OSAL must share the same `MAJOR.MINOR`
-version, so any `v0.7.x` of one is compatible with any `v0.7.y` of the other.
+version, so any `v0.8.x` of one is compatible with any `v0.8.y` of the other.
 The `Makefile` generated by the transpiler expects to find the OSAL under
 `/opt/termina/osal`, and the most direct configuration is therefore to create a
 symbolic link at that location:
 
 ```bash
-$ git clone --branch v0.7.0 https://github.com/termina-lang/termina-osal.git
+$ git clone --branch v0.8.0 https://github.com/termina-lang/termina-osal.git
 $ sudo mkdir -p /opt/termina
 $ sudo ln -s "$(pwd)/termina-osal" /opt/termina/osal
 ```
